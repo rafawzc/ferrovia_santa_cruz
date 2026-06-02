@@ -32,9 +32,15 @@ Aplicação web para **gerenciar** (lado admin) e **informar** (lado cliente e a
 Os três rodam em **Docker Compose**, ligados por uma **rede interna**. Só o `frontend` é exposto pra fora; ele chama o `backend` por proxy, e o `backend` fala com o `db` — nenhum dos dois publica porta.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{
+  'fontFamily':'ui-sans-serif, system-ui, sans-serif',
+  'lineColor':'#8b9bb4',
+  'clusterBkg':'#0d1117',
+  'clusterBorder':'#3d4757'
+}}}%%
 flowchart LR
     browser["🖥️ Navegador<br/><i>fora da rede</i>"]
-    subgraph internal["rede interna (Docker)"]
+    subgraph internal["🔒 rede interna · Docker"]
         direction LR
         frontend["<b>frontend</b><br/>React · Vite<br/>proxy /api"]
         backend["<b>backend</b><br/>FastAPI<br/><i>sem porta exposta</i>"]
@@ -43,6 +49,15 @@ flowchart LR
     browser -->|":5173"| frontend
     frontend -->|"/api → backend:8000"| backend
     backend -->|"SQL"| db
+
+    classDef browser fill:#1e293b,stroke:#94a3b8,stroke-width:2px,color:#e2e8f0
+    classDef front fill:#0b3a48,stroke:#61dafb,stroke-width:2px,color:#dff7ff
+    classDef back fill:#0a3f38,stroke:#2dd4bf,stroke-width:2px,color:#d6fff7
+    classDef data fill:#10243f,stroke:#5b9bd5,stroke-width:2px,color:#dbeafe
+    class browser browser
+    class frontend front
+    class backend back
+    class db data
 ```
 
 Detalhe completo (proxy, `depends_on`, healthchecks) em [`docs/arquitetura/containers-e-rede.md`](docs/arquitetura/containers-e-rede.md).
