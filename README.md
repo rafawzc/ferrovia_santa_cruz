@@ -31,10 +31,18 @@ Aplicação web para **gerenciar** (lado admin) e **informar** (lado cliente e a
 
 Os três rodam em **Docker Compose**, ligados por uma **rede interna**. Só o `frontend` é exposto pra fora; ele chama o `backend` por proxy, e o `backend` fala com o `db` — nenhum dos dois publica porta.
 
-```
-Navegador  ──:5173──►  frontend  ──rede interna──►  backend  ──rede interna──►  db
-                       Vite · proxy /api            FastAPI                      MySQL
-                                                    sem porta exposta            sem porta exposta
+```mermaid
+flowchart LR
+    browser["🖥️ Navegador<br/><i>fora da rede</i>"]
+    subgraph internal["rede interna (Docker)"]
+        direction LR
+        frontend["<b>frontend</b><br/>React · Vite<br/>proxy /api"]
+        backend["<b>backend</b><br/>FastAPI<br/><i>sem porta exposta</i>"]
+        db[("<b>db</b><br/>MySQL<br/><i>sem porta exposta</i>")]
+    end
+    browser -->|":5173"| frontend
+    frontend -->|"/api → backend:8000"| backend
+    backend -->|"SQL"| db
 ```
 
 Detalhe completo (proxy, `depends_on`, healthchecks) em [`docs/arquitetura/containers-e-rede.md`](docs/arquitetura/containers-e-rede.md).
