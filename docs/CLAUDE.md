@@ -8,6 +8,7 @@ Este arquivo é o **mapa da pasta `docs/`**. Quem chega aqui lê isto primeiro e
 
 | Área | O que tem dentro |
 |------|------------------|
+| [`design/`](design/) | **Referência visual base** do projeto (mockup da Entrega 1). `mockup-entrega-1.md`: catálogo de telas com pareamento mobile↔desktop. Subpastas `mobile/`, `desktop/` (telas) e `guia-de-estilo/` (paleta de cores + tipografia/ícones). Abra a imagem da tela antes de implementá-la em React. |
 | [`arquitetura/`](arquitetura/) | Como o sistema é montado. `containers-e-rede.md`: modelo Docker dos 3 serviços, rede interna, proxy do frontend, `depends_on` em cadeia. |
 | [`backend/`](backend/) | API FastAPI e acesso a dados. `acesso-a-dados.md`: SQL puro, queries parametrizadas, conexão, padrões anti-injection. |
 | [`frontend/`](frontend/) | UI React. `responsividade.md`: mobile-first, padrões responsivos, consumo de API por caminho relativo, os dois lados (admin/cliente). |
