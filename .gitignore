@@ -1,0 +1,27 @@
+.env
+.env.staging
+.env.test
+.env.prod
+*.env.bak
+.playwright-cli/
+screenshots/
+.claude/plans/
+.claude/ai/
+.claude/worktrees
+.claude/CLAUDE.local.md
+.claude/scheduled_tasks.lock
+task.md
+
+# Python bytecode and pytest caches
+__pycache__/
+*.pyc
+.pytest_cache/
+*cache*
+# ...but never let *cache* swallow source-controlled files (migrations,
+# code) that legitimately mention "cache" — they are not cache artifacts.
+!*.sql
+!*.py
+!*.php
+!*.jsx
+!*.ts
+!*.tsx
