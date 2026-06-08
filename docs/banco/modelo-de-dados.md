@@ -8,6 +8,7 @@
 
 ```mermaid
 erDiagram
+    CARGO     ||--o{ USUARIO        : classifica
     USUARIO   ||--o{ RELATORIO      : gera
     LINHA     ||--o{ TREM           : "opera"
     LINHA     ||--o{ ALERTA         : recebe
@@ -15,12 +16,17 @@ erDiagram
     TREM      ||--o{ CARGA          : transporta
     SENSOR    ||--o{ LEITURA_SENSOR : registra
 
+    CARGO {
+        int id PK
+        varchar nome UK
+        enum nivel_acesso "default cliente"
+    }
     USUARIO {
         int id PK
         varchar nome
         varchar email UK
         varchar senha_hash
-        enum cargo "default comum"
+        int cargo_id FK "default 1 = comum"
         varchar telefone
         varchar foto_url
         boolean ativo
@@ -87,7 +93,8 @@ erDiagram
 
 | Entidade | O que é | Relacionamentos | Vem de |
 |----------|---------|-----------------|--------|
-| **usuario** | Quem acessa o sistema (login). Cargo num único ENUM, default `comum`. | gera N `relatorio` | Mockup (login, funcionários, perfil) + atividade DB (login/admin) |
+| **cargo** | Função do usuário (comum, admin, maquinista…). `nivel_acesso` encoda a matriz de acesso. | classifica N `usuario` | Mockup (cargo do funcionário) + normalização do antigo ENUM |
+| **usuario** | Quem acessa o sistema (login). Aponta pra um `cargo` (default `comum`). | gera N `relatorio`; tem 1 `cargo` | Mockup (login, funcionários, perfil) + atividade DB (login/admin) |
 | **linha** | Rota da ferrovia, com status operacional. | opera N `trem`; recebe N `alerta` | Mockup (Gestão de Rotas) |
 | **trem** | Locomotiva/composição. Roda numa linha. | tem N `sensor`; transporta N `carga` | Atividade DB (monitoramento) + mockup (campo "Trem") |
 | **sensor** | Sensor IoT vinculado a um trem. Tipo de dado monitorado. | tem N `leitura_sensor` | Atividade DB (cadastro de sensores) |
@@ -98,6 +105,21 @@ erDiagram
 
 ## Detalhe das tabelas
 
+### `cargo`
+| Coluna | Tipo | Restrições |
+|--------|------|------------|
+| `id` | INT | PK, AUTO_INCREMENT |
+| `nome` | VARCHAR(40) | NOT NULL, **UNIQUE** |
+| `nivel_acesso` | ENUM(`cliente`,`operacional`,`gestao`) | NOT NULL, **DEFAULT `cliente`** |
+
+Os 10 cargos seedados e seu nível de acesso (a **matriz de acesso vive no banco**, não em código):
+
+| nivel_acesso | cargos | Pode |
+|--------------|--------|------|
+| `cliente` | `comum` | só o próprio perfil |
+| `operacional` | `maquinista`, `auxiliar_maquinista`, `agente_trem`, `manutencao`, `engenharia_mecanica`, `eletricista` | painel operacional (monitoramento), sem gerir usuários |
+| `gestao` | `admin`, `administracao`, `rh` | gestão completa, inclui gerir usuários |
+
 ### `usuario`
 | Coluna | Tipo | Restrições |
 |--------|------|------------|
@@ -105,16 +127,15 @@ erDiagram
 | `nome` | VARCHAR(120) | NOT NULL |
 | `email` | VARCHAR(160) | NOT NULL, **UNIQUE** |
 | `senha_hash` | VARCHAR(255) | NOT NULL (senha sempre com hash, nunca texto puro) |
-| `cargo` | ENUM(`comum`,`admin`,`rh`,`maquinista`,`auxiliar_maquinista`,`agente_trem`,`manutencao`,`administracao`,`engenharia_mecanica`,`eletricista`) | NOT NULL, **DEFAULT `comum`** |
+| `cargo_id` | INT | NOT NULL, **DEFAULT 1** (= `comum`, seedado como id 1), **FK → cargo(id) ON DELETE RESTRICT** |
 | `telefone` | VARCHAR(20) | NULL |
 | `foto_url` | VARCHAR(255) | NULL |
 | `ativo` | BOOLEAN | NOT NULL, DEFAULT TRUE |
 | `criado_em` | DATETIME | NOT NULL, DEFAULT CURRENT_TIMESTAMP |
 
-**Cargo num único ENUM (decisão do grupo):** sem tabela separada de cargos/papéis. Todo registro novo nasce `comum`; só um admin promove. O acesso é derivado do cargo (ver matriz de acesso no plano, Seção 5):
-- `comum` → **Cliente**: só o próprio perfil.
-- `admin`, `administracao`, `rh` → **gestão completa** (inclui gerir usuários).
-- demais cargos operacionais → **painel operacional** (monitoramento), sem gerir usuários.
+Todo registro novo nasce `comum` (DEFAULT 1); só um admin promove. O acesso de cada tela é derivado do `nivel_acesso` do cargo do usuário (um JOIN `usuario → cargo`).
+
+> **Decisão superada (não apagada):** o cargo era um **ENUM único em `usuario`** ("decisão do grupo" original). Foi normalizado pra a tabela `cargo` porque (1) o ENUM de 10 valores era grande e mexer nele exigia `ALTER TABLE` (DDL), (2) uma tabela com FK demonstra mais modelagem relacional — relevante numa avaliação de Banco — e (3) a matriz de acesso vira **dado** (`nivel_acesso`) em vez de regra espalhada em código. O comportamento "nasce comum" foi preservado via `DEFAULT 1`.
 
 ### `linha`
 | Coluna | Tipo | Restrições |
@@ -191,6 +212,7 @@ erDiagram
 
 | FK | Aponta para | ON DELETE | Por quê |
 |----|-------------|-----------|---------|
+| `usuario.cargo_id` | `cargo` | RESTRICT | não apagar um cargo que ainda tem usuários |
 | `trem.linha_id` | `linha` | SET NULL | trem pode existir sem linha atribuída |
 | `sensor.trem_id` | `trem` | RESTRICT | não soltar sensor órfão |
 | `leitura_sensor.sensor_id` | `sensor` | **RESTRICT** | **regra do item 6 — sensor com dados não some** |
@@ -200,4 +222,8 @@ erDiagram
 
 ## População (seed)
 
-A atividade DB exige **≥3 registros por tabela**, respeitando tipos, PKs e FKs. Ordem de inserção (respeita as dependências): `usuario` → `linha` → `trem` → `sensor` → `leitura_sensor` → `carga` → `alerta` → `relatorio`. Inserir os pais antes dos filhos, senão o FK falha.
+A atividade DB exige **≥3 registros por tabela**, respeitando tipos, PKs e FKs. Ordem de inserção (respeita as dependências): `cargo` → `usuario` → `linha` → `trem` → `sensor` → `leitura_sensor` → `carga` → `alerta` → `relatorio`. Inserir os pais antes dos filhos, senão o FK falha. `cargo` é seedado com **id explícito** (1 = `comum`) pra casar com o `DEFAULT 1` de `usuario`.
+
+## Lacuna conhecida — "localização em mapa" (tela 7)
+
+A Tela de Monitoramento em Tempo Real (item 7 da SA) pede mostrar o trem **num mapa**, o que exige **latitude/longitude**. O modelo atual guarda `sensor.localizacao` como texto e `leitura_sensor.valor` como um único `DECIMAL` — não há onde armazenar um par de coordenadas. **Não está implementado** (fora do escopo da entrega de Banco, que não exige o mapa funcionando). Quando a tela for pra valer, opções: adicionar `latitude`/`longitude` em `leitura_sensor`, ou uma tabela `posicao(trem_id, lat, long, data_hora)`.

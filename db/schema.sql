@@ -18,23 +18,37 @@ CREATE DATABASE IF NOT EXISTS ferrovia_santa_cruz
 USE ferrovia_santa_cruz;
 
 -- -------------------------------------------------------------
--- usuario: quem acessa o sistema. O cargo e um ENUM unico
--- (sem tabela separada); todo registro novo nasce 'comum'.
--- O acesso de cada tela e derivado desse cargo.
+-- cargo: funcao do usuario (maquinista, rh, admin...). Antes era
+-- um ENUM gigante dentro de usuario; virou tabela pra normalizar
+-- e tirar DDL (ALTER TABLE) do caminho quando muda um cargo.
+-- nivel_acesso encoda a matriz de acesso no banco (em vez de
+-- espalhar a regra em codigo): cliente < operacional < gestao.
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS cargo (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    nome         VARCHAR(40) NOT NULL UNIQUE,
+    nivel_acesso ENUM('cliente','operacional','gestao') NOT NULL DEFAULT 'cliente'
+) ENGINE=InnoDB;
+
+-- -------------------------------------------------------------
+-- usuario: quem acessa o sistema. cargo_id aponta pra cargo.
+-- DEFAULT 1 = 'comum' (semeado como id 1); todo registro novo
+-- nasce comum, so um admin promove. O acesso de cada tela e
+-- derivado do nivel_acesso do cargo.
+-- ON DELETE RESTRICT: nao deixa apagar um cargo em uso.
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS usuario (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     nome        VARCHAR(120)  NOT NULL,
     email       VARCHAR(160)  NOT NULL UNIQUE,
     senha_hash  VARCHAR(255)  NOT NULL,                 -- senha sempre com hash, nunca texto puro
-    cargo       ENUM('comum','admin','rh','maquinista','auxiliar_maquinista',
-                     'agente_trem','manutencao','administracao',
-                     'engenharia_mecanica','eletricista')
-                NOT NULL DEFAULT 'comum',
+    cargo_id    INT NOT NULL DEFAULT 1,                 -- 1 = 'comum' (ver seed)
     telefone    VARCHAR(20),
     foto_url    VARCHAR(255),
     ativo       BOOLEAN  NOT NULL DEFAULT TRUE,
-    criado_em   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    criado_em   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_usuario_cargo FOREIGN KEY (cargo_id)
+        REFERENCES cargo(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 -- -------------------------------------------------------------
