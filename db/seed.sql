@@ -14,12 +14,26 @@
 
 USE ferrovia_santa_cruz;
 
--- usuario (cargo ENUM; quem nao e 'comum' e equipe) ----------
-INSERT INTO usuario (nome, email, senha_hash, cargo, telefone, ativo) VALUES
-    ('Ana Gestora',     'ana.admin@ferrovia.com',  '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 'admin',      '47999990001', TRUE),
-    ('Carlos Souza',    'carlos.maq@ferrovia.com', '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 'maquinista', '47999990002', TRUE),
-    ('Bruna Lima',      'bruna.rh@ferrovia.com',   '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 'rh',         '47999990003', TRUE),
-    ('Cliente Comum',   'cliente@email.com',       '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 'comum',      '47999990004', TRUE);
+-- cargo (id explicito: 1 = comum, casa com o DEFAULT de usuario) -
+-- nivel_acesso encoda a matriz de acesso: cliente / operacional / gestao.
+INSERT INTO cargo (id, nome, nivel_acesso) VALUES
+    ( 1, 'comum',               'cliente'),
+    ( 2, 'admin',               'gestao'),
+    ( 3, 'administracao',       'gestao'),
+    ( 4, 'rh',                  'gestao'),
+    ( 5, 'maquinista',          'operacional'),
+    ( 6, 'auxiliar_maquinista', 'operacional'),
+    ( 7, 'agente_trem',         'operacional'),
+    ( 8, 'manutencao',          'operacional'),
+    ( 9, 'engenharia_mecanica', 'operacional'),
+    (10, 'eletricista',         'operacional');
+
+-- usuario (cargo_id FK; quem nao e 'comum' e equipe) ----------
+INSERT INTO usuario (nome, email, senha_hash, cargo_id, telefone, ativo) VALUES
+    ('Ana Gestora',     'ana.admin@ferrovia.com',  '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 2, '47999990001', TRUE),
+    ('Carlos Souza',    'carlos.maq@ferrovia.com', '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 5, '47999990002', TRUE),
+    ('Bruna Lima',      'bruna.rh@ferrovia.com',   '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 4, '47999990003', TRUE),
+    ('Cliente Comum',   'cliente@email.com',       '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 1, '47999990004', TRUE);
 
 -- linha (numero unico, status ENUM) --------------------------
 INSERT INTO linha (numero, status, ativo) VALUES

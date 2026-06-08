@@ -105,6 +105,7 @@ O banco (MySQL 8, SQL puro) une **o que o mockup exige** (usuários, linhas, car
 
 ```mermaid
 erDiagram
+    CARGO     ||--o{ USUARIO        : classifica
     USUARIO   ||--o{ RELATORIO      : gera
     LINHA     ||--o{ TREM           : "opera"
     LINHA     ||--o{ ALERTA         : recebe
@@ -112,11 +113,16 @@ erDiagram
     TREM      ||--o{ CARGA          : transporta
     SENSOR    ||--o{ LEITURA_SENSOR : registra
 
+    CARGO {
+        int id PK
+        varchar nome UK
+        enum nivel_acesso "default cliente"
+    }
     USUARIO {
         int id PK
         varchar email UK
         varchar senha_hash
-        enum cargo "default comum"
+        int cargo_id FK "default 1 = comum"
         boolean ativo
     }
     LINHA {
@@ -164,7 +170,7 @@ erDiagram
 
 Duas decisões de modelagem que valem destacar:
 
-- **Cargo é um único ENUM em `usuario`** (`comum`, `admin`, `maquinista`, `rh`…), sem tabela separada de cargos. Todo registro novo nasce **`comum`** (default) — só um admin promove. O acesso de cada tela (Seção 5) é derivado desse cargo.
+- **Cargo é uma tabela** (`usuario.cargo_id` FK → `cargo`), normalizada do antigo ENUM. Todo registro novo nasce **`comum`** (`DEFAULT 1`) — só um admin promove. `cargo.nivel_acesso` (`cliente`/`operacional`/`gestao`) encoda a matriz de acesso (Seção 5) no banco. Ver decisão superada em [`banco/modelo-de-dados.md`](banco/modelo-de-dados.md).
 - **Sensor não pode ser excluído se tiver leituras** — o FK `leitura_sensor.sensor_id` usa `ON DELETE RESTRICT`. A regra mora no schema; a API só traduz o erro do banco para a mensagem ao usuário.
 
 ---
