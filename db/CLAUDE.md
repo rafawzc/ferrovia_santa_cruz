@@ -9,5 +9,5 @@ Scripts de inicialização do MySQL. O container `db` roda estes na primeira sub
 
 Gotchas:
 - A regra "não exclui sensor com leituras" mora no schema: `leitura_sensor.sensor_id` é `ON DELETE RESTRICT`. O backend só traduz o erro do banco.
-- `cargo` é ENUM único em `usuario`, default `comum`. Não existe tabela de cargos.
+- `cargo` é **tabela** (não mais ENUM): `usuario.cargo_id` FK → `cargo(id)`, `DEFAULT 1`. O id 1 é `comum` e é seedado com **id explícito** justamente pra casar com esse default — não mexa na ordem/ids do seed de `cargo` sem ajustar o default. `cargo.nivel_acesso` (`cliente`/`operacional`/`gestao`) é a matriz de acesso no banco.
 - `senha_hash` no seed é placeholder — o hash real vem do backend.
