@@ -6,6 +6,12 @@
 
 ## Diagrama Entidade-Relacionamento
 
+DER exportado do MySQL Workbench (reverse engineering do `db/schema.sql`) — é o artefato que a SA pede como entrega:
+
+![Diagrama Entidade-Relacionamento](diagrama-er.png)
+
+O mesmo modelo em Mermaid (versionável, edita-no-texto):
+
 ```mermaid
 erDiagram
     CARGO     ||--o{ USUARIO        : classifica
