@@ -19,7 +19,7 @@ Este arquivo é o **mapa da pasta `docs/`**. Quem chega aqui lê isto primeiro e
 | [`banco/`](banco/) | Modelo de dados do MySQL. `modelo-de-dados.md`: ERD, tabelas/tipos/chaves, integridade referencial, regra de exclusão restrita de sensores. Fonte da verdade pro `db/schema.sql`. |
 | [`backend/`](backend/) | API FastAPI e acesso a dados. `acesso-a-dados.md`: SQL puro, queries parametrizadas, conexão, padrões anti-injection. |
 | [`frontend/`](frontend/) | UI React. `responsividade.md`: mobile-first, padrões responsivos, consumo de API por caminho relativo, os dois lados (admin/cliente). |
-| [`decisoes/`](decisoes/) | Registro das decisões técnicas com o *porquê*. `stack.md`: FastAPI, SQL puro (e a razão política), Vite/Vitest, Docker 3-container, estrutura de docs. |
+| [`decisoes/`](decisoes/) | Registro das decisões técnicas com o *porquê*. `stack.md`: FastAPI, SQL puro (e a razão política), Vite/Vitest, Docker 3-container, estrutura de docs. `uniformizacao-telas-ctx.md`: alinhamento do [`ctx.md`](../ctx.md) (Guia de Uniformização SENAI — 11 telas + vocabulário) contra o `PLANO_IMPLEMENTACAO`; decisões travadas, mapa das telas por dono, deltas de banco abertos. |
 
 ## Convenções
 
