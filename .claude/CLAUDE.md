@@ -17,7 +17,7 @@ Web app de **gerenciamento** (lado admin) e **informação** (lado cliente E adm
 - ***SQL sempre parametrizado*** — O acesso ao MySQL é **SQL puro** (sem ORM). Isso significa que VOCÊ é responsável pela segurança: TODA query com valor vindo de fora (request, query param, body, header) usa placeholders parametrizados (`%s` no mysql-connector / `cursor.execute(sql, params)`), NUNCA f-string / concatenação / `.format()` montando SQL. String interpolada em SQL = SQL injection = reprovado. Sem exceção, nem em "query interna que ninguém chama de fora".
 - ***Evidence Before Completion*** — Nunca declare trabalho "pronto", "corrigido", "passando" ou "funcionando" sem ter ACABADO de rodar o comando de verificação e lido o output. Sem exceção, sem "deve passar", sem confiar em rodada anterior, sem confiar no relatório de sucesso de um agente — re-cheque o diff/output você mesmo. Vale pra: testes passando, lint verde, build ok, bug corrigido, requisito satisfeito, trabalho delegado a agente. Se não consegue mostrar evidência na mesma mensagem, diga o status real em vez disso.
 - ***Documentar ao fechar*** — Implementação NÃO está completa quando o código passa nos testes — está completa quando está **documentada**. Todo fechamento de feature/bugfix/atividade tem um **step de documentação obrigatório** (ver seção *Documentação* abaixo): (1) atualizar os `CLAUDE.md` de pasta tocados com qualquer quirk/decisão/gotcha não-óbvio que você descobriu, e (2) atualizar a pasta `docs/` (incluindo `docs/CLAUDE.md`, o índice) com o que o cliente/professora/próximo-agente precisa saber. Isso é uma SA avaliada — documentação fraca = nota fraca, independente de o código funcionar. Pulou o step de doc = trabalho não fechado. Não diga "pronto" sem ter documentado.
-- ***No Bloat, No Duplication, No Over-engineering*** — Entregue o mínimo de código que resolve a tarefa pedida. NADA a mais. Antes de escrever função/arquivo/abstração nova, faça grep por uma existente e reúse. Proibido sem pedido explícito do usuário: implementações paralelas do que já existe, knobs "flexíveis"/"configuráveis", camadas wrapper, interfaces adapter pra um único caller, validação defensiva em fronteiras internas, tratamento de erro pra estados impossíveis, fallbacks pra casos que não acontecem, generalização prematura, shims de retrocompat, código morto "pra depois", TODOs especulativos, helpers usados uma vez, ou config flag pra um valor só. Se dá pra fazer em 30 linhas, NÃO escreva 200. Toda linha tem que rastrear até o pedido do usuário — se não consegue justificar em voz alta, apague. Na dúvida: menos código, menos arquivos, menos abstrações.
+- ***No Bloat, No Duplication, No Over-engineering*** — Entregue o mínimo de código que resolve a tarefa pedida. NADA a mais. Antes de escrever função/arquivo/abstração nova, faça grep por uma existente e reúse. Proibido sem pedido explícito do usuário: implementações paralelas do que já existe, knobs "flexíveis"/"configuráveis", camadas wrapper, interfaces adapter pra um único caller, validação defensiva em fronteiras internas, tratamento de erro pra estados impossíveis, fallbacks pra casos que não acontecem, generalização prematura, shims de retrocompat, código morto "pra depois", TODOs especulativos, helpers usados uma vez, ou config flag pra um valor só. Se dá pra fazer em 30 linhas, NÃO escreva 200. Toda linha tem que rastrear até o pedido do usuário — se não consegue justificar em voz alta, apague. Na dúvida: menos código, menos arquivos, menos abstrações. **O procedimento pra cumprir isso na hora de escrever é a skill `/ponytail`** (a escada de decisão + a guarda do que nunca se corta) — roda dentro do GREEN do `/tdd`.
 
 ### P1 — Standard
 
@@ -50,7 +50,7 @@ ferrovia_santa_cruz/
 ├── docker-compose.yml  # 3 serviços: frontend, backend, db
 └── .claude/
     ├── CLAUDE.md       # este arquivo — instruções raiz do agente
-    └── skills/         # brainstorming, tdd, systematic-debugging
+    └── skills/         # brainstorming, tdd, systematic-debugging, ponytail
 ```
 
 Os `CLAUDE.md` de pasta (`backend/`, `frontend/`, …) são os "espalhados" do P1 — conhecimento procedural local. Este (`.claude/CLAUDE.md`) é a raiz que governa tudo.
@@ -141,6 +141,7 @@ Pulou qualquer caixa = trabalho não fechado.
 | `/brainstorming` | Antes de QUALQUER trabalho criativo — desenhar feature, modelar arquitetura, escopar bugfix. Constrói uma spec viva e grila cada decisão até zero ambiguidade. |
 | `/tdd` | Antes de escrever qualquer código de implementação (feature ou bugfix). RED → GREEN → REFACTOR. |
 | `/systematic-debugging` | Ao encontrar qualquer bug, falha de teste ou comportamento inesperado, antes de propor fix. |
+| `/ponytail` | Ao escrever código de implementação — antes de criar função/arquivo/dep/abstração e durante o GREEN do `/tdd`. Força a solução mais enxuta que resolve, sem furar segurança / perda-de-dados / a11y. O melhor código é o que você não escreveu. |
 
 ## NEVER
 
