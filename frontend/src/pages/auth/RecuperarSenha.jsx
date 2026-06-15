@@ -54,7 +54,7 @@ export default function RecuperarSenha() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-bg-base">
       <div className="lg:w-[45%] flex flex-col bg-bg-base">
-        <div className="bg-componente2 px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
+        <div className="bg-bg-base px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
         <div className="flex-1 bg-bg-card rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:-mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
