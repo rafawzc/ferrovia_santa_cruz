@@ -4,7 +4,7 @@
 >
 > Capacidades: **CT6** (padrão de projeto), **CT13** (especificações técnicas e paradigmas), **CS3** (organização).
 >
-> **⚠️ Alinhamento posterior:** o Guia de Uniformização da SENAI ([`ctx.md`](../ctx.md)) chegou depois deste plano e o ajusta — 11 telas obrigatórias, vocabulário canônico (Rotas/Usuários) e cores de status fixas. As divergências e o mapa tela→dono estão reconciliados em [`decisoes/uniformizacao-telas-ctx.md`](decisoes/uniformizacao-telas-ctx.md). Leia os dois juntos.
+> **⚠️ Alinhamento posterior:** o **Guia de Uniformização de Telas (SENAI)** chegou depois deste plano e o ajusta — 11 telas obrigatórias, vocabulário canônico (Rotas/Usuários) e cores de status fixas. As divergências, o mapa tela→dono e o conteúdo consolidado do Guia estão em [`decisoes/uniformizacao-telas.md`](decisoes/uniformizacao-telas.md). Leia os dois juntos.
 
 ---
 
