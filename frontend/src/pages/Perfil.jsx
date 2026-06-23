@@ -43,30 +43,28 @@ export default function Perfil() {
         </div>
 
         <h2 className="text-xl font-bold text-texto1 text-center mb-8">
-          Informações da Conta
+          Informações do Cliente
         </h2>
 
-        <div className="bg-componente1 rounded-3xl p-6 lg:p-8">
-          <form onSubmit={handleSave} className="flex flex-col gap-5">
-            <FormField id="nome" label="Nome" value={formData.nome} onChange={handleChange('nome')} />
-            <FormField id="email" label="Email" type="email" value={formData.email} onChange={handleChange('email')} />
-            <FormField id="senha" label="Senha" type="password" value={formData.senha} onChange={handleChange('senha')} />
-            <FormField id="telefone" label="Telefone" value={formData.telefone} onChange={handleChange('telefone')} />
+        <form onSubmit={handleSave} className="flex flex-col gap-5">
+          <FormField id="nome" label="Nome" value={formData.nome} onChange={handleChange('nome')} />
+          <FormField id="email" label="Email" type="email" value={formData.email} onChange={handleChange('email')} />
+          <FormField id="senha" label="Senha" type="password" value={formData.senha} onChange={handleChange('senha')} />
+          <FormField id="telefone" label="Telefone" value={formData.telefone} onChange={handleChange('telefone')} />
 
-            <div className="mt-4">
-              <Button type="submit">Salvar</Button>
-            </div>
+          <div className="mt-4">
+            <Button type="submit">Salvar</Button>
+          </div>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center justify-center gap-2 w-full rounded-full border-2 border-red-400 text-red-300 py-3 px-6 font-semibold text-sm hover:bg-red-500/20 active:scale-[0.98] transition-all duration-200 cursor-pointer mt-2"
-            >
-              <LogOut size={18} />
-              Sair da Conta
-            </button>
-          </form>
-        </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 w-full rounded-full border-2 border-red-400 text-red-500 py-3 px-6 font-semibold text-sm hover:bg-red-50 active:scale-[0.98] transition-all duration-200 cursor-pointer mt-2"
+          >
+            <LogOut size={18} />
+            Sair da Conta
+          </button>
+        </form>
       </div>
 
       <BottomNav />
