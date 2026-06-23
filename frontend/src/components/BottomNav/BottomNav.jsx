@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { LayoutGrid, Box, BarChart3, AlertTriangle, User } from 'lucide-react'
 
-const navItems = [
+const adminItems = [
   { icon: LayoutGrid, label: 'Início', path: '/admin' },
   { icon: Box, label: 'Carga', path: '/admin/carga' },
   { icon: BarChart3, label: 'Linhas', path: '/admin/linhas' },
@@ -9,9 +9,18 @@ const navItems = [
   { icon: User, label: 'Funcionários', path: '/admin/funcionarios' },
 ]
 
-export default function BottomNav() {
+const clienteItems = [
+  { icon: LayoutGrid, label: 'Início', path: '/admin' },
+  { icon: Box, label: 'Carga', path: '/admin/carga' },
+  { icon: BarChart3, label: 'Linhas', path: '/admin/linhas' },
+  { icon: AlertTriangle, label: 'Alertas', path: '/admin/alertas' },
+  { icon: User, label: 'Perfil', path: '/perfil' },
+]
+
+export default function BottomNav({ role = 'admin' }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const navItems = role === 'cliente' ? clienteItems : adminItems
 
   const isActive = (path) => {
     if (path === '/admin') return location.pathname === '/admin'
