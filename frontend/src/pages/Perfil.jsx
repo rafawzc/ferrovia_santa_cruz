@@ -67,7 +67,7 @@ export default function Perfil() {
         </form>
       </div>
 
-      <BottomNav role="cliente" />
+      <BottomNav />
     </div>
   )
 }
