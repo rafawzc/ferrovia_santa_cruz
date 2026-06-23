@@ -10,6 +10,7 @@ import CargaLista from './pages/admin/CargaLista'
 import CargaCadastro from './pages/admin/CargaCadastro'
 import Linhas from './pages/admin/Linhas'
 import Alertas from './pages/admin/Alertas'
+import Perfil from './pages/Perfil'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/admin/carga/cadastro" element={<CargaCadastro />} />
         <Route path="/admin/linhas" element={<Linhas />} />
         <Route path="/admin/alertas" element={<Alertas />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
