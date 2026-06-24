@@ -2,17 +2,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/auth/Login'
 import Cadastro from './pages/auth/Cadastro'
 import RecuperarSenha from './pages/auth/RecuperarSenha'
-
-function DashboardPlaceholder() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-base">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-texto1 mb-2">Dashboard</h1>
-        <p className="text-texto1/60">Página em construção</p>
-      </div>
-    </div>
-  )
-}
+import Dashboard from './pages/admin/Dashboard'
+import UsuariosLista from './pages/admin/UsuariosLista'
+import UsuarioDetalhe from './pages/admin/UsuarioDetalhe'
+import UsuarioEditar from './pages/admin/UsuarioEditar'
+import CargaLista from './pages/admin/CargaLista'
+import CargaCadastro from './pages/admin/CargaCadastro'
+import Linhas from './pages/admin/Linhas'
+import Alertas from './pages/admin/Alertas'
+import Perfil from './pages/Perfil'
 
 export default function App() {
   return (
@@ -22,7 +20,15 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-        <Route path="/admin" element={<DashboardPlaceholder />} />
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/admin/funcionarios" element={<UsuariosLista />} />
+        <Route path="/admin/funcionarios/:id" element={<UsuarioDetalhe />} />
+        <Route path="/admin/funcionarios/:id/editar" element={<UsuarioEditar />} />
+        <Route path="/admin/carga" element={<CargaLista />} />
+        <Route path="/admin/carga/cadastro" element={<CargaCadastro />} />
+        <Route path="/admin/linhas" element={<Linhas />} />
+        <Route path="/admin/alertas" element={<Alertas />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
