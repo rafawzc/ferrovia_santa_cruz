@@ -13,6 +13,7 @@ export default {
         componente3: '#c2b19c',
         componente4: '#daccbe',
         'bg-base': '#c4a27d',
+        'bg-page': '#d5c4a8',
         'bg-card': '#c2b19c',
         error: '#dc2626',
         success: '#16a34a',
