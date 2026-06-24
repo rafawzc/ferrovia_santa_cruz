@@ -10,6 +10,7 @@ export default function FormField({
   error,
   helperText,
   id,
+  hideLabel = false,
 }) {
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
@@ -17,14 +18,16 @@ export default function FormField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-texto1">
-        {label}
-      </label>
+      {!hideLabel && (
+        <label htmlFor={id} className="text-sm font-medium text-texto1">
+          {label}
+        </label>
+      )}
       <div className="relative">
         <input
           id={id}
           type={inputType}
-          placeholder={placeholder}
+          placeholder={placeholder || label}
           value={value}
           onChange={onChange}
           className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
