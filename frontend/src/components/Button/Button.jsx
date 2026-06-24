@@ -6,7 +6,7 @@ export default function Button({
   type = 'button',
   disabled = false,
   variant = 'primary',
-  icon = true,
+  icon = false,
   className = '',
 }) {
   const base =
