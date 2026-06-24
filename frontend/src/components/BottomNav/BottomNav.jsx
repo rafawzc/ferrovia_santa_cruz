@@ -1,4 +1,5 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { LayoutGrid, Box, BarChart3, AlertTriangle, User, CircleUserRound } from 'lucide-react'
 
 const navItems = [
@@ -11,8 +12,9 @@ const navItems = [
 ]
 
 export default function BottomNav() {
-  const location = useLocation()
+  const [hovered, setHovered] = useState(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const isActive = (path) => {
     if (path === '/admin') return location.pathname === '/admin'
@@ -21,23 +23,51 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4">
-      <div className="flex items-center gap-1 bg-componente1 rounded-full px-2 py-2 shadow-lg">
-        {navItems.map((item) => {
+      <div
+        className="flex items-end gap-3 px-4 py-3 rounded-3xl border bg-componente1/90 backdrop-blur-sm shadow-lg"
+        style={{ transform: 'perspective(600px) rotateX(8deg)' }}
+      >
+        {navItems.map((item, i) => {
           const active = isActive(item.path)
+          const isHovered = hovered === i
           const Icon = item.icon
+
           return (
-            <button
+            <div
               key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`flex items-center gap-2 rounded-full px-4 py-2.5 transition-all duration-200 cursor-pointer ${
-                active
-                  ? 'bg-componente3 text-texto1 font-semibold'
-                  : 'text-texto2 hover:bg-componente1/80'
-              }`}
+              className="relative flex flex-col items-center"
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
             >
-              <Icon size={20} />
-              {active && <span className="text-sm whitespace-nowrap">{item.label}</span>}
-            </button>
+              <button
+                onClick={() => navigate(item.path)}
+                className={`relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 ${
+                  isHovered
+                    ? 'bg-componente3 scale-110 shadow-lg shadow-componente3/30'
+                    : active
+                    ? 'bg-componente3'
+                    : 'bg-transparent hover:bg-componente3/50'
+                }`}
+              >
+                <Icon
+                  size={24}
+                  className={`transition-colors ${
+                    active ? 'text-texto1' : 'text-texto2'
+                  }`}
+                />
+                {isHovered && (
+                  <span className="absolute inset-0 rounded-2xl border border-texto2/30" />
+                )}
+              </button>
+              {active && (
+                <div className="w-1.5 h-1.5 rounded-full bg-texto2 mt-1" />
+              )}
+              {isHovered && (
+                <div className="absolute -top-8 px-2 py-1 bg-texto1 text-texto2 text-xs rounded whitespace-nowrap">
+                  {item.label}
+                </div>
+              )}
+            </div>
           )
         })}
       </div>
