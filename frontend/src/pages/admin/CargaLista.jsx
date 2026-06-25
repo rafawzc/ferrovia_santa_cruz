@@ -27,34 +27,34 @@ const vagoesPorTrem = {
 
 const passageirosPorTrem = {
   1: {
-    A: [0, 1, 2, 3, 4, 5, 8, 9, 10, 11],
-    B: [0, 1, 2, 3, 8, 9],
-    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-    D: [0, 1, 2, 3, 4, 5, 6, 7],
-    E: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    F: [0, 1, 2, 3],
-    G: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    H: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    A: [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31],
+    B: [0, 1, 2, 3, 8, 9, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30],
+    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    D: [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27],
+    E: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    F: [0, 1, 2, 3, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29],
+    G: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
+    H: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
   },
   2: {
-    A: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    B: [0, 1, 2, 3, 4, 5, 6, 7],
-    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    D: [0, 1, 2, 3, 4, 5],
-    E: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    F: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    G: [0, 1, 2, 3, 4],
-    H: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    A: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    B: [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30],
+    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    D: [0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30],
+    E: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    F: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    G: [0, 1, 2, 3, 4, 16, 17, 18, 19, 20, 21, 24, 25, 26],
+    H: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
   },
   3: {
-    A: [0, 1, 2, 3, 4, 5, 6],
-    B: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-    D: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    E: [0, 1, 2, 3, 4, 5, 6, 7],
-    F: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    G: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-    H: [0, 1, 2, 3, 4, 5],
+    A: [0, 1, 2, 3, 4, 5, 6, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30],
+    B: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+    D: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    E: [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+    F: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    G: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    H: [0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
   },
 }
 
@@ -78,9 +78,18 @@ export default function CargaLista() {
   const vagoesQuaseLotados = Object.values(vagoesCarga).filter((p) => p >= 70 && p < 90).length
 
   const passageirosAtuais = passageiros[selectedTrainPassageiro]?.[selectedWagonPassageiro] || []
-  const totalPoltronas = 16
+  const totalPoltronas = 32
   const poltronasOcupadas = passageirosAtuais.length
   const poltronasDisponiveis = totalPoltronas - poltronasOcupadas
+
+  const passageirosVagoes = passageiros[selectedTrainPassageiro] || {}
+  const vagoesPassageiros = Object.entries(passageirosVagoes).map(([letter, seats]) => ({
+    letter,
+    percentage: Math.round((seats.length / 32) * 100),
+  }))
+  const vagoesPassageirosOcupados = vagoesPassageiros.filter((v) => v.percentage >= 90).length
+  const vagoesPassageirosDisponiveis = vagoesPassageiros.filter((v) => v.percentage < 70).length
+  const vagoesPassageirosQuaseLotados = vagoesPassageiros.filter((v) => v.percentage >= 70 && v.percentage < 90).length
 
   const handleAddCargo = (newCargo) => {
     setCargos((prev) => [newCargo, ...prev])
@@ -117,56 +126,30 @@ export default function CargaLista() {
   }
 
   const renderPassengerSeats = () => {
-    const topRow = [0, 1, 2, 3, 4, 5, 6, 7]
-    const bottomRow = [8, 9, 10, 11, 12, 13, 14, 15]
+    const rows = [
+      [0, 1, 2, 3, 4, 5, 6, 7],
+      [8, 9, 10, 11, 12, 13, 14, 15],
+      [16, 17, 18, 19, 20, 21, 22, 23],
+      [24, 25, 26, 27, 28, 29, 30, 31],
+    ]
 
     return (
       <div className="flex flex-col items-center gap-1">
-        <div className="flex gap-1">
-          {topRow.map((seatIndex) => (
-            <div
-              key={seatIndex}
-              className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                passageirosAtuais.includes(seatIndex) ? 'bg-error' : 'bg-success'
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="flex gap-1">
-          {bottomRow.map((seatIndex) => (
-            <div
-              key={seatIndex}
-              className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                passageirosAtuais.includes(seatIndex) ? 'bg-error' : 'bg-success'
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="w-full h-px bg-texto2/30 my-1" />
-
-        <div className="flex gap-1">
-          {topRow.map((seatIndex) => (
-            <div
-              key={seatIndex + 8}
-              className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                passageirosAtuais.includes(seatIndex + 8) ? 'bg-error' : 'bg-success'
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="flex gap-1">
-          {bottomRow.map((seatIndex) => (
-            <div
-              key={seatIndex + 8}
-              className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                passageirosAtuais.includes(seatIndex + 8) ? 'bg-error' : 'bg-success'
-              }`}
-            />
-          ))}
-        </div>
+        {rows.map((row, rowIndex) => (
+          <div key={rowIndex}>
+            <div className="flex gap-1">
+              {row.map((seatIndex) => (
+                <div
+                  key={seatIndex}
+                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
+                    passageirosAtuais.includes(seatIndex) ? 'bg-error' : 'bg-success'
+                  }`}
+                />
+              ))}
+            </div>
+            {rowIndex === 1 && <div className="w-full h-px bg-texto2/30 my-1" />}
+          </div>
+        ))}
       </div>
     )
   }
@@ -321,7 +304,7 @@ export default function CargaLista() {
 
               <div className="bg-componente3 rounded-2xl p-4 mb-4">
                 <p className="text-sm font-medium text-texto2 mb-1">Limite de pessoas por vagão</p>
-                <p className="text-xl font-bold text-texto2">24 Pessoas</p>
+                <p className="text-xl font-bold text-texto2">32 Pessoas</p>
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -330,36 +313,40 @@ export default function CargaLista() {
                   <p className="text-xs text-texto2/70">Total</p>
                 </div>
                 <div className="bg-success/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-success">{poltronasDisponiveis}</p>
+                  <p className="text-xl font-bold text-success">{vagoesPassageirosDisponiveis}</p>
                   <p className="text-xs text-texto2/70">Disponíveis</p>
                 </div>
-                <div className="bg-error/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-error">{poltronasOcupadas}</p>
-                  <p className="text-xs text-texto2/70">Ocupadas</p>
+                <div className="bg-yellow-500/20 rounded-xl p-2 text-center">
+                  <p className="text-xl font-bold text-yellow-600">{vagoesPassageirosQuaseLotados}</p>
+                  <p className="text-xs text-texto2/70">Quase lotados</p>
                 </div>
-                <div className="bg-componente3/50 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-texto2">8</p>
-                  <p className="text-xs text-texto2/70">Vagões</p>
+                <div className="bg-error/20 rounded-xl p-2 text-center">
+                  <p className="text-xl font-bold text-error">{vagoesPassageirosOcupados}</p>
+                  <p className="text-xs text-texto2/70">Ocupados</p>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-success" />
-                  <span className="text-xs text-texto2">Livre</span>
+                  <div className="w-3 h-3 rounded bg-success" />
+                  <span className="text-xs text-texto2">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-error" />
-                  <span className="text-xs text-texto2">Ocupado</span>
+                  <div className="w-3 h-3 rounded bg-yellow-500" />
+                  <span className="text-xs text-texto2">Quase lotado</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-error" />
+                  <span className="text-xs text-texto2">Lotado</span>
                 </div>
               </div>
 
               <div className="mb-4">
-                <p className="text-sm font-medium text-texto2 mb-3">Vagões disponíveis</p>
+                <p className="text-sm font-medium text-texto2 mb-3">Vagões</p>
                 <div className="grid grid-cols-4 gap-3">
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((letter) => {
                     const ocupadas = passageiros[selectedTrainPassageiro]?.[letter]?.length || 0
-                    const percentage = Math.round((ocupadas / 24) * 100)
+                    const percentage = Math.round((ocupadas / 32) * 100)
                     return (
                       <WagonIcon
                         key={letter}
