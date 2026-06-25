@@ -62,80 +62,36 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
   const renderSeats = () => {
     if (!selectedWagon) return null
 
-    const topRow = [0, 1, 2, 3, 4, 5, 6, 7]
-    const bottomRow = [8, 9, 10, 11, 12, 13, 14, 15]
+    const rows = [
+      [0, 1, 2, 3, 4, 5, 6, 7],
+      [8, 9, 10, 11, 12, 13, 14, 15],
+      [16, 17, 18, 19, 20, 21, 22, 23],
+      [24, 25, 26, 27, 28, 29, 30, 31],
+    ]
 
     return (
       <div className="flex flex-col items-center gap-1 mt-4">
-        <div className="flex gap-1">
-          {topRow.map((seatIndex) => (
-            <button
-              key={seatIndex}
-              onClick={() => handleSeatClick(seatIndex)}
-              disabled={ocupadas.includes(seatIndex)}
-              className={`w-5 h-5 rounded-full transition-all duration-200 ${
-                ocupadas.includes(seatIndex)
-                  ? 'bg-error cursor-not-allowed'
-                  : selectedSeats.includes(seatIndex)
-                  ? 'bg-error ring-2 ring-texto2 scale-110'
-                  : 'bg-success hover:scale-110 cursor-pointer'
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="flex gap-1">
-          {bottomRow.map((seatIndex) => (
-            <button
-              key={seatIndex}
-              onClick={() => handleSeatClick(seatIndex)}
-              disabled={ocupadas.includes(seatIndex)}
-              className={`w-5 h-5 rounded-full transition-all duration-200 ${
-                ocupadas.includes(seatIndex)
-                  ? 'bg-error cursor-not-allowed'
-                  : selectedSeats.includes(seatIndex)
-                  ? 'bg-error ring-2 ring-texto2 scale-110'
-                  : 'bg-success hover:scale-110 cursor-pointer'
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="w-full h-px bg-texto2/30 my-1" />
-
-        <div className="flex gap-1">
-          {topRow.map((seatIndex) => (
-            <button
-              key={seatIndex + 8}
-              onClick={() => handleSeatClick(seatIndex + 8)}
-              disabled={ocupadas.includes(seatIndex + 8)}
-              className={`w-5 h-5 rounded-full transition-all duration-200 ${
-                ocupadas.includes(seatIndex + 8)
-                  ? 'bg-error cursor-not-allowed'
-                  : selectedSeats.includes(seatIndex + 8)
-                  ? 'bg-error ring-2 ring-texto2 scale-110'
-                  : 'bg-success hover:scale-110 cursor-pointer'
-              }`}
-            />
-          ))}
-        </div>
-
-        <div className="flex gap-1">
-          {bottomRow.map((seatIndex) => (
-            <button
-              key={seatIndex + 8}
-              onClick={() => handleSeatClick(seatIndex + 8)}
-              disabled={ocupadas.includes(seatIndex + 8)}
-              className={`w-5 h-5 rounded-full transition-all duration-200 ${
-                ocupadas.includes(seatIndex + 8)
-                  ? 'bg-error cursor-not-allowed'
-                  : selectedSeats.includes(seatIndex + 8)
-                  ? 'bg-error ring-2 ring-texto2 scale-110'
-                  : 'bg-success hover:scale-110 cursor-pointer'
-              }`}
-            />
-          ))}
-        </div>
+        {rows.map((row, rowIndex) => (
+          <div key={rowIndex}>
+            <div className="flex gap-1">
+              {row.map((seatIndex) => (
+                <button
+                  key={seatIndex}
+                  onClick={() => handleSeatClick(seatIndex)}
+                  disabled={ocupadas.includes(seatIndex)}
+                  className={`w-5 h-5 rounded-full transition-all duration-200 ${
+                    ocupadas.includes(seatIndex)
+                      ? 'bg-error cursor-not-allowed'
+                      : selectedSeats.includes(seatIndex)
+                      ? 'bg-error ring-2 ring-texto2 scale-110'
+                      : 'bg-success hover:scale-110 cursor-pointer'
+                  }`}
+                />
+              ))}
+            </div>
+            {rowIndex === 1 && <div className="w-full h-px bg-texto2/30 my-1" />}
+          </div>
+        ))}
       </div>
     )
   }
