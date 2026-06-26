@@ -158,7 +158,7 @@ export default function CargaLista() {
     <div className="min-h-screen bg-bg-page pb-28">
       <div className="px-6 pt-8 max-w-4xl mx-auto">
         <h1 className="text-xl lg:text-2xl font-bold text-texto1 text-center mb-6">
-          Monitoramento de Carga<br />e Passageiro
+          Monitoramento de Carga e Passageiro
         </h1>
 
         <div className="flex justify-start mb-6">
@@ -178,7 +178,7 @@ export default function CargaLista() {
                   <select
                     value={selectedTrainCarga}
                     onChange={(e) => setSelectedTrainCarga(Number(e.target.value))}
-                    className="bg-componente3 text-texto2 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
+                    className="bg-componente3 text-texto1 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
                   >
                     {trenes.map((t) => (
                       <option key={t.id} value={t.id}>{t.nome}</option>
@@ -188,26 +188,29 @@ export default function CargaLista() {
               </div>
 
               <div className="bg-componente3 rounded-2xl p-4 mb-4">
-                <p className="text-sm font-medium text-texto2 mb-1">Limite de carga por vagão</p>
-                <p className="text-xl font-bold text-texto2">170 Toneladas</p>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                <div className="bg-componente3/50 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-texto2">{totalVagoes}</p>
-                  <p className="text-xs text-texto2/70">Total</p>
-                </div>
-                <div className="bg-success/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-success">{vagoesDisponiveis}</p>
-                  <p className="text-xs text-texto2/70">Disponíveis</p>
-                </div>
-                <div className="bg-yellow-500/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-yellow-600">{vagoesQuaseLotados}</p>
-                  <p className="text-xs text-texto2/70">Quase lotados</p>
-                </div>
-                <div className="bg-error/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-error">{vagoesOcupados}</p>
-                  <p className="text-xs text-texto2/70">Lotados</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-texto1 mb-1">Limite de carga por vagão</p>
+                    <p className="text-xl font-bold text-texto1">170 Toneladas</p>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-componente1/50 border-2 border-componente1 rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-texto1">{totalVagoes}</p>
+                      <p className="text-xs text-texto1">Total</p>
+                    </div>
+                    <div className="bg-success/30 border-2 border-success rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-success">{vagoesDisponiveis}</p>
+                      <p className="text-xs text-texto1">Disponíveis</p>
+                    </div>
+                    <div className="bg-yellow-500/30 border-2 border-yellow-500 rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-yellow-600">{vagoesQuaseLotados}</p>
+                      <p className="text-xs text-texto1">Quase lotados</p>
+                    </div>
+                    <div className="bg-error/30 border-2 border-error rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-error">{vagoesOcupados}</p>
+                      <p className="text-xs text-texto1">Lotados</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -293,7 +296,7 @@ export default function CargaLista() {
                       setSelectedTrainPassageiro(Number(e.target.value))
                       setSelectedWagonPassageiro('A')
                     }}
-                    className="bg-componente3 text-texto2 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
+                    className="bg-componente3 text-texto1 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
                   >
                     {trenes.map((t) => (
                       <option key={t.id} value={t.id}>{t.nome}</option>
@@ -303,26 +306,29 @@ export default function CargaLista() {
               </div>
 
               <div className="bg-componente3 rounded-2xl p-4 mb-4">
-                <p className="text-sm font-medium text-texto2 mb-1">Limite de pessoas por vagão</p>
-                <p className="text-xl font-bold text-texto2">32 Pessoas</p>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                <div className="bg-componente3/50 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-texto2">{totalPoltronas}</p>
-                  <p className="text-xs text-texto2/70">Total</p>
-                </div>
-                <div className="bg-success/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-success">{vagoesPassageirosDisponiveis}</p>
-                  <p className="text-xs text-texto2/70">Disponíveis</p>
-                </div>
-                <div className="bg-yellow-500/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-yellow-600">{vagoesPassageirosQuaseLotados}</p>
-                  <p className="text-xs text-texto2/70">Quase lotados</p>
-                </div>
-                <div className="bg-error/20 rounded-xl p-2 text-center">
-                  <p className="text-xl font-bold text-error">{vagoesPassageirosOcupados}</p>
-                  <p className="text-xs text-texto2/70">Ocupados</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-texto1 mb-1">Limite de pessoas por vagão</p>
+                    <p className="text-xl font-bold text-texto1">32 Pessoas</p>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-componente1/50 border-2 border-componente1 rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-texto1">{totalPoltronas}</p>
+                      <p className="text-xs text-texto1">Total</p>
+                    </div>
+                    <div className="bg-success/30 border-2 border-success rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-success">{vagoesPassageirosDisponiveis}</p>
+                      <p className="text-xs text-texto1">Disponíveis</p>
+                    </div>
+                    <div className="bg-yellow-500/30 border-2 border-yellow-500 rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-yellow-600">{vagoesPassageirosQuaseLotados}</p>
+                      <p className="text-xs text-texto1">Quase lotados</p>
+                    </div>
+                    <div className="bg-error/30 border-2 border-error rounded-xl p-2 text-center">
+                      <p className="text-lg font-bold text-error">{vagoesPassageirosOcupados}</p>
+                      <p className="text-xs text-texto1">Ocupados</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -366,7 +372,7 @@ export default function CargaLista() {
                 <select
                   value={selectedWagonPassageiro}
                   onChange={(e) => setSelectedWagonPassageiro(e.target.value)}
-                  className="bg-componente3 text-texto2 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
+                  className="bg-componente3 text-texto1 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
                 >
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((v) => (
                     <option key={v} value={v}>Vagão {v}</option>
@@ -379,11 +385,11 @@ export default function CargaLista() {
                 <div className="flex justify-center gap-4 mt-3">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-success" />
-                    <span className="text-xs text-texto2">Livre</span>
+                    <span className="text-xs text-texto1">Livre</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-error" />
-                    <span className="text-xs text-texto2">Ocupado</span>
+                    <span className="text-xs text-texto1">Ocupado</span>
                   </div>
                 </div>
               </div>
