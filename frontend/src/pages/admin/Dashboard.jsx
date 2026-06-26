@@ -82,102 +82,106 @@ export default function Dashboard() {
           <StatusCard icon={Gauge} label="Velocidade média" value="82 km/h" status="ok" />
         </div>
 
-        <div className="bg-componente4 rounded-3xl p-5 mb-6">
-          <h2 className="text-lg font-bold text-texto1 mb-4">Status das Linhas</h2>
-          <div className="flex flex-col gap-3">
-            {lines.map((line) => (
-              <div
-                key={line.id}
-                className="bg-componente1 rounded-2xl p-4 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <Train size={20} className="text-texto2" />
-                  <div>
-                    <p className="text-sm font-semibold text-texto2">{line.nome}</p>
-                    <p className="text-xs text-texto2/70">{line.velocidade}</p>
-                  </div>
-                </div>
-                <div className={`w-3 h-3 rounded-full ${line.status === 'ok' ? 'bg-success' : 'bg-error'}`} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-componente4 rounded-3xl p-5 mb-6">
-          <h2 className="text-lg font-bold text-texto1 mb-4">Sensores</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-            {sensors.map((sensor) => (
-              <div
-                key={sensor.id}
-                className="bg-componente1 rounded-xl p-3 flex flex-col items-center gap-2"
-              >
-                <Radio size={20} className={sensor.status === 'ok' ? 'text-success' : 'text-error'} />
-                <p className="text-xs font-medium text-texto2 text-center">{sensor.nome}</p>
-                <p className="text-[10px] text-texto2/70 text-center">{sensor.linha}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {pendingMaintenances > 0 && (
-          <div className="bg-componente4 rounded-3xl p-5 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-texto1">Manutenções Pendentes</h2>
-              <AlertTriangle size={20} className="text-error" />
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-componente4 rounded-3xl p-5">
+            <h2 className="text-lg font-bold text-texto1 mb-4">Status das Linhas</h2>
             <div className="flex flex-col gap-3">
-              {maintenances
-                .filter((m) => m.statusFinalizacao === 'pendente')
-                .map((maintenance) => (
-                  <div
-                    key={maintenance.id}
-                    className="bg-componente1 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-componente1/90 transition-colors"
-                    onClick={() => setSelectedMaintenance(maintenance)}
-                  >
+              {lines.map((line) => (
+                <div
+                  key={line.id}
+                  className="bg-componente1 rounded-2xl p-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <Train size={20} className="text-texto2" />
                     <div>
-                      <p className="text-sm font-semibold text-texto2">{maintenance.linha}</p>
-                      <p className="text-xs text-texto2/70">{maintenance.motivo}</p>
+                      <p className="text-sm font-semibold text-texto2">{line.nome}</p>
+                      <p className="text-xs text-texto2/70">{line.velocidade}</p>
                     </div>
-                    <Eye size={18} className="text-texto2" />
                   </div>
-                ))}
+                  <div className={`w-3 h-3 rounded-full ${line.status === 'ok' ? 'bg-success' : 'bg-error'}`} />
+                </div>
+              ))}
             </div>
           </div>
-        )}
 
-        {finalizedMaintenances.length > 0 && (
-          <div className="bg-componente4 rounded-3xl p-5 mb-6">
-            <button
-              onClick={() => setShowFinalized(!showFinalized)}
-              className="flex items-center justify-between w-full mb-4"
-            >
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-texto1">Manutenções Finalizadas</h2>
-                <CheckCircle size={18} className="text-success" />
-              </div>
-              {showFinalized ? <ChevronUp size={20} className="text-texto1" /> : <ChevronDown size={20} className="text-texto1" />}
-            </button>
-            {showFinalized && (
-              <div className="flex flex-col gap-3">
-                {finalizedMaintenances.map((maintenance) => (
-                  <div
-                    key={maintenance.id}
-                    className="bg-componente1/70 rounded-2xl p-4 flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-texto2">{maintenance.linha}</p>
-                      <p className="text-xs text-texto2/70">{maintenance.motivo}</p>
-                      <p className="text-[10px] text-texto2/50 mt-1">
-                        Finalizada há {Math.round((Date.now() - maintenance.finalizedAt) / 60000)} min
-                      </p>
-                    </div>
-                    <CheckCircle size={18} className="text-success" />
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="bg-componente4 rounded-3xl p-5">
+            <h2 className="text-lg font-bold text-texto1 mb-4">Sensores</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {sensors.map((sensor) => (
+                <div
+                  key={sensor.id}
+                  className="bg-componente1 rounded-xl p-3 flex flex-col items-center gap-2"
+                >
+                  <Radio size={20} className={sensor.status === 'ok' ? 'text-success' : 'text-error'} />
+                  <p className="text-xs font-medium text-texto2 text-center">{sensor.nome}</p>
+                  <p className="text-[10px] text-texto2/70 text-center">{sensor.linha}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {pendingMaintenances > 0 && (
+            <div className="bg-componente4 rounded-3xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-texto1">Manutenções Pendentes</h2>
+                <AlertTriangle size={20} className="text-error" />
+              </div>
+              <div className="flex flex-col gap-3">
+                {maintenances
+                  .filter((m) => m.statusFinalizacao === 'pendente')
+                  .map((maintenance) => (
+                    <div
+                      key={maintenance.id}
+                      className="bg-componente1 rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-componente1/90 transition-colors"
+                      onClick={() => setSelectedMaintenance(maintenance)}
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-texto2">{maintenance.linha}</p>
+                        <p className="text-xs text-texto2/70">{maintenance.motivo}</p>
+                      </div>
+                      <Eye size={18} className="text-texto2" />
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {finalizedMaintenances.length > 0 && (
+            <div className="bg-componente4 rounded-3xl p-5">
+              <button
+                onClick={() => setShowFinalized(!showFinalized)}
+                className="flex items-center justify-between w-full mb-4"
+              >
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-texto1">Manutenções Finalizadas</h2>
+                  <CheckCircle size={18} className="text-success" />
+                </div>
+                {showFinalized ? <ChevronUp size={20} className="text-texto1" /> : <ChevronDown size={20} className="text-texto1" />}
+              </button>
+              {showFinalized && (
+                <div className="flex flex-col gap-3">
+                  {finalizedMaintenances.map((maintenance) => (
+                    <div
+                      key={maintenance.id}
+                      className="bg-componente1/70 rounded-2xl p-4 flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-texto2">{maintenance.linha}</p>
+                        <p className="text-xs text-texto2/70">{maintenance.motivo}</p>
+                        <p className="text-[10px] text-texto2/50 mt-1">
+                          Finalizada há {Math.round((Date.now() - maintenance.finalizedAt) / 60000)} min
+                        </p>
+                      </div>
+                      <CheckCircle size={18} className="text-success" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-center">
           <Button onClick={() => setShowMaintenanceModal(true)} className="w-auto px-10">
