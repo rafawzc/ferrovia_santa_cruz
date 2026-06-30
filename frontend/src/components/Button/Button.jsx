@@ -28,7 +28,7 @@ export default function Button({
       disabled={disabled}
       className={`${base} ${variants[variant]} ${className}`}
     >
-      {icon && <Fingerprint size={20} />}
+      {icon === true ? <Fingerprint size={20} /> : icon}
       {children}
     </button>
   )
