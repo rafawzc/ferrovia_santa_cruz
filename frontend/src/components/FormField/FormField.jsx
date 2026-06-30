@@ -11,6 +11,7 @@ export default function FormField({
   helperText,
   id,
   hideLabel = false,
+  labelDark = false,
 }) {
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
@@ -19,7 +20,7 @@ export default function FormField({
   return (
     <div className="flex flex-col gap-1.5">
       {!hideLabel && (
-        <label htmlFor={id} className="text-sm font-medium text-texto1">
+        <label htmlFor={id} className={`text-sm font-medium ${labelDark ? 'text-texto2' : 'text-texto1'}`}>
           {label}
         </label>
       )}
