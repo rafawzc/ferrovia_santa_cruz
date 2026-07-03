@@ -190,25 +190,25 @@ export default function CargaLista() {
               <div className="bg-componente3 rounded-2xl p-4 mb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-texto1 mb-1">Limite de carga por vagão</p>
-                    <p className="text-xl font-bold text-texto1">170 Toneladas</p>
+                    <p className="text-sm font-medium text-texto2 mb-1">Limite de carga por vagão</p>
+                    <p className="text-xl font-bold text-texto2">170 Toneladas</p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
                     <div className="bg-componente1/50 border-2 border-componente1 rounded-xl p-2 text-center">
-                      <p className="text-lg font-bold text-texto1">{totalVagoes}</p>
-                      <p className="text-xs text-texto1">Total</p>
+                      <p className="text-lg font-bold text-texto2">{totalVagoes}</p>
+                      <p className="text-xs text-texto2">Total</p>
                     </div>
                     <div className="bg-success/30 border-2 border-success rounded-xl p-2 text-center">
                       <p className="text-lg font-bold text-success">{vagoesDisponiveis}</p>
-                      <p className="text-xs text-texto1">Disponíveis</p>
+                      <p className="text-xs text-texto2">Disponíveis</p>
                     </div>
                     <div className="bg-yellow-500/30 border-2 border-yellow-500 rounded-xl p-2 text-center">
                       <p className="text-lg font-bold text-yellow-600">{vagoesQuaseLotados}</p>
-                      <p className="text-xs text-texto1">Quase lotados</p>
+                      <p className="text-xs text-texto2">Quase lotados</p>
                     </div>
                     <div className="bg-error/30 border-2 border-error rounded-xl p-2 text-center">
                       <p className="text-lg font-bold text-error">{vagoesOcupados}</p>
-                      <p className="text-xs text-texto1">Lotados</p>
+                      <p className="text-xs text-texto2">Lotados</p>
                     </div>
                   </div>
                 </div>
@@ -308,25 +308,25 @@ export default function CargaLista() {
               <div className="bg-componente3 rounded-2xl p-4 mb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-texto1 mb-1">Limite de pessoas por vagão</p>
-                    <p className="text-xl font-bold text-texto1">32 Pessoas</p>
+                    <p className="text-sm font-medium text-texto2 mb-1">Limite de pessoas por vagão</p>
+                    <p className="text-xl font-bold text-texto2">32 Pessoas</p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
                     <div className="bg-componente1/50 border-2 border-componente1 rounded-xl p-2 text-center">
-                      <p className="text-lg font-bold text-texto1">{totalPoltronas}</p>
-                      <p className="text-xs text-texto1">Total</p>
+                      <p className="text-lg font-bold text-texto2">{totalPoltronas}</p>
+                      <p className="text-xs text-texto2">Total</p>
                     </div>
                     <div className="bg-success/30 border-2 border-success rounded-xl p-2 text-center">
                       <p className="text-lg font-bold text-success">{vagoesPassageirosDisponiveis}</p>
-                      <p className="text-xs text-texto1">Disponíveis</p>
+                      <p className="text-xs text-texto2">Disponíveis</p>
                     </div>
                     <div className="bg-yellow-500/30 border-2 border-yellow-500 rounded-xl p-2 text-center">
                       <p className="text-lg font-bold text-yellow-600">{vagoesPassageirosQuaseLotados}</p>
-                      <p className="text-xs text-texto1">Quase lotados</p>
+                      <p className="text-xs text-texto2">Quase lotados</p>
                     </div>
                     <div className="bg-error/30 border-2 border-error rounded-xl p-2 text-center">
                       <p className="text-lg font-bold text-error">{vagoesPassageirosOcupados}</p>
-                      <p className="text-xs text-texto1">Ocupados</p>
+                      <p className="text-xs text-texto2">Ocupados</p>
                     </div>
                   </div>
                 </div>
@@ -385,11 +385,11 @@ export default function CargaLista() {
                 <div className="flex justify-center gap-4 mt-3">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-success" />
-                    <span className="text-xs text-texto1">Livre</span>
+                    <span className="text-xs text-texto2">Livre</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-error" />
-                    <span className="text-xs text-texto1">Ocupado</span>
+                    <span className="text-xs text-texto2">Ocupado</span>
                   </div>
                 </div>
               </div>

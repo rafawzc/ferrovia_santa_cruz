@@ -16,8 +16,8 @@ export default function UserCard({ nome, cargo, status, foto, onClick }) {
         )}
       </div>
       <div className="flex-1 min-w-0 text-left">
-        <p className="text-xs font-semibold text-texto2 truncate">{nome}</p>
-        <p className="text-[10px] text-texto2/70 truncate">{cargo}</p>
+        <p className="text-xs font-semibold text-texto1 truncate">{nome}</p>
+        <p className="text-[10px] text-texto1/70 truncate">{cargo}</p>
       </div>
       <div className="flex items-center shrink-0">
         <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-success' : 'bg-error'}`} />

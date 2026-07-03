@@ -16,13 +16,13 @@ export default function WagonDetail({ wagon, percentage, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
       <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-texto2">Detalhes do Vagão {wagon}</h2>
+          <h2 className="text-lg font-bold text-texto1">Detalhes do Vagão {wagon}</h2>
           <button
             onClick={onClose}
-            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -51,7 +51,6 @@ export default function WagonDetail({ wagon, percentage, onClose }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <Package size={16} className="text-texto1/70" />
                 <p className="text-sm text-texto1">Capacidade: {percentage >= 90 ? 'Máxima' : 'Normal'}</p>

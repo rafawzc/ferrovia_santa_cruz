@@ -45,7 +45,7 @@ export default function Toast({ message, type = 'success', duration = 5000, onCl
 
   return (
     <div
-      className={`fixed bottom-24 right-6 z-[100] w-72 rounded-2xl bg-componente1 text-texto2 shadow-xl overflow-hidden transition-all duration-300 ${
+      className={`fixed bottom-24 right-6 z-[100] w-72 rounded-2xl bg-componente1 text-texto1 shadow-xl overflow-hidden transition-all duration-300 ${
         isExiting ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
       }`}
     >

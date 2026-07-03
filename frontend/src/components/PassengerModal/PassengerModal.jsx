@@ -97,13 +97,13 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
       <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-texto2">Cadastrar Passageiro</h2>
+          <h2 className="text-lg font-bold text-texto1">Cadastrar Passageiro</h2>
           <button
             onClick={onClose}
-            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -118,8 +118,8 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                 setSelectedWagon('')
                 setSelectedSeats([])
               }}
-              className={`flex-1 rounded-full bg-white/60 px-4 py-2 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                !selectedTrain ? 'text-texto1/40' : ''
+              className={`flex-1 rounded-full bg-input-bg px-4 py-2 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+                !selectedTrain ? 'text-texto1/60' : ''
               }`}
             >
               <option value="" disabled>Trem</option>
@@ -135,8 +135,8 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                   setSelectedWagon(e.target.value)
                   setSelectedSeats([])
                 }}
-                className={`w-24 rounded-full bg-white/60 px-4 py-2 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                  !selectedWagon ? 'text-texto1/40' : ''
+                className={`w-24 rounded-full bg-input-bg px-4 py-2 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+                  !selectedWagon ? 'text-texto1/60' : ''
                 }`}
               >
                 <option value="" disabled>Vagão</option>
@@ -149,8 +149,8 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
 
           {renderSeats()}
 
-          {selectedSeats.length > 0 && (
-            <p className="text-sm text-texto2 text-center">
+              {selectedSeats.length > 0 && (
+            <p className="text-sm text-texto1 text-center">
               {selectedSeats.length} assento(s) selecionado(s)
             </p>
           )}

@@ -11,10 +11,14 @@ import CargaCadastro from './pages/admin/CargaCadastro'
 import Linhas from './pages/admin/Linhas'
 import Alertas from './pages/admin/Alertas'
 import Perfil from './pages/Perfil'
+import ThemeToggle from './components/ThemeToggle/ThemeToggle'
 
 export default function App() {
   return (
     <BrowserRouter>
+      <div className="fixed top-4 right-4 z-[100]">
+        <ThemeToggle />
+      </div>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />

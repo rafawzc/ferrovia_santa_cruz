@@ -21,11 +21,11 @@ export default function WagonIcon({ letter, percentage = 0, onClick, className =
           className="w-20 h-auto"
           style={{ filter: 'drop-shadow(2px 2px 3px rgba(0,0,0,0.5))' }}
         />
-        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-texto2 text-sm font-bold drop-shadow-lg">
-          {letter}
-        </span>
-      </div>
-      <span className="text-texto2 text-xs font-semibold">{percentage}%</span>
+      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-texto1 text-sm font-bold drop-shadow-lg">
+        {letter}
+      </span>
+    </div>
+    <span className="text-texto1 text-xs font-semibold">{percentage}%</span>
     </button>
   )
 }

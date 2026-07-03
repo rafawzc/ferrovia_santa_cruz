@@ -87,13 +87,13 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
       <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-texto2">Cadastro de Carga</h2>
+          <h2 className="text-lg font-bold text-texto1">Cadastro de Carga</h2>
           <button
             onClick={onClose}
-            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -105,9 +105,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="tipo"
               value={formData.tipo}
               onChange={handleChange('tipo')}
-              className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
                 errors.tipo ? 'ring-2 ring-error' : ''
-              } ${!formData.tipo ? 'text-texto1/40' : ''}`}
+              } ${!formData.tipo ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Tipo de carga</option>
               {tiposCarga.map((t) => (
@@ -132,9 +132,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="partida"
               value={formData.partida}
               onChange={handleChange('partida')}
-              className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
                 errors.partida ? 'ring-2 ring-error' : ''
-              } ${!formData.partida ? 'text-texto1/40' : ''}`}
+              } ${!formData.partida ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Local de partida</option>
               {locaisPartida.map((l) => (
@@ -149,9 +149,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="destino"
               value={formData.destino}
               onChange={handleChange('destino')}
-              className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
                 errors.destino ? 'ring-2 ring-error' : ''
-              } ${!formData.destino ? 'text-texto1/40' : ''}`}
+              } ${!formData.destino ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Destino</option>
               {destinos.map((d) => (
@@ -166,9 +166,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="vagao"
               value={formData.vagao}
               onChange={handleChange('vagao')}
-              className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
                 errors.vagao ? 'ring-2 ring-error' : ''
-              } ${!formData.vagao ? 'text-texto1/40' : ''}`}
+              } ${!formData.vagao ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Vagão</option>
               {vagoes.map((v) => (
