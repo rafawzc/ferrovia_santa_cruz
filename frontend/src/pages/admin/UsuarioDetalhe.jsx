@@ -31,19 +31,19 @@ export default function UsuarioDetalhe() {
         <div className="flex flex-col gap-5">
           <div>
             <label className="text-sm font-semibold text-texto1 block mb-1.5">Nome</label>
-            <div className="w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1">{func.nome}</div>
+            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">{func.nome}</div>
           </div>
           <div>
             <label className="text-sm font-semibold text-texto1 block mb-1.5">Email</label>
-            <div className="w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1">{func.email}</div>
+            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">{func.email}</div>
           </div>
           <div>
             <label className="text-sm font-semibold text-texto1 block mb-1.5">Telefone</label>
-            <div className="w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1">{func.telefone}</div>
+            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">{func.telefone}</div>
           </div>
           <div>
             <label className="text-sm font-semibold text-texto1 block mb-1.5">Cargo atual</label>
-            <div className="w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1">{func.cargo}</div>
+            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">{func.cargo}</div>
           </div>
         </div>
       </div>

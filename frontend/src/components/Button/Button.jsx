@@ -6,7 +6,7 @@ export default function Button({
   type = 'button',
   disabled = false,
   variant = 'primary',
-  icon = true,
+  icon = false,
   className = '',
 }) {
   const base =
@@ -18,7 +18,7 @@ export default function Button({
     secondary:
       'bg-componente4 text-texto1 py-3 px-6 hover:bg-componente3 active:scale-[0.98]',
     outline:
-      'bg-transparent border-2 border-componente1 text-componente1 py-3 px-6 hover:bg-componente1/10 active:scale-[0.98]',
+      'bg-transparent border-2 border-componente3 text-texto1 py-3 px-6 hover:bg-componente3/10 active:scale-[0.98]',
   }
 
   return (
@@ -28,7 +28,7 @@ export default function Button({
       disabled={disabled}
       className={`${base} ${variants[variant]} ${className}`}
     >
-      {icon && <Fingerprint size={20} />}
+      {icon === true ? <Fingerprint size={20} /> : icon}
       {children}
     </button>
   )
