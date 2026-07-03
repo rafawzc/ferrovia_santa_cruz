@@ -71,13 +71,13 @@ export default function MaintenanceModal({ onClose, onAdd }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
       <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-texto2">Cadastrar Manutenção</h2>
+          <h2 className="text-lg font-bold text-texto1">Cadastrar Manutenção</h2>
           <button
             onClick={onClose}
-            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -99,9 +99,9 @@ export default function MaintenanceModal({ onClose, onAdd }) {
               id="linha"
               value={formData.linha}
               onChange={handleChange('linha')}
-              className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
                 errors.linha ? 'ring-2 ring-error' : ''
-              } ${!formData.linha ? 'text-texto1/40' : ''}`}
+              } ${!formData.linha ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Selecione a linha</option>
               {linhas.map((l) => (
@@ -116,9 +116,9 @@ export default function MaintenanceModal({ onClose, onAdd }) {
               id="setor"
               value={formData.setor}
               onChange={handleChange('setor')}
-              className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
                 errors.setor ? 'ring-2 ring-error' : ''
-              } ${!formData.setor ? 'text-texto1/40' : ''}`}
+              } ${!formData.setor ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Selecione o setor</option>
               {setores.map((s) => (

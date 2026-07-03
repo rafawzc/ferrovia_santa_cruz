@@ -69,7 +69,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay"
       onClick={onClose}
     >
       <div
@@ -77,12 +77,12 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-texto2">
+          <h2 className="text-lg font-bold text-texto1">
             {isCreate ? 'Cadastro de Funcionário' : 'Editar Funcionário'}
           </h2>
           <button
             onClick={onClose}
-            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -106,7 +106,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
                 <div
                   className={`w-full h-full items-center justify-center ${formData.foto ? 'hidden' : 'flex'}`}
                 >
-                  <Camera size={32} className="text-texto1/40" />
+                  <Camera size={32} className="text-texto1/60" />
                 </div>
               </div>
             </div>
@@ -153,14 +153,14 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-texto2">Cargo</label>
+            <label className="text-sm font-medium text-texto1">Cargo</label>
             <select
               id="cargo"
               value={formData.cargo}
               onChange={handleChange('cargo')}
               className={`w-full rounded-full bg-componente3 px-5 py-3 text-sm text-texto1 transition-all duration-200 focus:ring-2 focus:ring-texto2/30 ${
                 errors.cargo ? 'ring-2 ring-error' : ''
-              } ${!formData.cargo ? 'text-texto1/40' : ''}`}
+              } ${!formData.cargo ? 'text-texto1/60' : ''}`}
             >
               <option value="" disabled>Selecione o cargo</option>
               {cargos.map((c) => (
@@ -171,7 +171,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-texto2">Status</label>
+            <label className="text-sm font-medium text-texto1">Status</label>
             <select
               id="status"
               value={formData.status}

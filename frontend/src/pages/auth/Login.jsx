@@ -98,7 +98,7 @@ export default function Login() {
               <Button type="submit">Entrar</Button>
             </div>
           </form>
-          <p className="text-center text-sm text-texto1/60 mt-6">
+          <p className="text-center text-sm text-texto1/70 mt-6">
             Não tem uma conta?{' '}
             <Link to="/cadastro" className="font-semibold text-componente1 hover:underline">
               Criar Conta
@@ -106,7 +106,7 @@ export default function Login() {
           </p>
         </div>
       </div>
-      <div className="hidden lg:block lg:w-[55%] bg-texto1 relative overflow-hidden">
+      <div className="hidden lg:block lg:w-[55%] bg-componente1 relative overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80"
           alt="Trem em movimento"
