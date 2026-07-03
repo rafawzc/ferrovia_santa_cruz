@@ -19,7 +19,7 @@ export default function Linhas() {
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 bg-componente1 rounded-3xl p-6">
             <h2 className="text-lg font-bold text-texto2 mb-4">Mapa de Rotas</h2>
-            <div className="bg-white rounded-2xl overflow-hidden aspect-[4/3]">
+            <div className="bg-componente4 rounded-2xl overflow-hidden aspect-[4/3]">
               <img
                 src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=450&fit=crop"
                 alt="Mapa de rotas ferroviárias"
