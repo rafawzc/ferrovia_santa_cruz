@@ -18,7 +18,7 @@ Este arquivo é o **mapa da pasta `docs/`**. Quem chega aqui lê isto primeiro e
 | [`arquitetura/`](arquitetura/) | Como o sistema é montado. `containers-e-rede.md`: modelo Docker dos 3 serviços, rede interna, proxy do frontend, `depends_on` em cadeia. |
 | [`banco/`](banco/) | Modelo de dados do MySQL. `modelo-de-dados.md`: ERD, tabelas/tipos/chaves, integridade referencial, regra de exclusão restrita de sensores. Fonte da verdade pro `db/schema.sql`. |
 | [`backend/`](backend/) | API FastAPI e acesso a dados. `acesso-a-dados.md`: SQL puro, queries parametrizadas, conexão, padrões anti-injection. |
-| [`frontend/`](frontend/) | UI React. `responsividade.md`: mobile-first, padrões responsivos, consumo de API por caminho relativo, os dois lados (admin/cliente). |
+| [`frontend/`](frontend/) | UI React. `responsividade.md`: mobile-first, padrões responsivos, consumo de API por caminho relativo, os dois lados (admin/cliente). `tema-escuro.md`: sistema de tokens de cor claro/escuro, a regra semântica (`componente1`→`texto2`, resto→`texto1`) e o gotcha de opacidade com CSS variables no Tailwind. |
 | [`decisoes/`](decisoes/) | Registro das decisões técnicas com o *porquê*. `stack.md`: FastAPI, SQL puro (e a razão política), Vite/Vitest, Docker 3-container, estrutura de docs. `uniformizacao-telas.md`: alinhamento com o Guia de Uniformização de Telas (SENAI — 11 telas + vocabulário, conteúdo consolidado) contra o `PLANO_IMPLEMENTACAO`; decisões travadas, mapa das telas por dono, deltas de banco abertos. |
 | [`entregas/`](entregas/) | Documentos das atividades entregues da SA. `requisitos.md`: Requisitos Funcionais (RF) e Não Funcionais (RNF) da aplicação, com IDs, prioridade e rastreabilidade à origem. |
 
