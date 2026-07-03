@@ -2,26 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: ease;
+    transition-duration: 300ms;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* Tema Claro (padrão) — componentes RGB (sem #) para suportar opacidade via Tailwind, ex: bg-texto1/60 */
+.white {
+  --texto1: 68 49 43;
+  --texto2: 234 230 222;
+  --componente1: 109 65 42;
+  --componente3: 194 177 156;
+  --componente4: 218 204 190;
+  --bg-base: 196 162 125;
+  --bg-page: 213 196 168;
+  --bg-card: 194 177 156;
+  --input-bg: rgba(255, 255, 255, 0.6);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --border: 255 255 255;
+}
+
+/* Tema Escuro */
+.black {
+  --texto1: 247 242 238;
+  --texto2: 234 230 222;
+  --componente1: 136 80 48;
+  --componente3: 81 67 56;
+  --componente4: 110 89 73;
+  --bg-base: 37 29 24;
+  --bg-page: 19 15 12;
+  --bg-card: 58 47 39;
+  --input-bg: rgba(0, 0, 0, 0.35);
+  --overlay: rgba(0, 0, 0, 0.7);
+  --border: 201 178 156;
+}
+
 html,
 body,
 #root {
   min-height: 100%;
-  background-color: #efe8de;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
-  color: #44312b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 input:focus {
+  outline: none;
+}
+
+button:focus {
   outline: none;
 }
