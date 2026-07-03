@@ -100,10 +100,10 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
       <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-texto1">Cadastrar Passageiro</h2>
+          <h2 className="text-lg font-bold text-texto2">Cadastrar Passageiro</h2>
           <button
             onClick={onClose}
-            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -149,8 +149,8 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
 
           {renderSeats()}
 
-              {selectedSeats.length > 0 && (
-            <p className="text-sm text-texto1 text-center">
+          {selectedSeats.length > 0 && (
+            <p className="text-sm text-texto2 text-center">
               {selectedSeats.length} assento(s) selecionado(s)
             </p>
           )}
