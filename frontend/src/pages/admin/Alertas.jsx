@@ -146,9 +146,9 @@ export default function Alertas() {
           <div className="flex justify-center mt-4">
             <div className="w-full max-w-md bg-componente1 rounded-3xl p-4">
               {recentHistory.length === 0 ? (
-                <p className="text-texto2 text-sm text-center py-4">
-                  Nenhuma notificação enviada nos últimos 30 minutos
-                </p>
+                 <p className="text-texto1 text-sm text-center py-4">
+                   Nenhuma notificação enviada nos últimos 30 minutos
+                 </p>
               ) : (
                 <div className="flex flex-col gap-3">
                   {recentHistory.map((item, i) => (
@@ -165,15 +165,11 @@ export default function Alertas() {
                         </span>
                       </div>
                       <p className="text-xs text-texto1">
-                        Tempo de espera: {item.espera}
-                      </p>
-                      <p className="text-xs text-texto1">
                         Motivo: {item.motivo}
                       </p>
                       <p className="text-xs text-texto1">
                         Status: {item.status}
                       </p>
-                    </div>
                   ))}
                 </div>
               )}
