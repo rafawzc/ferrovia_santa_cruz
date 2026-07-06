@@ -31,17 +31,17 @@ export default function UsuarioEditar() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-bg pb-28">
       <div className="px-6 pt-8 max-w-2xl mx-auto">
         <ScreenHeader title="" showBack={true} />
 
         <div className="flex justify-center mb-6">
-          <div className="w-64 h-64 rounded-2xl overflow-hidden bg-componente3">
+          <div className="w-64 h-64 rounded-2xl overflow-hidden bg-surface">
             <img src={func.foto} alt={func.nome} className="w-full h-full object-cover" />
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-texto1 text-center mb-8">Informações do funcionário</h2>
+        <h2 className="text-xl font-bold text-text text-center mb-8">Informações do funcionário</h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <FormField id="nome" label="Nome" value={formData.nome} onChange={handleChange('nome')} />

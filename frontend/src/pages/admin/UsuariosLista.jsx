@@ -15,9 +15,9 @@ export default function UsuariosLista() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-bg pb-28">
       <div className="px-6 pt-8">
-        <h1 className="text-2xl font-bold text-texto1 text-center mb-8">Lista de Funcionários</h1>
+        <h1 className="text-2xl font-bold text-text text-center mb-8">Lista de Funcionários</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {funcionarios.map((func) => (

@@ -12,13 +12,13 @@ const linhas = [
 
 export default function Linhas() {
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-bg pb-28">
       <div className="px-6 pt-8">
-        <h1 className="text-2xl font-bold text-texto1 text-center mb-8">Gestão de Rotas</h1>
+        <h1 className="text-2xl font-bold text-text text-center mb-8">Gestão de Rotas</h1>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 bg-componente1 rounded-3xl p-6">
-            <h2 className="text-lg font-bold text-texto2 mb-4">Mapa de Rotas</h2>
+          <div className="flex-1 bg-primary rounded-3xl p-6">
+            <h2 className="text-lg font-bold text-on-primary mb-4">Mapa de Rotas</h2>
             <div className="bg-white rounded-2xl overflow-hidden aspect-[4/3]">
               <img
                 src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=450&fit=crop"
@@ -28,8 +28,8 @@ export default function Linhas() {
             </div>
           </div>
 
-          <div className="flex-1 bg-componente1 rounded-3xl p-6">
-            <h2 className="text-lg font-bold text-texto2 mb-4">Status das linhas</h2>
+          <div className="flex-1 bg-primary rounded-3xl p-6">
+            <h2 className="text-lg font-bold text-on-primary mb-4">Status das linhas</h2>
             <div className="grid grid-cols-2 gap-4">
               {linhas.map((l) => (
                 <LineCard key={l.id} numero={l.numero} status={l.status} ativo={l.ativo} />

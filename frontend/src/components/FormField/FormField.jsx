@@ -10,14 +10,20 @@ export default function FormField({
   error,
   helperText,
   id,
+  onDark = false,
 }) {
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : type
 
+  // Cor do texto que fica SOBRE o container (label/helper). O input é uma pílula
+  // clara autossuficiente, legível em qualquer fundo. onDark = container escuro (bg-primary).
+  const labelColor = onDark ? 'text-on-primary' : 'text-text'
+  const helperColor = onDark ? 'text-on-primary/70' : 'text-text-muted'
+
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-texto1">
+      <label htmlFor={id} className={`text-sm font-medium ${labelColor}`}>
         {label}
       </label>
       <div className="relative">
@@ -27,7 +33,7 @@ export default function FormField({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className={`w-full rounded-full bg-white/60 px-5 py-3 text-sm text-texto1 placeholder-texto1/40 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
+          className={`w-full rounded-full bg-field px-5 py-3 text-sm text-text placeholder-text-muted transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
             error ? 'ring-2 ring-error' : ''
           }`}
         />
@@ -35,7 +41,7 @@ export default function FormField({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-texto1/40 hover:text-texto1 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -44,7 +50,7 @@ export default function FormField({
       </div>
       {error && <span className="text-xs text-error">{error}</span>}
       {helperText && !error && (
-        <span className="text-xs text-texto1/50">{helperText}</span>
+        <span className={`text-xs ${helperColor}`}>{helperText}</span>
       )}
     </div>
   )

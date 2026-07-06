@@ -21,9 +21,9 @@ export default function CargaLista() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-bg pb-28">
       <div className="px-6 pt-8">
-        <h1 className="text-xl lg:text-2xl font-bold text-texto1 text-center mb-6">
+        <h1 className="text-xl lg:text-2xl font-bold text-text text-center mb-6">
           Monitoramento de Carga<br />e Passageiro
         </h1>
 
@@ -33,34 +33,34 @@ export default function CargaLista() {
 
         {activeTab === 'carga' && (
           <div className="flex flex-col lg:flex-row gap-6">
-            <div className="flex-1 bg-componente1 rounded-3xl p-6">
-              <div className="bg-componente3 rounded-2xl p-5 mb-4">
-                <p className="text-sm font-medium text-texto2 mb-2">Limite de carga por vagão</p>
-                <p className="text-2xl font-bold text-texto2">170 Toneladas</p>
+            <div className="flex-1 bg-primary rounded-3xl p-6">
+              <div className="bg-surface rounded-2xl p-5 mb-4">
+                <p className="text-sm font-medium text-on-primary mb-2">Limite de carga por vagão</p>
+                <p className="text-2xl font-bold text-on-primary">170 Toneladas</p>
               </div>
 
               <div className="flex gap-6 mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-green-600" />
-                  <span className="text-xs text-texto2">Vagão disponível</span>
+                  <span className="text-xs text-on-primary">Vagão disponível</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-500" />
-                  <span className="text-xs text-texto2">Vagão lotado</span>
+                  <span className="text-xs text-on-primary">Vagão lotado</span>
                 </div>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-texto2 mb-3">vagões disponíveis</p>
+                <p className="text-sm font-medium text-on-primary mb-3">vagões disponíveis</p>
                 <div className="grid grid-cols-4 gap-3">
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((v) => (
                     <div key={v} className="flex flex-col items-center gap-1">
                       <div className={`w-14 h-10 rounded-lg ${vagaoColors[v]} flex items-center justify-center`}>
-                        <span className="text-texto2 text-xs font-bold">{v}</span>
+                        <span className="text-on-primary text-xs font-bold">{v}</span>
                       </div>
                       <div className="flex gap-1">
-                        <div className="w-2.5 h-2.5 rounded-full bg-texto2/80" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-texto2/80" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-on-primary/80" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-on-primary/80" />
                       </div>
                     </div>
                   ))}
@@ -68,28 +68,28 @@ export default function CargaLista() {
               </div>
             </div>
 
-            <div className="flex-1 bg-componente1 rounded-3xl p-6">
-              <div className="bg-componente3 rounded-2xl p-5 mb-4">
-                <p className="text-sm font-medium text-texto2 mb-2">Limite de pessoas por vagão</p>
-                <p className="text-2xl font-bold text-texto2">24 Pessoas</p>
+            <div className="flex-1 bg-primary rounded-3xl p-6">
+              <div className="bg-surface rounded-2xl p-5 mb-4">
+                <p className="text-sm font-medium text-on-primary mb-2">Limite de pessoas por vagão</p>
+                <p className="text-2xl font-bold text-on-primary">24 Pessoas</p>
               </div>
 
               <div className="flex flex-wrap gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded bg-green-600" />
-                  <span className="text-xs text-texto2">Vagão disponível</span>
+                  <span className="text-xs text-on-primary">Vagão disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-6 rounded-t-full bg-green-600" />
-                  <span className="text-xs text-texto2">Poltrona disponível</span>
+                  <span className="text-xs text-on-primary">Poltrona disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded bg-red-500" />
-                  <span className="text-xs text-texto2">Vagão lotado</span>
+                  <span className="text-xs text-on-primary">Vagão lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-6 rounded-t-full bg-red-400" />
-                  <span className="text-xs text-texto2">Poltrona indisponível</span>
+                  <span className="text-xs text-on-primary">Poltrona indisponível</span>
                 </div>
               </div>
 
@@ -97,18 +97,18 @@ export default function CargaLista() {
                 {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((v) => (
                   <div key={v} className="flex flex-col items-center gap-1">
                     <div className={`w-14 h-10 rounded-lg ${v === 'F' ? 'bg-red-500' : 'bg-green-600'} flex items-center justify-center`}>
-                      <span className="text-texto2 text-xs font-bold">{v}</span>
+                      <span className="text-on-primary text-xs font-bold">{v}</span>
                     </div>
                     <div className="flex gap-1">
-                      <div className="w-2.5 h-2.5 rounded-full bg-texto2/80" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-texto2/80" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-on-primary/80" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-on-primary/80" />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-componente3 rounded-2xl p-4">
-                <p className="text-sm font-medium text-texto2 mb-3">Poltronas disponível no vagão F</p>
+              <div className="bg-surface rounded-2xl p-4">
+                <p className="text-sm font-medium text-on-primary mb-3">Poltronas disponível no vagão F</p>
                 <div className="grid grid-cols-4 gap-2">
                   {poltronas.map((disponivel, i) => (
                     <div key={i} className={`w-full h-8 rounded-t-full ${disponivel ? 'bg-green-600' : 'bg-red-400'}`} />
@@ -123,7 +123,7 @@ export default function CargaLista() {
           <div className="flex justify-center">
             <button
               onClick={() => navigate('/admin/carga/cadastro')}
-              className="bg-componente1 text-texto2 font-semibold rounded-full px-8 py-3 hover:opacity-90 transition-opacity cursor-pointer"
+              className="bg-primary text-on-primary font-semibold rounded-full px-8 py-3 hover:opacity-90 transition-opacity cursor-pointer"
             >
               Cadastrar Carga
             </button>
@@ -131,8 +131,8 @@ export default function CargaLista() {
         )}
 
         {activeTab === 'passageiros' && (
-          <div className="bg-componente1 rounded-3xl p-6">
-            <p className="text-texto2 text-center">Monitoramento de passageiros</p>
+          <div className="bg-primary rounded-3xl p-6">
+            <p className="text-on-primary text-center">Monitoramento de passageiros</p>
           </div>
         )}
       </div>
