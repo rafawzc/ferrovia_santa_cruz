@@ -51,6 +51,7 @@ export default function WagonDetail({ wagon, percentage, onClose }) {
               </div>
             </div>
 
+            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <Package size={16} className="text-texto1/70" />
                 <p className="text-sm text-texto1">Capacidade: {percentage >= 90 ? 'Máxima' : 'Normal'}</p>

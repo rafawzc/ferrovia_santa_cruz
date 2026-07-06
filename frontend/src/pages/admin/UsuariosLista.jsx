@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Plus, Users } from 'lucide-react'
 import UserCard from '../../components/UserCard/UserCard'
 import FuncionarioModal from '../../components/FuncionarioModal/FuncionarioModal'
-import Button from '../../components/Button/Button'
 import BottomNav from '../../components/BottomNav/BottomNav'
 import { useAuth } from '../../contexts/AuthContext'
 
