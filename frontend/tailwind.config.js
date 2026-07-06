@@ -7,13 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        texto1: '#44312b',
-        texto2: '#eae6de',
-        componente1: '#6d412a',
-        componente3: '#c2b19c',
-        componente4: '#daccbe',
-        'bg-base': '#c4a27d',
-        'bg-card': '#c2b19c',
+        bg: 'rgb(var(--color-bg) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        'surface-2': 'rgb(var(--color-surface-2) / <alpha-value>)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        'on-primary': 'rgb(var(--color-on-primary) / <alpha-value>)',
+        text: 'rgb(var(--color-text) / <alpha-value>)',
+        'text-muted': 'rgb(var(--color-text-muted) / <alpha-value>)',
+        panel: 'rgb(var(--color-panel) / <alpha-value>)',
+        field: 'rgb(var(--color-field) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
         error: '#dc2626',
         success: '#16a34a',
       },
