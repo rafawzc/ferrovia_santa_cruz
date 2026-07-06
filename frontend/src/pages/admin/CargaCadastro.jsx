@@ -25,17 +25,17 @@ export default function CargaCadastro() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-bg pb-28">
       <div className="px-6 pt-8 max-w-2xl mx-auto">
-        <div className="bg-componente1 rounded-3xl p-6 lg:p-8">
+        <div className="bg-primary rounded-3xl p-6 lg:p-8">
           <ScreenHeader title="Cadastro de carga" showBack={true} />
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <FormField id="tipo" label="Tipo de carga:" placeholder="" value={formData.tipo} onChange={handleChange('tipo')} />
-            <FormField id="peso" label="Peso:" placeholder="" value={formData.peso} onChange={handleChange('peso')} />
-            <FormField id="partida" label="Local de partida:" placeholder="" value={formData.partida} onChange={handleChange('partida')} />
-            <FormField id="destino" label="Destino:" placeholder="" value={formData.destino} onChange={handleChange('destino')} />
-            <FormField id="vagoes" label="Vagão:" placeholder="" value={formData.vagoes} onChange={handleChange('vagoes')} />
+            <FormField id="tipo" label="Tipo de carga:" placeholder="" value={formData.tipo} onChange={handleChange('tipo')} onDark />
+            <FormField id="peso" label="Peso:" placeholder="" value={formData.peso} onChange={handleChange('peso')} onDark />
+            <FormField id="partida" label="Local de partida:" placeholder="" value={formData.partida} onChange={handleChange('partida')} onDark />
+            <FormField id="destino" label="Destino:" placeholder="" value={formData.destino} onChange={handleChange('destino')} onDark />
+            <FormField id="vagoes" label="Vagão:" placeholder="" value={formData.vagoes} onChange={handleChange('vagoes')} onDark />
 
             <div className="flex justify-center mt-4">
               <Button type="submit" variant="secondary" className="w-auto px-12">Cadastrar</Button>

@@ -11,7 +11,7 @@ const statusColors = {
 }
 
 export default function StatusBadge({ status, className = '' }) {
-  const colorClass = statusColors[status] || 'text-texto2'
+  const colorClass = statusColors[status] || 'text-on-primary'
 
   return (
     <span className={`text-sm font-semibold ${colorClass} ${className}`}>

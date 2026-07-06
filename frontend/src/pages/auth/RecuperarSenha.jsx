@@ -52,20 +52,20 @@ export default function RecuperarSenha() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-bg-base">
-      <div className="lg:w-[45%] flex flex-col bg-bg-base">
-        <div className="bg-bg-base px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-bg">
+      <div className="lg:w-[45%] flex flex-col bg-bg">
+        <div className="bg-bg px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
-        <div className="flex-1 bg-bg-card rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:-mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm text-texto1/60 hover:text-texto1 mb-6 transition-colors">
+        <div className="flex-1 bg-surface rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:-mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
+          <Link to="/login" className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-text mb-6 transition-colors">
             <ArrowLeft size={16} />
             Voltar para o login
           </Link>
-          <h1 className="text-2xl lg:text-3xl font-bold text-texto1 mb-3">
+          <h1 className="text-2xl lg:text-3xl font-bold text-text mb-3">
             Recuperar Senha
           </h1>
-          <p className="text-sm text-texto1/60 mb-8">
+          <p className="text-sm text-text-muted mb-8">
             Informe seu email e crie uma nova senha para acessar sua conta.
           </p>
           {success && (
@@ -83,15 +83,15 @@ export default function RecuperarSenha() {
               <Button type="submit" disabled={success}>Redefinir Senha</Button>
             </div>
           </form>
-          <p className="text-center text-sm text-texto1/60 mt-6">
+          <p className="text-center text-sm text-text-muted mt-6">
             Lembrou sua senha?{' '}
-            <Link to="/login" className="font-semibold text-componente1 hover:underline">
+            <Link to="/login" className="font-semibold text-primary hover:underline">
               Fazer Login
             </Link>
           </p>
         </div>
       </div>
-      <div className="hidden lg:block lg:w-[55%] bg-texto1 relative overflow-hidden">
+      <div className="hidden lg:block lg:w-[55%] bg-panel relative overflow-hidden">
         <img src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80" alt="Trem em movimento" className="w-full h-full object-cover opacity-80" />
       </div>
     </div>
