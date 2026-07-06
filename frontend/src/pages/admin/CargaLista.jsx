@@ -79,8 +79,6 @@ export default function CargaLista() {
 
   const passageirosAtuais = passageiros[selectedTrainPassageiro]?.[selectedWagonPassageiro] || []
   const totalPoltronas = 32
-  const poltronasOcupadas = passageirosAtuais.length
-  const poltronasDisponiveis = totalPoltronas - poltronasOcupadas
 
   const passageirosVagoes = passageiros[selectedTrainPassageiro] || {}
   const vagoesPassageiros = Object.entries(passageirosVagoes).map(([letter, seats]) => ({

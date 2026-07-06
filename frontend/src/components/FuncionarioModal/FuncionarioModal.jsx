@@ -77,12 +77,12 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-texto2">
+          <h2 className="text-lg font-bold text-texto1">
             {isCreate ? 'Cadastro de Funcionário' : 'Editar Funcionário'}
           </h2>
           <button
             onClick={onClose}
-            className="text-texto2 hover:opacity-70 transition-opacity cursor-pointer"
+            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
           >
             <X size={24} />
           </button>
@@ -153,7 +153,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-texto2">Cargo</label>
+            <label className="text-sm font-medium text-texto1">Cargo</label>
             <select
               id="cargo"
               value={formData.cargo}
@@ -171,7 +171,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-texto2">Status</label>
+            <label className="text-sm font-medium text-texto1">Status</label>
             <select
               id="status"
               value={formData.status}

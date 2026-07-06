@@ -21,8 +21,8 @@ export default function MaintenanceDetail({ maintenance, onClose, onFinalize }) 
           <div className="bg-componente3 rounded-2xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
-                <Train size={18} className="text-texto1" />
-                <p className="text-base font-semibold text-texto1">{maintenance.linha}</p>
+                <Train size={18} className="text-texto2" />
+                <p className="text-base font-semibold text-texto2">{maintenance.linha}</p>
               </div>
               <span
                 className={`text-xs font-medium px-3 py-1 rounded-full ${
@@ -35,33 +35,35 @@ export default function MaintenanceDetail({ maintenance, onClose, onFinalize }) 
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-texto1/50" />
-              <p className="text-sm text-texto1">Motivo: {maintenance.motivo}</p>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-texto1/50" />
+                <p className="text-sm text-texto1">Motivo: {maintenance.motivo}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={14} className="text-texto1/60" />
+                <p className="text-sm text-texto1">Setor: {maintenance.setor}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={14} className="text-texto1/60" />
+                <p className="text-xs text-texto1/70">
+                  Cadastrada em: {new Date(maintenance.timestamp).toLocaleString('pt-BR')}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin size={14} className="text-texto1/60" />
-              <p className="text-sm text-texto1">Setor: {maintenance.setor}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock size={14} className="text-texto1/60" />
-              <p className="text-xs text-texto1/70">
-                Cadastrada em: {new Date(maintenance.timestamp).toLocaleString('pt-BR')}
-              </p>
-            </div>
-          </div>
 
-          {maintenance.statusFinalizacao !== 'finalizada' && (
-            <div className="flex justify-center mt-2">
-              <Button
-                onClick={() => onFinalize(maintenance.id)}
-                className="w-full px-8 bg-success hover:bg-success/90"
-              >
-                <CheckCircle size={20} className="mr-2" />
-                Finalizar Manutenção
-              </Button>
-            </div>
-          )}
+            {maintenance.statusFinalizacao !== 'finalizada' && (
+              <div className="flex justify-center mt-2">
+                <Button
+                  onClick={() => onFinalize(maintenance.id)}
+                  className="w-full px-8 bg-success hover:bg-success/90"
+                >
+                  <CheckCircle size={20} className="mr-2" />
+                  Finalizar Manutenção
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
