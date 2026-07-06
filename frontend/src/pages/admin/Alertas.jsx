@@ -170,6 +170,7 @@ export default function Alertas() {
                       <p className="text-xs text-texto1">
                         Status: {item.status}
                       </p>
+                    </div>
                   ))}
                 </div>
               )}

@@ -35,6 +35,7 @@ export default function MaintenanceDetail({ maintenance, onClose, onFinalize }) 
               </span>
             </div>
 
+            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-texto2/50" />
                 <p className="text-sm text-texto1">Motivo: {maintenance.motivo}</p>
@@ -49,18 +50,20 @@ export default function MaintenanceDetail({ maintenance, onClose, onFinalize }) 
                   Cadastrada em: {new Date(maintenance.timestamp).toLocaleString('pt-BR')}
                 </p>
               </div>
-
-          {maintenance.statusFinalizacao !== 'finalizada' && (
-            <div className="flex justify-center mt-2">
-              <Button
-                onClick={() => onFinalize(maintenance.id)}
-                className="w-full px-8 bg-success hover:bg-success/90"
-              >
-                <CheckCircle size={20} className="mr-2" />
-                Finalizar Manutenção
-              </Button>
             </div>
-          )}
+
+            {maintenance.statusFinalizacao !== 'finalizada' && (
+              <div className="flex justify-center mt-2">
+                <Button
+                  onClick={() => onFinalize(maintenance.id)}
+                  className="w-full px-8 bg-success hover:bg-success/90"
+                >
+                  <CheckCircle size={20} className="mr-2" />
+                  Finalizar Manutenção
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
