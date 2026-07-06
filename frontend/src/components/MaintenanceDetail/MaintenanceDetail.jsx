@@ -37,15 +37,15 @@ export default function MaintenanceDetail({ maintenance, onClose, onFinalize }) 
 
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-texto2/50" />
+                <div className="w-2 h-2 rounded-full bg-texto1/50" />
                 <p className="text-sm text-texto1">Motivo: {maintenance.motivo}</p>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin size={14} className="text-texto2/60" />
+                <MapPin size={14} className="text-texto1/60" />
                 <p className="text-sm text-texto1">Setor: {maintenance.setor}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Clock size={14} className="text-texto2/60" />
+                <Clock size={14} className="text-texto1/60" />
                 <p className="text-xs text-texto1/70">
                   Cadastrada em: {new Date(maintenance.timestamp).toLocaleString('pt-BR')}
                 </p>
