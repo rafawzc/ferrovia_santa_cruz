@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Plus, Users } from 'lucide-react'
 import UserCard from '../../components/UserCard/UserCard'
 import FuncionarioModal from '../../components/FuncionarioModal/FuncionarioModal'
-import Button from '../../components/Button/Button'
 import BottomNav from '../../components/BottomNav/BottomNav'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -54,7 +53,7 @@ export default function UsuariosLista() {
           {isGestao && (
             <button
               onClick={handleCreateClick}
-              className="flex items-center gap-1.5 bg-componente1 text-texto2 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-componente1/90 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 bg-componente1 text-texto1 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-componente1/90 transition-colors cursor-pointer"
             >
               <Plus size={16} />
               Cadastrar
@@ -64,8 +63,8 @@ export default function UsuariosLista() {
 
         <div className="bg-componente4 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Users size={18} className="text-texto1" />
-            <h2 className="text-base font-bold text-texto1">Lista</h2>
+                  <Users size={18} className="text-texto1" />
+                  <h2 className="text-base font-bold text-texto1">Lista</h2>
           </div>
 
           <div className="flex flex-col gap-2">

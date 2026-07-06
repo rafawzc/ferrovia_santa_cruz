@@ -7,7 +7,6 @@ import UsuariosLista from './pages/admin/UsuariosLista'
 import UsuarioDetalhe from './pages/admin/UsuarioDetalhe'
 import UsuarioEditar from './pages/admin/UsuarioEditar'
 import CargaLista from './pages/admin/CargaLista'
-import CargaCadastro from './pages/admin/CargaCadastro'
 import Linhas from './pages/admin/Linhas'
 import Alertas from './pages/admin/Alertas'
 import Perfil from './pages/Perfil'
@@ -29,7 +28,6 @@ export default function App() {
         <Route path="/admin/funcionarios/:id" element={<UsuarioDetalhe />} />
         <Route path="/admin/funcionarios/:id/editar" element={<UsuarioEditar />} />
         <Route path="/admin/carga" element={<CargaLista />} />
-        <Route path="/admin/carga/cadastro" element={<CargaCadastro />} />
         <Route path="/admin/linhas" element={<Linhas />} />
         <Route path="/admin/alertas" element={<Alertas />} />
         <Route path="/perfil" element={<Perfil />} />
