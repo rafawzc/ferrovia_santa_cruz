@@ -233,6 +233,37 @@ Criar a worktree `feat/fundacao` e disparar em paralelo `A2` (db fix), `A4` (too
 - **Collation fixada no compose** (`command:` do db), já que o `CREATE DATABASE` que a definia saiu do `schema.sql`.
 - **Telas `.jsx` legadas fora do typecheck e do lint** até a reescrita em TSX (fase 4).
 
+### Fase 3 — backend API (branch `feat/backend-api`) — concluída em 2026-09-22
+
+| Item do plano (5.7) | Commit | O que entrou |
+|---------------------|--------|--------------|
+| C1 — `db.py` + segurança (L15, L21) | `815a80f` | Pool único preguiçoso + `cursor()` context manager; argon2 (pwdlib) + JWT HS256 (PyJWT, 8h); deps `mysql-connector-python`, `pwdlib[argon2]`, `pyjwt`; `.env.example` com `DB_HOST` e `JWT_SECRET` de 32+ bytes. |
+| C2 — auth (L15, L18) | `c0cad8b` | `login` (cookie `sessao` HttpOnly/SameSite=Lax/8h), `logout`, `me`, `cadastro` (cargo = `DEFAULT` do banco), `recuperar-senha` stub 202; `usuario_atual` + `exige_papel`; `IntegrityError` → 409. |
+| C3 — usuários | `54be1d1` | CRUD gestão (`DELETE` = desativar) + `GET /api/cargos`. |
+| C3 — linhas, carga, alertas | `4de14b0` | `GET /api/linhas`, `GET/POST /api/cargas`, `GET/POST /api/alertas` (operacional + gestão). |
+| C3 — dashboard | `fc98ebd` | `GET /api/dashboard`: linhas ativas, em manutenção, sensores, velocidade média. |
+| C4 — docs | `301c2a9` | `docs/backend/api.md` (contrato), `backend/CLAUDE.md`, `acesso-a-dados.md` com o `db.py` real, índice. |
+
+Verificação: `./fsc check` verde (53 testes). Smoke R1 real via proxy do Vite (projeto compose isolado `fsc-api-smoke`, porta 5199, banco recém-seedado): todos os endpoints com 200/201/204/202 no caminho feliz e 401/403/404/409/422 nos erros esperados.
+
+#### Desvios da fase 3
+
+- **Sem `app/core/settings.py`.** Só dois lugares leem env (`db.py` e `core/security.py`); um módulo de settings seria wrapper de `os.environ`. Leitura é preguiçosa → importar o app em teste não exige banco.
+- **Router → repo direto quando não há regra** (linhas, cargas, alertas, dashboard). `services/` só existe onde há regra (`usuarios.py`: auth, cadastro, hash, desativar). O `Protocol` mora no service.
+- **Papel relido do banco a cada request**, não só do JWT: desativar/trocar cargo vale na hora (o `papel` continua no token, como pedido).
+- **`DELETE /api/usuarios/{id}` desativa** (soft delete) — `relatorio.usuario_id` é `RESTRICT` e o histórico precisa do autor. `PATCH {"ativo": true}` reativa.
+- **`GET /api/cargos`** entrou (não estava no L18): o cadastro de funcionário precisa dos ids.
+- **Status cru do banco** em `linha.status` e `alerta.status`; rótulo/cor ficam no front (L7), tabela no `api.md`.
+- **Mensagens de 422 em inglês** (padrão Pydantic, com `type`/`loc` estáveis pro front traduzir).
+- **Rota de API segue o banco** (`/api/linhas`, `/api/usuarios`), não o vocabulário do Guia (L1 é só de UI).
+
+#### Não coberto pelo schema / fora do escopo
+
+- Manutenções pendentes/finalizadas (sem tabela), ocupação de vagões/poltronas e passageiros (sem colunas), velocidade/sensores por linha (derivável, não pedido).
+- `PATCH` do próprio perfil (`/perfil/editar`) — fora do L18; reusa `services.usuarios.atualizar` quando vier.
+- `null` no `PATCH` não apaga campo (SQL estático com `COALESCE`).
+- Ingestão IoT (L23): só o espaço nas camadas, descrito no `backend/CLAUDE.md`.
+
 ### Pendente fora do repo
 
 - Ruleset da `main` (L20, R4): o dono (rafawzc) cria seguindo [`../arquitetura/operacao.md`](../arquitetura/operacao.md).
