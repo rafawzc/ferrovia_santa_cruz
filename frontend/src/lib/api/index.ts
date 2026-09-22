@@ -15,7 +15,7 @@ import type {
   UsuarioNovo,
 } from '@/lib/api/types'
 
-export { ApiError } from '@/lib/api/client'
+export { ApiError, marcarErrosDeCampo } from '@/lib/api/client'
 export type { ErroBody, ErroValidacao } from '@/lib/api/client'
 export type * from '@/lib/api/types'
 

@@ -53,7 +53,7 @@ import {
   useDesativarUsuario,
   useUsuarios,
 } from '@/hooks/usuarios'
-import { ApiError, type Cargo, type Usuario } from '@/lib/api'
+import { ApiError, marcarErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
 
 const CARGOS: Record<string, string> = {
   comum: 'Cliente',
@@ -128,11 +128,7 @@ function FormUsuario({
       } else {
         form.setError('cargo_id', { message: 'Cargo não encontrado' })
       }
-    } else if (e instanceof ApiError && e.status === 422 && Array.isArray(e.body?.detail)) {
-      for (const d of e.body.detail) {
-        form.setError(String(d.loc[1]) as keyof Valores, { message: 'Valor inválido' })
-      }
-    } else {
+    } else if (!marcarErrosDeCampo(e, form)) {
       toast.error(erroTexto(e, 'salvar'))
     }
   }

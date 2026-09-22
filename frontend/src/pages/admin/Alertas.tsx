@@ -18,7 +18,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAlertas, useCriarAlerta } from '@/hooks/alertas'
 import { useLinhas } from '@/hooks/linhas'
-import { ApiError } from '@/lib/api'
+import { ApiError, marcarErrosDeCampo } from '@/lib/api'
+import { dataHora } from '@/lib/utils'
 
 const schema = z.object({
   linha_id: z.string().min(1, 'Escolha a rota'),
@@ -29,16 +30,7 @@ const schema = z.object({
 
 type Valores = z.infer<typeof schema>
 
-const CAMPOS = ['linha_id', 'tempo_espera', 'motivo', 'status'] as const
-
 const VAZIO: Valores = { linha_id: '', tempo_espera: '', motivo: '', status: '' }
-
-function quando(criadoEm: string) {
-  return new Date(`${criadoEm}Z`).toLocaleString('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
-}
 
 function NovoAlerta() {
   const linhas = useLinhas()
@@ -65,13 +57,7 @@ function NovoAlerta() {
             })
             return
           }
-          if (error instanceof ApiError && Array.isArray(error.body?.detail)) {
-            for (const e of error.body.detail) {
-              const campo = CAMPOS.find((c) => c === e.loc[1])
-              if (campo) form.setError(campo, { message: 'Valor inválido' })
-            }
-            return
-          }
+          if (marcarErrosDeCampo(error, form)) return
           toast.error(`Não foi possível enviar: ${mensagemDeErro(error)}`)
         },
       },
@@ -208,7 +194,7 @@ function Historico() {
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="font-semibold">Rota {a.linha_numero}</p>
                   <time dateTime={a.criado_em} className="text-xs text-muted-foreground">
-                    {quando(a.criado_em)}
+                    {dataHora(a.criado_em)}
                   </time>
                 </div>
                 <p className="text-sm">

@@ -12,7 +12,7 @@ import { ScreenHeader } from '@/components/ui/screen-header'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAtualizarPerfil } from '@/hooks/auth'
-import { ApiError, type PerfilEdicao, type Usuario } from '@/lib/api'
+import { ApiError, marcarErrosDeCampo, type PerfilEdicao, type Usuario } from '@/lib/api'
 
 const schema = z
   .object({
@@ -124,15 +124,7 @@ function PerfilForm({ usuario }: { usuario: Usuario }) {
           form.setError('email', { message: 'Esse email já está em uso' })
           return
         }
-        if (erro instanceof ApiError && erro.status === 422 && Array.isArray(erro.body?.detail)) {
-          for (const item of erro.body.detail) {
-            const campo = item.loc[1]
-            if (typeof campo === 'string' && campo in valores) {
-              form.setError(campo as Nome, { message: 'Valor inválido' })
-            }
-          }
-          return
-        }
+        if (marcarErrosDeCampo(erro, form)) return
         toast.error(
           erro instanceof ApiError ? erro.message : 'Sem conexão com o servidor. Tente de novo.',
         )

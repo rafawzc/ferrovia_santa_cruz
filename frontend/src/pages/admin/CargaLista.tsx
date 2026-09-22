@@ -26,7 +26,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCargas, useCriarCarga } from '@/hooks/cargas'
-import { ApiError } from '@/lib/api'
+import { ApiError, marcarErrosDeCampo } from '@/lib/api'
+import { dataHora } from '@/lib/utils'
 
 const numero = (s: string) => Number(s.replace(',', '.'))
 
@@ -85,11 +86,7 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
         onError: (e) => {
           if (e instanceof ApiError && e.status === 409) {
             form.setError('trem_id', { message: 'Trem não encontrado' })
-          } else if (e instanceof ApiError && e.status === 422 && Array.isArray(e.body?.detail)) {
-            for (const d of e.body.detail) {
-              form.setError(String(d.loc[1]) as keyof Valores, { message: 'Valor inválido' })
-            }
-          } else {
+          } else if (!marcarErrosDeCampo(e, form)) {
             toast.error(e instanceof ApiError ? e.message : 'Sem conexão com o servidor')
           }
         },
@@ -126,10 +123,6 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
       </FieldGroup>
     </form>
   )
-}
-
-function dataHora(iso: string) {
-  return new Date(`${iso}Z`).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
 export default function CargaLista() {
