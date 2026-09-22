@@ -52,29 +52,70 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-bg-base">
-      <div className="lg:w-[45%] flex flex-col bg-bg-base">
-        <div className="bg-bg-base px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
+    <div className="flex min-h-screen flex-col bg-bg-base lg:flex-row">
+      <div className="flex flex-col bg-bg-base lg:w-[45%]">
+        <div className="flex justify-center bg-bg-base px-8 pt-10 pb-14 lg:justify-start lg:pb-20">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
-        <div className="flex-1 bg-bg-card rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:-mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
-          <h1 className="text-2xl lg:text-3xl font-bold text-texto1 mb-8">
-            Crie sua Conta
-          </h1>
+        <div className="-mt-6 flex-1 rounded-tl-[3rem] rounded-tr-[3rem] bg-bg-card px-8 pt-10 pb-8 lg:-mt-0 lg:rounded-tl-none lg:rounded-tr-[3rem] lg:rounded-br-[3rem] lg:rounded-bl-[3rem] lg:px-14 lg:pt-12">
+          <h1 className="mb-8 text-2xl font-bold text-texto1 lg:text-3xl">Crie sua Conta</h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <FormField id="nome" label="Nome" type="text" placeholder="Seu nome completo" value={formData.nome} onChange={handleChange('nome')} error={errors.nome} />
-            <FormField id="email" label="Email" type="email" placeholder="seu@email.com" value={formData.email} onChange={handleChange('email')} error={errors.email} />
-            <FormField id="senha" label="Senha" type="password" placeholder="********" value={formData.senha} onChange={handleChange('senha')} error={errors.senha} helperText="A senha deve ter no mínimo 8 caracteres." />
-            <FormField id="confirmarSenha" label="Confirmar Senha" type="password" placeholder="********" value={formData.confirmarSenha} onChange={handleChange('confirmarSenha')} error={errors.confirmarSenha} />
-            <div className="flex flex-col gap-3 mt-1">
-              <Toggle id="terms" label="Aceito os termos e a política de privacidade." checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
-              <Toggle id="location" label="Permitir acesso a localização" checked={allowLocation} onChange={(e) => setAllowLocation(e.target.checked)} />
+            <FormField
+              id="nome"
+              label="Nome"
+              type="text"
+              placeholder="Seu nome completo"
+              value={formData.nome}
+              onChange={handleChange('nome')}
+              error={errors.nome}
+            />
+            <FormField
+              id="email"
+              label="Email"
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={handleChange('email')}
+              error={errors.email}
+            />
+            <FormField
+              id="senha"
+              label="Senha"
+              type="password"
+              placeholder="********"
+              value={formData.senha}
+              onChange={handleChange('senha')}
+              error={errors.senha}
+              helperText="A senha deve ter no mínimo 8 caracteres."
+            />
+            <FormField
+              id="confirmarSenha"
+              label="Confirmar Senha"
+              type="password"
+              placeholder="********"
+              value={formData.confirmarSenha}
+              onChange={handleChange('confirmarSenha')}
+              error={errors.confirmarSenha}
+            />
+            <div className="mt-1 flex flex-col gap-3">
+              <Toggle
+                id="terms"
+                label="Aceito os termos e a política de privacidade."
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+              />
+              <Toggle
+                id="location"
+                label="Permitir acesso a localização"
+                checked={allowLocation}
+                onChange={(e) => setAllowLocation(e.target.checked)}
+              />
             </div>
             <div className="mt-2">
               <Button type="submit">Criar</Button>
             </div>
           </form>
-          <p className="text-center text-sm text-texto1/70 mt-6">
+          <p className="mt-6 text-center text-sm text-texto1/70">
             Já tem uma conta?{' '}
             <Link to="/login" className="font-semibold text-componente1 hover:underline">
               Entrar
@@ -82,8 +123,12 @@ export default function Cadastro() {
           </p>
         </div>
       </div>
-      <div className="hidden lg:block lg:w-[55%] bg-componente1 relative overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80" alt="Trem em movimento" className="w-full h-full object-cover opacity-80" />
+      <div className="relative hidden overflow-hidden bg-componente1 lg:block lg:w-[55%]">
+        <img
+          src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80"
+          alt="Trem em movimento"
+          className="h-full w-full object-cover opacity-80"
+        />
       </div>
     </div>
   )

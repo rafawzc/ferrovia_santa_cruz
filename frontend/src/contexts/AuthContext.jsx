@@ -16,11 +16,7 @@ export function AuthProvider({ children }) {
 
   const isGestao = CARGOS_GESTAO.includes(usuario.cargo)
 
-  return (
-    <AuthContext.Provider value={{ usuario, isGestao }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ usuario, isGestao }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
