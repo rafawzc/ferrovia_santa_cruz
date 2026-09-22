@@ -8,11 +8,8 @@
 -- entram antes dos "filhos" (usuario/linha -> trem -> sensor ->
 -- leitura -> carga/alerta/relatorio), senao o FK falha.
 --
--- senha_hash usa um hash de exemplo (placeholder) - em producao
--- vem do hash real gerado pelo backend.
+-- senha_hash e argon2 real (pwdlib); senha de dev de todos: ferrovia123.
 -- =============================================================
-
-USE ferrovia_santa_cruz;
 
 -- cargo (id explicito: 1 = comum, casa com o DEFAULT de usuario) -
 -- nivel_acesso encoda a matriz de acesso: cliente / operacional / gestao.
@@ -30,10 +27,10 @@ INSERT INTO cargo (id, nome, nivel_acesso) VALUES
 
 -- usuario (cargo_id FK; quem nao e 'comum' e equipe) ----------
 INSERT INTO usuario (nome, email, senha_hash, cargo_id, telefone, ativo) VALUES
-    ('Ana Gestora',     'ana.admin@ferrovia.com',  '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 2, '47999990001', TRUE),
-    ('Carlos Souza',    'carlos.maq@ferrovia.com', '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 5, '47999990002', TRUE),
-    ('Bruna Lima',      'bruna.rh@ferrovia.com',   '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 4, '47999990003', TRUE),
-    ('Cliente Comum',   'cliente@email.com',       '$2b$12$exemploHashDeSenhaParaSeedXxxxxxxxxxxxxxxxxxxxxxx', 1, '47999990004', TRUE);
+    ('Ana Gestora',     'ana.admin@ferrovia.com',  '$argon2id$v=19$m=65536,t=3,p=4$ZxdvG3jAojafi0lnIjeQ7w$w+AQfE1eRIrj8S2sZf2UzhSjeFGgBq6TYzuC7mFohO0', 2, '47999990001', TRUE),
+    ('Carlos Souza',    'carlos.maq@ferrovia.com', '$argon2id$v=19$m=65536,t=3,p=4$ZxdvG3jAojafi0lnIjeQ7w$w+AQfE1eRIrj8S2sZf2UzhSjeFGgBq6TYzuC7mFohO0', 5, '47999990002', TRUE),
+    ('Bruna Lima',      'bruna.rh@ferrovia.com',   '$argon2id$v=19$m=65536,t=3,p=4$ZxdvG3jAojafi0lnIjeQ7w$w+AQfE1eRIrj8S2sZf2UzhSjeFGgBq6TYzuC7mFohO0', 4, '47999990003', TRUE),
+    ('Cliente Comum',   'cliente@email.com',       '$argon2id$v=19$m=65536,t=3,p=4$ZxdvG3jAojafi0lnIjeQ7w$w+AQfE1eRIrj8S2sZf2UzhSjeFGgBq6TYzuC7mFohO0', 1, '47999990004', TRUE);
 
 -- linha (numero unico, status ENUM) --------------------------
 INSERT INTO linha (numero, status, ativo) VALUES

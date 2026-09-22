@@ -22,9 +22,9 @@ export default function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 px-4">
+    <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center px-4 pb-3">
       <div
-        className="flex items-center justify-center gap-2 px-3 py-2 rounded-2xl bg-componente1 shadow-lg outline-none border border-border"
+        className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-componente1 px-3 py-2 shadow-lg outline-hidden"
         style={{ transform: 'perspective(600px) rotateX(8deg)', willChange: 'transform' }}
       >
         {navItems.map((item, i) => {
@@ -41,26 +41,22 @@ export default function BottomNav() {
             >
               <button
                 onClick={() => navigate(item.path)}
-                className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200 outline-none ${
+                className={`relative flex h-10 w-10 items-center justify-center rounded-xl outline-hidden transition-colors duration-200 ${
                   isHovered
                     ? 'bg-componente3'
                     : active
-                    ? 'bg-componente3'
-                    : 'bg-transparent hover:bg-componente3/50'
+                      ? 'bg-componente3'
+                      : 'bg-transparent hover:bg-componente3/50'
                 }`}
               >
                 <Icon
                   size={20}
-                  className={`transition-colors ${
-                    active ? 'text-texto1' : 'text-texto2'
-                  }`}
+                  className={`transition-colors ${active ? 'text-texto1' : 'text-texto2'}`}
                 />
               </button>
-              {active && (
-                <div className="w-1.5 h-1.5 rounded-full bg-texto2 mt-1" />
-              )}
+              {active && <div className="mt-1 h-1.5 w-1.5 rounded-full bg-texto2" />}
               {isHovered && (
-                <div className="absolute -top-8 px-2 py-1 bg-componente3 text-texto1 text-xs rounded whitespace-nowrap">
+                <div className="absolute -top-8 rounded-sm bg-componente3 px-2 py-1 text-xs whitespace-nowrap text-texto1">
                   {item.label}
                 </div>
               )}

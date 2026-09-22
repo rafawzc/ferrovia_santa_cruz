@@ -20,7 +20,10 @@ export default function FormField({
   return (
     <div className="flex flex-col gap-1.5">
       {!hideLabel && (
-        <label htmlFor={id} className={`text-sm font-medium ${labelDark ? 'text-texto2' : 'text-texto1'}`}>
+        <label
+          htmlFor={id}
+          className={`text-sm font-medium ${labelDark ? 'text-texto2' : 'text-texto1'}`}
+        >
           {label}
         </label>
       )}
@@ -39,7 +42,7 @@ export default function FormField({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-texto1/60 hover:text-texto1 transition-colors"
+            className="absolute top-1/2 right-4 -translate-y-1/2 text-texto1/60 transition-colors hover:text-texto1"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -47,9 +50,7 @@ export default function FormField({
         )}
       </div>
       {error && <span className="text-xs text-error">{error}</span>}
-      {helperText && !error && (
-        <span className="text-xs text-texto1/60">{helperText}</span>
-      )}
+      {helperText && !error && <span className="text-xs text-texto1/60">{helperText}</span>}
     </div>
   )
 }
