@@ -52,42 +52,44 @@ export default function UsuarioDetalhe() {
   const func = funcionarios[id] || funcionarios[1]
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-muted pb-28">
       <div className="mx-auto max-w-2xl px-6 pt-8">
         <ScreenHeader title="" showBack={true} />
 
         <div className="mb-6 flex justify-center">
-          <div className="h-64 w-64 overflow-hidden rounded-2xl bg-componente3">
+          <div className="h-64 w-64 overflow-hidden rounded-2xl bg-secondary">
             <img src={func.foto} alt={func.nome} className="h-full w-full object-cover" />
           </div>
         </div>
 
-        <h2 className="mb-8 text-center text-xl font-bold text-texto1">
+        <h2 className="mb-8 text-center text-xl font-bold text-foreground">
           Informações do funcionário
         </h2>
 
         <div className="flex flex-col gap-5">
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-texto1">Nome</label>
-            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">Nome</label>
+            <div className="w-full rounded-full bg-input px-5 py-3 text-sm text-foreground">
               {func.nome}
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-texto1">Email</label>
-            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">Email</label>
+            <div className="w-full rounded-full bg-input px-5 py-3 text-sm text-foreground">
               {func.email}
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-texto1">Telefone</label>
-            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">Telefone</label>
+            <div className="w-full rounded-full bg-input px-5 py-3 text-sm text-foreground">
               {func.telefone}
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-texto1">Cargo atual</label>
-            <div className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1">
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">
+              Cargo atual
+            </label>
+            <div className="w-full rounded-full bg-input px-5 py-3 text-sm text-foreground">
               {func.cargo}
             </div>
           </div>

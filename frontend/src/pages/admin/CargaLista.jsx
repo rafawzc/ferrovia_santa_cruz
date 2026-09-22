@@ -170,12 +170,12 @@ export default function CargaLista() {
                 <div
                   key={seatIndex}
                   className={`h-4 w-4 rounded-full transition-all duration-200 ${
-                    passageirosAtuais.includes(seatIndex) ? 'bg-error' : 'bg-success'
+                    passageirosAtuais.includes(seatIndex) ? 'bg-destructive' : 'bg-success'
                   }`}
                 />
               ))}
             </div>
-            {rowIndex === 1 && <div className="my-1 h-px w-full bg-texto2/30" />}
+            {rowIndex === 1 && <div className="my-1 h-px w-full bg-primary-foreground/30" />}
           </div>
         ))}
       </div>
@@ -183,9 +183,9 @@ export default function CargaLista() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-page pb-28">
+    <div className="min-h-screen bg-background pb-28">
       <div className="mx-auto max-w-4xl px-6 pt-8">
-        <h1 className="mb-6 text-center text-xl font-bold text-texto1 lg:text-2xl">
+        <h1 className="mb-6 text-center text-xl font-bold text-foreground lg:text-2xl">
           Monitoramento de Carga e Passageiro
         </h1>
 
@@ -195,18 +195,18 @@ export default function CargaLista() {
 
         {activeTab === 'carga' && (
           <div className="flex flex-col gap-6">
-            <div className="rounded-3xl bg-componente1 p-6">
+            <div className="rounded-3xl bg-primary p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-lg font-bold text-texto2">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-primary-foreground">
                   <Package size={20} />
                   Carga
                 </h2>
                 <div className="flex items-center gap-2">
-                  <Train size={16} className="text-texto2" />
+                  <Train size={16} className="text-primary-foreground" />
                   <select
                     value={selectedTrainCarga}
                     onChange={(e) => setSelectedTrainCarga(Number(e.target.value))}
-                    className="rounded-full border-none bg-componente3 px-4 py-2 text-sm text-texto1 focus:ring-2 focus:ring-componente1/30"
+                    className="rounded-full border-none bg-secondary px-4 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/30"
                   >
                     {trenes.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -217,30 +217,30 @@ export default function CargaLista() {
                 </div>
               </div>
 
-              <div className="mb-4 rounded-2xl bg-componente3 p-4">
+              <div className="mb-4 rounded-2xl bg-secondary p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="mb-1 text-sm font-medium text-texto2">
+                    <p className="mb-1 text-sm font-medium text-primary-foreground">
                       Limite de carga por vagão
                     </p>
-                    <p className="text-xl font-bold text-texto2">170 Toneladas</p>
+                    <p className="text-xl font-bold text-primary-foreground">170 Toneladas</p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="rounded-xl border-2 border-componente1 bg-componente1/50 p-2 text-center">
-                      <p className="text-lg font-bold text-texto2">{totalVagoes}</p>
-                      <p className="text-xs text-texto2">Total</p>
+                    <div className="rounded-xl border-2 border-primary bg-primary/50 p-2 text-center">
+                      <p className="text-lg font-bold text-primary-foreground">{totalVagoes}</p>
+                      <p className="text-xs text-primary-foreground">Total</p>
                     </div>
                     <div className="rounded-xl border-2 border-success bg-success/30 p-2 text-center">
                       <p className="text-lg font-bold text-success">{vagoesDisponiveis}</p>
-                      <p className="text-xs text-texto2">Disponíveis</p>
+                      <p className="text-xs text-primary-foreground">Disponíveis</p>
                     </div>
-                    <div className="rounded-xl border-2 border-yellow-500 bg-yellow-500/30 p-2 text-center">
-                      <p className="text-lg font-bold text-yellow-600">{vagoesQuaseLotados}</p>
-                      <p className="text-xs text-texto2">Quase lotados</p>
+                    <div className="rounded-xl border-2 border-warning bg-warning/30 p-2 text-center">
+                      <p className="text-lg font-bold text-warning">{vagoesQuaseLotados}</p>
+                      <p className="text-xs text-primary-foreground">Quase lotados</p>
                     </div>
-                    <div className="rounded-xl border-2 border-error bg-error/30 p-2 text-center">
-                      <p className="text-lg font-bold text-error">{vagoesOcupados}</p>
-                      <p className="text-xs text-texto2">Lotados</p>
+                    <div className="rounded-xl border-2 border-destructive bg-destructive/30 p-2 text-center">
+                      <p className="text-lg font-bold text-destructive">{vagoesOcupados}</p>
+                      <p className="text-xs text-primary-foreground">Lotados</p>
                     </div>
                   </div>
                 </div>
@@ -249,20 +249,22 @@ export default function CargaLista() {
               <div className="mb-4 flex flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-sm bg-success" />
-                  <span className="text-xs text-texto2">Disponível</span>
+                  <span className="text-xs text-primary-foreground">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-sm bg-yellow-500" />
-                  <span className="text-xs text-texto2">Quase lotado</span>
+                  <div className="h-3 w-3 rounded-sm bg-warning" />
+                  <span className="text-xs text-primary-foreground">Quase lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-sm bg-error" />
-                  <span className="text-xs text-texto2">Lotado</span>
+                  <div className="h-3 w-3 rounded-sm bg-destructive" />
+                  <span className="text-xs text-primary-foreground">Lotado</span>
                 </div>
               </div>
 
               <div className="mb-4">
-                <p className="mb-3 text-sm font-medium text-texto2">Vagões disponíveis</p>
+                <p className="mb-3 text-sm font-medium text-primary-foreground">
+                  Vagões disponíveis
+                </p>
                 <div className="grid grid-cols-4 gap-3">
                   {Object.entries(vagoesCarga).map(([letter, percentage]) => (
                     <WagonIcon
@@ -283,32 +285,34 @@ export default function CargaLista() {
             </div>
 
             {cargos.length > 0 && (
-              <div className="rounded-3xl bg-componente1 p-4">
+              <div className="rounded-3xl bg-primary p-4">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
                   className="mb-3 flex w-full items-center justify-between"
                 >
-                  <h2 className="text-base font-bold text-texto2">Histórico de Cargas</h2>
+                  <h2 className="text-base font-bold text-primary-foreground">
+                    Histórico de Cargas
+                  </h2>
                   {showHistory ? (
-                    <ChevronUp size={18} className="text-texto2" />
+                    <ChevronUp size={18} className="text-primary-foreground" />
                   ) : (
-                    <ChevronDown size={18} className="text-texto2" />
+                    <ChevronDown size={18} className="text-primary-foreground" />
                   )}
                 </button>
                 {showHistory && (
                   <div className="flex flex-col gap-2">
                     {cargos.map((cargo) => (
-                      <div key={cargo.id} className="rounded-xl bg-componente3 p-3">
+                      <div key={cargo.id} className="rounded-xl bg-secondary p-3">
                         <div className="mb-1 flex items-center justify-between">
-                          <p className="text-sm font-semibold text-texto1">{cargo.tipo}</p>
-                          <span className="text-xs text-texto1/70">
+                          <p className="text-sm font-semibold text-foreground">{cargo.tipo}</p>
+                          <span className="text-xs text-foreground/70">
                             {new Date(cargo.timestamp).toLocaleString('pt-BR')}
                           </span>
                         </div>
-                        <p className="text-xs text-texto1">
+                        <p className="text-xs text-foreground">
                           Peso: {cargo.peso}t | Vagão: {cargo.vagao}
                         </p>
-                        <p className="text-xs text-texto1/70">
+                        <p className="text-xs text-foreground/70">
                           {cargo.partida} → {cargo.destino}
                         </p>
                       </div>
@@ -322,21 +326,21 @@ export default function CargaLista() {
 
         {activeTab === 'passageiros' && (
           <div className="flex flex-col gap-6">
-            <div className="rounded-3xl bg-componente1 p-6">
+            <div className="rounded-3xl bg-primary p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-lg font-bold text-texto2">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-primary-foreground">
                   <Users size={20} />
                   Passageiros
                 </h2>
                 <div className="flex items-center gap-2">
-                  <Train size={16} className="text-texto2" />
+                  <Train size={16} className="text-primary-foreground" />
                   <select
                     value={selectedTrainPassageiro}
                     onChange={(e) => {
                       setSelectedTrainPassageiro(Number(e.target.value))
                       setSelectedWagonPassageiro('A')
                     }}
-                    className="rounded-full border-none bg-componente3 px-4 py-2 text-sm text-texto1 focus:ring-2 focus:ring-componente1/30"
+                    className="rounded-full border-none bg-secondary px-4 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/30"
                   >
                     {trenes.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -347,34 +351,36 @@ export default function CargaLista() {
                 </div>
               </div>
 
-              <div className="mb-4 rounded-2xl bg-componente3 p-4">
+              <div className="mb-4 rounded-2xl bg-secondary p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="mb-1 text-sm font-medium text-texto2">
+                    <p className="mb-1 text-sm font-medium text-primary-foreground">
                       Limite de pessoas por vagão
                     </p>
-                    <p className="text-xl font-bold text-texto2">32 Pessoas</p>
+                    <p className="text-xl font-bold text-primary-foreground">32 Pessoas</p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="rounded-xl border-2 border-componente1 bg-componente1/50 p-2 text-center">
-                      <p className="text-lg font-bold text-texto2">{totalPoltronas}</p>
-                      <p className="text-xs text-texto2">Total</p>
+                    <div className="rounded-xl border-2 border-primary bg-primary/50 p-2 text-center">
+                      <p className="text-lg font-bold text-primary-foreground">{totalPoltronas}</p>
+                      <p className="text-xs text-primary-foreground">Total</p>
                     </div>
                     <div className="rounded-xl border-2 border-success bg-success/30 p-2 text-center">
                       <p className="text-lg font-bold text-success">
                         {vagoesPassageirosDisponiveis}
                       </p>
-                      <p className="text-xs text-texto2">Disponíveis</p>
+                      <p className="text-xs text-primary-foreground">Disponíveis</p>
                     </div>
-                    <div className="rounded-xl border-2 border-yellow-500 bg-yellow-500/30 p-2 text-center">
-                      <p className="text-lg font-bold text-yellow-600">
+                    <div className="rounded-xl border-2 border-warning bg-warning/30 p-2 text-center">
+                      <p className="text-lg font-bold text-warning">
                         {vagoesPassageirosQuaseLotados}
                       </p>
-                      <p className="text-xs text-texto2">Quase lotados</p>
+                      <p className="text-xs text-primary-foreground">Quase lotados</p>
                     </div>
-                    <div className="rounded-xl border-2 border-error bg-error/30 p-2 text-center">
-                      <p className="text-lg font-bold text-error">{vagoesPassageirosOcupados}</p>
-                      <p className="text-xs text-texto2">Ocupados</p>
+                    <div className="rounded-xl border-2 border-destructive bg-destructive/30 p-2 text-center">
+                      <p className="text-lg font-bold text-destructive">
+                        {vagoesPassageirosOcupados}
+                      </p>
+                      <p className="text-xs text-primary-foreground">Ocupados</p>
                     </div>
                   </div>
                 </div>
@@ -383,20 +389,20 @@ export default function CargaLista() {
               <div className="mb-4 flex flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-sm bg-success" />
-                  <span className="text-xs text-texto2">Disponível</span>
+                  <span className="text-xs text-primary-foreground">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-sm bg-yellow-500" />
-                  <span className="text-xs text-texto2">Quase lotado</span>
+                  <div className="h-3 w-3 rounded-sm bg-warning" />
+                  <span className="text-xs text-primary-foreground">Quase lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-sm bg-error" />
-                  <span className="text-xs text-texto2">Lotado</span>
+                  <div className="h-3 w-3 rounded-sm bg-destructive" />
+                  <span className="text-xs text-primary-foreground">Lotado</span>
                 </div>
               </div>
 
               <div className="mb-4">
-                <p className="mb-3 text-sm font-medium text-texto2">Vagões</p>
+                <p className="mb-3 text-sm font-medium text-primary-foreground">Vagões</p>
                 <div className="grid grid-cols-4 gap-3">
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((letter) => {
                     const ocupadas = passageiros[selectedTrainPassageiro]?.[letter]?.length || 0
@@ -414,13 +420,13 @@ export default function CargaLista() {
               </div>
 
               <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm font-medium text-texto2">
+                <p className="text-sm font-medium text-primary-foreground">
                   Poltronas no vagão {selectedWagonPassageiro}
                 </p>
                 <select
                   value={selectedWagonPassageiro}
                   onChange={(e) => setSelectedWagonPassageiro(e.target.value)}
-                  className="rounded-full border-none bg-componente3 px-4 py-2 text-sm text-texto1 focus:ring-2 focus:ring-componente1/30"
+                  className="rounded-full border-none bg-secondary px-4 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/30"
                 >
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((v) => (
                     <option key={v} value={v}>
@@ -430,16 +436,16 @@ export default function CargaLista() {
                 </select>
               </div>
 
-              <div className="rounded-2xl bg-componente3 p-4">
+              <div className="rounded-2xl bg-secondary p-4">
                 {renderPassengerSeats()}
                 <div className="mt-3 flex justify-center gap-4">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-success" />
-                    <span className="text-xs text-texto2">Livre</span>
+                    <span className="text-xs text-primary-foreground">Livre</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-error" />
-                    <span className="text-xs text-texto2">Ocupado</span>
+                    <div className="h-3 w-3 rounded-full bg-destructive" />
+                    <span className="text-xs text-primary-foreground">Ocupado</span>
                   </div>
                 </div>
               </div>
