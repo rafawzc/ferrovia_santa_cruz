@@ -43,6 +43,8 @@ Transformar o repo (hoje só um front JS com dados mockados) num projeto profiss
 | L25 | Correções do `db/` | Na fase 1: seed com hash argon2 real (senha de dev conhecida e documentada); `schema.sql` sem `CREATE DATABASE`/`USE` (usa `MYSQL_DATABASE` do compose). Aplicar com `./fsc db:reset` (só dado de dev). |
 | L26 | Deps Python | `uv` + `pyproject.toml` (lockfile; config de ruff/pytest no mesmo arquivo). |
 | L27 | Testes do front | **Nenhum.** Sem Vitest/Testing Library. Gate do front = `typecheck` + `lint` + build. `./fsc test` = só backend. `.claude/CLAUDE.md` atualizado: sai "Vitest + Testing Library", `/tdd` vale só pro backend. Verificação de tela continua manual (mobile + desktop no navegador). |
+| L28 | Partes de tela sem dado no schema (fase 4) | **Removidas da tela**: manutenções pendentes/finalizadas (Dashboard) e ocupação de vagões/poltronas + passageiros (Carga). Voltam quando houver tabela/coluna + endpoint (follow-up dos donos). Nada de mock numa tela que já fala com a API. |
+| L29 | Perfil | Edição do próprio perfil **entra**: `PATCH /api/auth/me` (nome, email, telefone, senha com `senha_atual`; `cargo_id`/`ativo` proibidos → 422). |
 
 ---
 
