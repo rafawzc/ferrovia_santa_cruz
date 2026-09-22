@@ -31,39 +31,61 @@ Placeholders só valem pra **valores**, não pra identificadores (nome de tabela
 
 ## Regra nº 2 — conexão centralizada
 
-Não abra `mysql.connector.connect(...)` cru espalhado pelo código. Centralize a conexão/pool num único módulo e consuma de lá. Isso dá um ponto único pra config (host `db`, credenciais via env), pool e troubleshooting.
-
-Exemplo de `db.py` (ponto único de conexão). `host="db"` é o nome do serviço na rede interna; credenciais **sempre** do ambiente (o compose injeta o `.env`), nunca chumbadas:
+Não abra `mysql.connector.connect(...)` cru espalhado pelo código. O ponto único é **`backend/app/db.py`** (o arquivo real, inteiro):
 
 ```python
 import os
+from contextlib import contextmanager
+from functools import cache
 
 from mysql.connector import pooling
 
-pool = pooling.MySQLConnectionPool(
-    pool_name="ferrovia",
-    pool_size=5,
-    host="db",
-    user=os.environ["MYSQL_USER"],
-    password=os.environ["MYSQL_PASSWORD"],
-    database=os.environ["MYSQL_DATABASE"],
-)
 
-def get_conn():
-    return pool.get_connection()
+@cache
+def _pool():
+    return pooling.MySQLConnectionPool(
+        pool_name="ferrovia",
+        pool_size=5,
+        host=os.environ["DB_HOST"],
+        user=os.environ["MYSQL_USER"],
+        password=os.environ["MYSQL_PASSWORD"],
+        database=os.environ["MYSQL_DATABASE"],
+    )
+
+
+@contextmanager
+def cursor():
+    conn = _pool().get_connection()
+    try:
+        with conn.cursor(dictionary=True) as cur:
+            yield cur
+        conn.commit()
+    finally:
+        conn.close()
 ```
+
+- **Pool preguiçoso** (`@cache`): só conecta na primeira query. Por isso importar o `app` nos testes não precisa de banco.
+- **Env:** `DB_HOST` (`db`, o nome do serviço na rede interna), `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD` — o compose injeta o `.env`. Nada chumbado.
+- **`cursor()` é a única porta:** devolve cursor `dictionary=True` (linha vira `dict`), faz `commit` se o bloco terminar sem erro e **sempre** devolve a conexão pro pool (`close()` num pooled = devolver). Erro no meio → sem commit; o pool reseta a sessão quando a conexão volta (o que não foi commitado é descartado).
 
 ## Regra nº 3 — sempre fechar cursor e conexão
 
-Use context manager (`with`) pra garantir que cursor e conexão fecham mesmo se der exceção. Conexão vazada esgota o pool e derruba a API.
+Garantido pelo `cursor()` acima — nunca pegue conexão do pool na mão. Um repositório real (`backend/app/repositories/linhas.py`):
 
 ```python
-def listar_trens_da_linha(linha_id: int):
-    with get_conn() as conn:
-        with conn.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT * FROM trem WHERE linha_id = %s", (linha_id,))
-            return cursor.fetchall()
+from app.db import cursor
+
+
+class LinhasMySQL:
+    def listar(self):
+        with cursor() as cur:
+            cur.execute("SELECT id, numero, status, ativo FROM linha ORDER BY numero")
+            return cur.fetchall()
 ```
+
+Com parâmetro: `cur.execute("... WHERE u.id = %s", (id_,))`. Com vários campos, placeholder nomeado + `dict` (também parametrizado): `cur.execute("INSERT ... VALUES (%(nome)s, %(email)s)", dados)`.
+
+Conflito de integridade (e-mail duplicado, FK pra nada) **não** é tratado no repo: o `IntegrityError` sobe e o handler do `main.py` responde `409`. Ver [`api.md`](api.md).
 
 ## Regra nº 4 — validar na fronteira com Pydantic
 
@@ -75,10 +97,10 @@ Senha do MySQL e afins vêm de variável de ambiente / `.env` gitignored. Nunca 
 
 ## Onde o SQL mora — camada `repositories/`
 
-O backend é em camadas (L21 do plano da fundação): `routers/` (só HTTP) → `services/` (regra, Python puro) → `repositories/` (SQL). **SQL só existe em `repositories/`**, e o repo é fino: só a query, nenhuma regra. O service declara o repo que precisa como `typing.Protocol`. Detalhe em [`../../backend/CLAUDE.md`](../../backend/CLAUDE.md).
+O backend é em camadas (L21 do plano da fundação): `routers/` (só HTTP) → `services/` (regra, Python puro) → `repositories/` (SQL). **SQL só existe em `repositories/`**, e o repo é fino: só a query, nenhuma regra. Recurso sem regra (linhas, cargas, alertas, dashboard) vai do router direto pro repo; com regra (auth, usuários) passa por `services/`, que declara o repo como `typing.Protocol`. Detalhe em [`../../backend/CLAUDE.md`](../../backend/CLAUDE.md).
 
 ## Testes — banco mockado
 
-Decisão travada (L16): **sem banco de teste**. Testes usam pytest + `TestClient` e trocam o repositório por um fake via `app.dependency_overrides`. Rodar: `./fsc test`.
+Decisão travada (L16): **sem banco de teste**. Testes usam pytest + `TestClient` e trocam o repositório por um fake via `app.dependency_overrides` (fakes em `backend/tests/fakes.py`, com a mesma interface dos repos reais — inclusive levantando o mesmo `IntegrityError`). Rodar: `./fsc test`.
 
 Preço disso: o SQL nunca executa em teste — coluna errada ou erro de sintaxe só aparece rodando de verdade. Compensação: repo fino (quase nada pra errar além da query) e um **smoke manual contra o banco de dev** (`./fsc up` + chamar o endpoint, ou conferir a query no `./fsc db`) antes de fechar qualquer feature que toque SQL.
