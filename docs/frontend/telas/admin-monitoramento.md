@@ -25,14 +25,14 @@ Todas têm os três estados: carregando (`Skeleton`), erro (`LoadError`) e vazio
 
 - **Formulário** (react-hook-form + zod, regras do contrato): Rota (select de `GET /api/linhas`, manda `linha_id`), Tempo de espera (opcional, até 40), Motivo (1–200), Status (1–40, **texto livre** — o banco guarda `VARCHAR`, não é o ENUM de `linha.status`, por isso não usa `StatusBadge`).
 - Sucesso → toast "Alerta enviado", formulário limpa e o histórico recarrega (a mutação invalida `['alertas']`).
-- `409` (rota apagada entre carregar a lista e enviar) → mensagem no campo Rota pedindo pra recarregar. `422` → "Valor inválido" no campo apontado por `loc`. Outro erro → toast com o `detail` da API (ou "Sem conexão com o servidor").
+- `409` (rota apagada entre carregar a lista e enviar) → mensagem no campo Rota pedindo pra recarregar. `422` → "Valor inválido" no campo apontado por `loc` (`marcarErrosDeCampo` de `@/lib/api`). Outro erro → toast com o `detail` da API (ou "Sem conexão com o servidor").
 - **Histórico** ("Alertas enviados"): todos os alertas de `GET /api/alertas`, mais recente primeiro, em cards (celular: embaixo do formulário; desktop: coluna ao lado, como no mockup). O legado só mostrava os últimos 30 min da sessão local; agora é o histórico do banco.
-- **Data:** `criado_em` vem sem fuso e está em UTC (horário do MySQL no container). A tela acrescenta `Z` antes do `new Date` pra converter pro horário local; sem isso a hora sai adiantada/atrasada pelo fuso.
+- **Data:** `criado_em` vem sem fuso e está em UTC (horário do MySQL no container). A tela usa `dataHora()` de `src/lib/utils.ts`, que acrescenta `Z` antes do `new Date` pra converter pro horário local; sem isso a hora sai adiantada/atrasada pelo fuso.
 
 ## Componente novo: `LoadError`
 
-`components/ui/load-error.tsx`: `LoadError` (parágrafo `role="alert"` pro estado de erro de uma query) e `mensagemDeErro(error)` (`detail` da API quando é `ApiError`, "Sem conexão com o servidor" quando é falha de rede — o `TypeError` do `fetch` vem em inglês).
+`components/ui/load-error.tsx`: `LoadError` (parágrafo `role="alert"` pro estado de erro de uma query) e `mensagemDeErro(error)` (`detail` da API quando é `ApiError`, "Sem conexão com o servidor" quando é falha de rede — o `TypeError` do `fetch` vem em inglês). Usado por todas as telas logadas (erro de carregamento e texto dos toasts de erro) e mostrado na vitrine `/ui`.
 
 ## Vocabulário (L1)
 
-Texto das telas diz **Rota** ("Rota 1778", "Rotas ativas"). Exceção: o `LineCard` compartilhado ainda escreve "Linha {numero}".
+Texto das telas diz **Rota** ("Rota 1778", "Rotas ativas"), inclusive o `LineCard` ("Rota {numero}").

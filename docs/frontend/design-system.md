@@ -43,21 +43,22 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 | `ScreenHeader` | `screen-header.tsx` | `h1` da tela, botão voltar opcional (`back`), slot `actions`. |
 | `StatusBadge` | `status-badge.tsx` | Status do banco → rótulo/cor (L7): `normal alerta falha manutencao atraso fechado na_estacao ja_partiu`. Tipo `Status` exportado. |
 | `MetricCard` | `metric-card.tsx` | Indicador do dashboard: ícone, rótulo, valor, bolinha de `tone` (com texto pra leitor de tela). |
-| `LineCard` | `line-card.tsx` | Card de linha: número, `StatusBadge`, ativo/inativo. |
+| `LineCard` | `line-card.tsx` | Card de rota: "Rota {numero}", `StatusBadge`, ativo/inativo. |
 | `UserCard` | `user-card.tsx` | Card de funcionário do grid: foto, nome, cargo, ativo. Clicável. |
 | `ThemeToggle` | `theme-toggle.tsx` | Switch claro/escuro com sol/lua. |
 | `PasswordInput` | `password-input.tsx` | Input de senha com mostrar/ocultar. |
+| `LoadError` | `load-error.tsx` | Estado de erro de uma query (`role="alert"`) + `mensagemDeErro(error)`: `detail` da API ou "Sem conexão com o servidor". |
 
 ## Como montar uma tela
 
 1. Página em `src/pages/**/*.tsx`, importando só de `@/components/ui/*` (e libs), sempre por `@/`.
-2. Tela logada: embrulhe em `<PageShell>` e comece com `<ScreenHeader title="…" />`. Tela de auth: `<AuthLayout title="…">`.
+2. Tela logada: **não** embrulhe em `<PageShell>` — o `ProtectedLayout` do `App.tsx` já envolve toda rota logada (embrulhar de novo dá dois docks). Comece com `<ScreenHeader title="…" />`. Tela de auth: `<AuthLayout title="…">`. Só a vitrine `/ui` (rota pública) monta o `PageShell` na mão.
 3. Layout mobile-first com utilitários (`grid grid-cols-2 lg:grid-cols-4`), cor só por token.
 4. Formulário: `useForm({ resolver: zodResolver(schema) })` + `<Controller>` renderizando `<Field data-invalid>` / `<FieldLabel>` / controle com `aria-invalid` / `<FieldError errors={[fieldState.error]} />`. Exemplo completo em `src/pages/Vitrine.tsx` (`DemoForm`).
-5. Confirmação destrutiva: `AlertDialog`. Feedback: `toast()` do `sonner` (com um `<Toaster />` montado).
+5. Confirmação destrutiva: `AlertDialog`. Feedback: `toast()` do `sonner` (o `<Toaster />` já está no `main.tsx`). Erro de carregamento: `<LoadError error={error} />`. `422` da API: `if (marcarErrosDeCampo(erro, form)) return` (de `@/lib/api`). Data `criado_em`: `dataHora()` de `@/lib/utils`.
 6. Faltou algo? Primitivo novo → `./fsc ui add <nome>`; padrão do domínio que se repete → composto novo em `ui/`. Nunca estilo solto na página.
 7. Confira em `/ui` e na própria tela, 414px e 1440px, nos dois temas.
 
 ## Legado
 
-Os `src/components/<Nome>/*.jsx` antigos continuam lá (já com os tokens novos) até a fase 4 migrar as 13 telas e apagá-los. Não use em tela nova.
+Não existe mais: os `src/components/<Nome>/*.jsx` foram apagados no fechamento da fase 4 (D5), quando as 13 telas já estavam em TSX sobre o DS. Telas por área: [`telas/`](telas/).

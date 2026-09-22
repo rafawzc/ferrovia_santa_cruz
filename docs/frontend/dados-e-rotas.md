@@ -32,20 +32,18 @@ Papel vem da API (`cliente` < `operacional` < `gestao`). Sem sessão → `/login
 | Rota | Tela (arquivo) | Quem |
 |---|---|---|
 | `/` | redireciona pra `/login` | — |
-| `/login` | `pages/auth/Login.jsx` | público (deslogado) |
-| `/cadastro` | `pages/auth/Cadastro.jsx` | público (deslogado) |
-| `/recuperar-senha` | `pages/auth/RecuperarSenha.jsx` | público (deslogado) |
-| `/admin` | `pages/admin/Dashboard.jsx` | operacional, gestao |
-| `/admin/rotas` | `pages/admin/Linhas.jsx` | operacional, gestao |
-| `/admin/carga` | `pages/admin/CargaLista.jsx` | operacional, gestao |
-| `/admin/alertas` | `pages/admin/Alertas.jsx` | operacional, gestao |
-| `/admin/usuarios` | `pages/admin/UsuariosLista.jsx` | gestao |
-| `/admin/usuarios/:id` | `pages/admin/UsuarioDetalhe.jsx` | gestao |
-| `/admin/usuarios/:id/editar` | `pages/admin/UsuarioEditar.jsx` | gestao |
-| `/perfil` | `pages/Perfil.jsx` | qualquer logado |
+| `/login` | `pages/auth/Login.tsx` | público (deslogado) |
+| `/cadastro` | `pages/auth/Cadastro.tsx` | público (deslogado) |
+| `/recuperar-senha` | `pages/auth/RecuperarSenha.tsx` | público (deslogado) |
+| `/admin` | `pages/admin/Dashboard.tsx` | operacional, gestao |
+| `/admin/rotas` | `pages/admin/Rotas.tsx` | operacional, gestao |
+| `/admin/carga` | `pages/admin/CargaLista.tsx` (cadastro em `Dialog`) | operacional, gestao |
+| `/admin/alertas` | `pages/admin/Alertas.tsx` | operacional, gestao |
+| `/admin/usuarios` | `pages/admin/UsuariosLista.tsx` (detalhe, edição e cadastro em `Dialog`) | gestao |
+| `/perfil` | `pages/Perfil.tsx` | qualquer logado |
 | `/ui` | `pages/Vitrine.tsx` (vitrine do design system) | público |
 | qualquer outra | redireciona pra `/` | — |
 
-Renomes do Guia (L1) aplicados: `/admin/linhas` → `/admin/rotas`, `/admin/funcionarios*` → `/admin/usuarios*`. O dock do `PageShell` mostra só os itens do papel (cliente vê só Perfil). Cada tela é um pedaço de JS separado (`React.lazy`), baixado quando a rota abre.
+Renomes do Guia (L1) aplicados: `/admin/linhas` → `/admin/rotas`, `/admin/funcionarios*` → `/admin/usuarios`. Não há rota própria pra formulário: `/admin/usuarios/:id`, `/admin/usuarios/:id/editar` e os `…/cadastro` viraram `Dialog` dentro da lista. O dock do `PageShell` mostra só os itens do papel (cliente vê só Perfil). Cada tela é um pedaço de JS separado (`React.lazy`), baixado quando a rota abre.
 
-As telas ainda são as `.jsx` antigas (dados mock): a reescrita em TSX sobre o design system e os hooks acima é o próximo passo da fase 4.
+Todas as telas são TSX sobre o design system e os hooks acima (fase 4 concluída). O que cada tela mostra, o que saiu do mockup e por quê: [`telas/`](telas/).
