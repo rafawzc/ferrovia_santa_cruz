@@ -21,6 +21,10 @@ class UsuarioDesativado(Exception):
     pass
 
 
+class SenhaAtualIncorreta(Exception):
+    pass
+
+
 _HASH_FALSO = hash_senha("iguala-o-tempo-de-resposta-de-email-inexistente")
 
 
@@ -60,6 +64,11 @@ class UsuariosService:
             return None
         self.repo.atualizar(id_, _com_hash(dados))
         return self.repo.por_id(id_)
+
+    def atualizar_perfil(self, usuario: dict, dados: dict, senha_atual: str | None) -> dict:
+        if dados["senha"] and not verificar_senha(senha_atual or "", usuario["senha_hash"]):
+            raise SenhaAtualIncorreta
+        return self.atualizar(usuario["id"], {**dados, "cargo_id": None, "ativo": None})
 
     def desativar(self, id_: int) -> bool:
         if self.repo.por_id(id_) is None:
