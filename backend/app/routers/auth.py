@@ -1,18 +1,19 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.auth import COOKIE, usuario_atual
 from app.core.security import SESSAO, criar_token
 from app.deps import Usuarios
-from app.services.usuarios import CredenciaisInvalidas, UsuarioDesativado
+from app.services.usuarios import CredenciaisInvalidas, SenhaAtualIncorreta, UsuarioDesativado
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 Email = Annotated[str, Field(max_length=160, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
 Senha = Annotated[str, Field(min_length=8, max_length=128)]
 Nome = Annotated[str, Field(min_length=1, max_length=120)]
+Telefone = Annotated[str, Field(max_length=20)]
 
 
 class UsuarioSaida(BaseModel):
@@ -35,6 +36,16 @@ class Cadastro(BaseModel):
     nome: Nome
     email: Email
     senha: Senha
+
+
+class PerfilEdicao(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nome: Nome | None = None
+    email: Email | None = None
+    telefone: Telefone | None = None
+    senha: Senha | None = None
+    senha_atual: str | None = None
 
 
 class RecuperarSenha(BaseModel):
@@ -68,6 +79,20 @@ def logout(response: Response):
 @router.get("/me", response_model=UsuarioSaida)
 def me(usuario: Annotated[dict, Depends(usuario_atual)]):
     return usuario
+
+
+@router.patch("/me", response_model=UsuarioSaida)
+def editar_perfil(
+    corpo: PerfilEdicao,
+    usuario: Annotated[dict, Depends(usuario_atual)],
+    servico: Usuarios,
+):
+    try:
+        return servico.atualizar_perfil(
+            usuario, corpo.model_dump(exclude={"senha_atual"}), corpo.senha_atual
+        )
+    except SenhaAtualIncorreta:
+        raise HTTPException(400, "Senha atual incorreta") from None
 
 
 @router.post("/cadastro", response_model=UsuarioSaida, status_code=201)

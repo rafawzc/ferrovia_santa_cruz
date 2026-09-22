@@ -27,6 +27,7 @@ Sempre `{"detail": ...}`.
 
 | Status | Quando | `detail` |
 |---|---|---|
+| `400` | `PATCH /api/auth/me` trocando senha com `senha_atual` ausente ou errada | `"Senha atual incorreta"` |
 | `401` | sem cookie, cookie inválido/expirado, ou usuário do cookie sumiu/foi desativado | `"Não autenticado"` |
 | `401` | login com e-mail ou senha errados (mesma mensagem nos dois — não revela se o e-mail existe) | `"Credenciais inválidas"` |
 | `403` | papel não permite a rota | `"Sem permissão"` |
@@ -36,7 +37,7 @@ Sempre `{"detail": ...}`.
 | `409` | FK aponta pra nada (ex: `cargo_id`, `trem_id`, `linha_id` inexistente) | `"Referência inexistente"` |
 | `422` | corpo inválido (Pydantic) | **lista**: `[{"type", "loc", "msg", "input", "ctx"}]` — `loc` = `["body", "<campo>"]`, `msg` em inglês (padrão do Pydantic). O front traduz por `type`/`loc`. |
 
-Tipos de `422` que podem aparecer: `missing`, `string_too_short`, `string_too_long`, `string_pattern_mismatch` (e-mail), `greater_than` / `less_than` (peso), `int_parsing`, `bool_parsing`.
+Tipos de `422` que podem aparecer: `missing`, `string_too_short`, `string_too_long`, `string_pattern_mismatch` (e-mail), `greater_than` / `less_than` (peso), `int_parsing`, `bool_parsing`, `extra_forbidden` (campo não permitido no `PATCH /api/auth/me`).
 
 ## Mapa de rotas
 
@@ -45,6 +46,7 @@ Tipos de `422` que podem aparecer: `missing`, `string_too_short`, `string_too_lo
 | `POST` | `/api/auth/login` | público | `200` + cookie |
 | `POST` | `/api/auth/logout` | público | `204` |
 | `GET` | `/api/auth/me` | logado | `200` |
+| `PATCH` | `/api/auth/me` | logado (qualquer papel) | `200` |
 | `POST` | `/api/auth/cadastro` | público | `201` |
 | `POST` | `/api/auth/recuperar-senha` | público | `202` |
 | `GET` | `/api/usuarios` | gestao | `200` |
@@ -99,6 +101,33 @@ Sem corpo. `204`, apaga o cookie. Funciona mesmo sem sessão.
 ### `GET /api/auth/me`
 
 `200` → `Usuario` do cookie. `401` sem sessão. É o que o `AuthContext` chama no boot pra saber se tem alguém logado.
+
+### `PATCH /api/auth/me`
+
+O próprio usuário logado (qualquer papel, inclusive `cliente`) edita o seu perfil. Edição **parcial**, todos opcionais:
+
+| Campo | Regra |
+|---|---|
+| `nome` | 1–120 |
+| `email` | até 160, formato `x@y.z` |
+| `telefone` | até 20 |
+| `senha` | 8–128; **exige** `senha_atual` correta |
+| `senha_atual` | só conferida quando vem `senha` |
+
+```json
+{ "telefone": "47999990000", "senha": "novasenha1", "senha_atual": "ferrovia123" }
+```
+
+`200` → `Usuario` atualizado (mesmo formato do `GET /api/auth/me`). O cookie continua válido (o JWT só carrega o id).
+
+| Status | Quando |
+|---|---|
+| `400` `"Senha atual incorreta"` | veio `senha` sem `senha_atual` ou com ela errada. Não é `401` (o front leria como sessão caída) nem `403` (reservado a papel/desativado). Nada é gravado. |
+| `401` | sem sessão |
+| `409` | e-mail já usado por outro usuário |
+| `422` | regra de campo violada, ou campo fora da lista (ex: `cargo_id`, `ativo`, `foto_url`) → `type: "extra_forbidden"`. Ninguém se promove nem se reativa. |
+
+Mesma limitação do `PATCH /api/usuarios/{id}`: `null` = "não mexe", não dá pra apagar o telefone.
 
 ### `POST /api/auth/cadastro`
 
@@ -290,7 +319,6 @@ Histórico, mais recente primeiro.
 - **Manutenções pendentes/finalizadas** (Dashboard): não existe tabela de manutenção. O card "Manutenções" usa `linhas_em_manutencao`; o modal de manutenção segue mock no front.
 - **Ocupação de vagões/poltronas e passageiros** (Monitoramento de Carga): o banco não tem capacidade de vagão nem passageiro. A tela só consegue a lista de `carga` (histórico) e somar `peso_t`.
 - **Velocidade/sensores por linha** (lista do Dashboard): dá pra derivar (`sensor → trem → linha`), mas não foi pedido; fica pra rodada de sensores.
-- **Editar o próprio perfil** (`/perfil/editar`): fora do escopo L18. Quando vier, reusa `UsuariosService.atualizar` numa rota `PATCH /api/auth/me`.
 - **Foto de perfil**: só `foto_url` em leitura; não há upload.
 - **Recuperar senha de verdade** (token + e-mail): stub.
 - **Ingestão IoT** (`POST /api/leituras`, L22/L23): só a arquitetura está pronta — ver `backend/CLAUDE.md`.

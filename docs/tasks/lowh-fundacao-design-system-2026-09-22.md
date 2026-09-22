@@ -1,6 +1,6 @@
 # Fundação + Design System (Living Plan)
 
-> Status: **LOCKED** — plano travado, pronto pra execução.
+> Status: **LOCKED** — fases 1 a 4 concluídas (fundação, design system, backend API, 13 telas em TSX na API real). Pendente só o que está fora do repo (fim do log).
 > Owner: lowh · Created: 2026-09-22 · Locked: 2026-09-22
 > Este arquivo é o **plano de registro** e é pra ser iterado. As seções abaixo são o PISO, não o teto.
 
@@ -43,6 +43,8 @@ Transformar o repo (hoje só um front JS com dados mockados) num projeto profiss
 | L25 | Correções do `db/` | Na fase 1: seed com hash argon2 real (senha de dev conhecida e documentada); `schema.sql` sem `CREATE DATABASE`/`USE` (usa `MYSQL_DATABASE` do compose). Aplicar com `./fsc db:reset` (só dado de dev). |
 | L26 | Deps Python | `uv` + `pyproject.toml` (lockfile; config de ruff/pytest no mesmo arquivo). |
 | L27 | Testes do front | **Nenhum.** Sem Vitest/Testing Library. Gate do front = `typecheck` + `lint` + build. `./fsc test` = só backend. `.claude/CLAUDE.md` atualizado: sai "Vitest + Testing Library", `/tdd` vale só pro backend. Verificação de tela continua manual (mobile + desktop no navegador). |
+| L28 | Partes de tela sem dado no schema (fase 4) | **Removidas da tela**: manutenções pendentes/finalizadas (Dashboard) e ocupação de vagões/poltronas + passageiros (Carga). Voltam quando houver tabela/coluna + endpoint (follow-up dos donos). Nada de mock numa tela que já fala com a API. |
+| L29 | Perfil | Edição do próprio perfil **entra**: `PATCH /api/auth/me` (nome, email, telefone, senha com `senha_atual`; `cargo_id`/`ativo` proibidos → 422). |
 
 ---
 
@@ -288,6 +290,50 @@ Verificação: `./fsc check` verde (53 testes). Smoke R1 real via proxy do Vite 
 - `PATCH` do próprio perfil (`/perfil/editar`) — fora do L18; reusa `UsuariosService.atualizar` quando vier.
 - `null` no `PATCH` não apaga campo (SQL estático com `COALESCE`).
 - Ingestão IoT (L23): só o espaço nas camadas, descrito no `backend/CLAUDE.md`.
+
+### Fase 4 — D1: camada de dados + auth + rotas (branch `feat/telas`) — 2026-09-22
+
+| Item | Commit | O que entrou |
+|------|--------|--------------|
+| D1 — cliente da API + TanStack Query (L14) | `1ce1d84` | `src/lib/api` (`request`, `ApiError`, tipos do contrato, `api.<recurso>`), `src/lib/query-client.ts` (401 global zera `['me']`, retry só de erro de rede), `src/hooks/<recurso>.ts` com invalidação nas mutações. Inclui `PATCH /api/auth/me` (`useAtualizarPerfil`), que entrou no contrato durante o D1. |
+| D1 — auth + rotas (L15, L17) | `95f0a97` | `AuthContext.tsx` sobre `GET /api/auth/me` + mutações login/logout (mock `.jsx` removido). `main.tsx`/`App.tsx` com layout routes (`PublicLayout`, `ProtectedLayout` com `PageShell`, `Papeis`), renomes L1, dock filtrado por papel, `Toaster`/`TooltipProvider` na raiz, `React.lazy` por rota. |
+| D1 — docs | commit `docs(front)` seguinte | `frontend/CLAUDE.md` (camada de dados), `src/lib/api/CLAUDE.md`, `docs/frontend/dados-e-rotas.md`, `ui/CLAUDE.md`, índice. |
+
+Verificação: `./fsc check` verde (61 testes backend, build sem aviso de chunk: maior JS 429 kB, antes 686 kB). Smoke via proxy (`./fsc up`, `curl localhost:5173`): `me` sem cookie 401 → login `ana.admin` 200 + `Set-Cookie: sessao=…; HttpOnly; Max-Age=28800; Path=/; SameSite=lax` → `me` com cookie 200 (`papel: gestao`) → `linhas` 200 → logout 204 → `me` 401. Sem verificação visual (decisão do usuário).
+
+#### Desvios / pendências do D1
+
+- **Telas legadas ainda mock e com o próprio `BottomNav`**: dentro do `ProtectedLayout` aparecem dois docks até a reescrita. O `Login.jsx` legado navega pra `/admin` sem chamar a API, então o guard devolve pro `/login` — login real só com a tela reescrita (`useAuth().login.mutate`).
+- **Import de `.jsx` no TSX** via `declare module '*.jsx'` (especificador com `.jsx`), sem `allowJs`.
+- **401 tratado no `QueryClient`**, não no wrapper: todo dado passa por query/mutação, então o cache é o ponto único.
+- **`UsuariosLista.jsx`**: uma linha trocada (`isGestao` agora vem de `usuario.papel`), já que o mock `isGestao` saiu do contexto.
+- **Sem rota** pra `/admin/carga/cadastro` e `/admin/usuarios/cadastro` (PLANO §5): hoje são modais dentro das listas; entram se as telas reescritas virarem página.
+- `logo.svg` pesa 2 MB no build (asset, não JS) — fora do escopo do D1.
+
+### Fase 4 — D2..D5: telas na API + fechamento (branch `feat/telas`) — 2026-09-22
+
+D2–D4 rodaram em paralelo (uma branch por grupo de tela) e foram mergeadas na `feat/telas`; D5 fecha a fase. Detalhe por tela em [`../frontend/telas/`](../frontend/telas/).
+
+| Item | Commits | O que entrou |
+|------|---------|--------------|
+| D2 — auth | `9ee86bb` `5847eeb` `1798bad` `4ab9afe`, merge `1664b97` | Login, Cadastro, Recuperar senha em TSX (`AuthLayout`, react-hook-form + zod). Doc: `telas/auth.md`. |
+| D3a — monitoramento | `885fd2c` `59e6629` `c2fab3d` `4adb22c`, merge `f359c98` | Dashboard, Rotas, Alertas + composto `LoadError`. Doc: `telas/admin-monitoramento.md`. |
+| D3b — cadastros | `b84c056` `416a0a9` `0aa3bab`, merge `3f72bff` | Carga e Usuários. Doc: `telas/admin-cadastros.md`. |
+| D4 — perfil | `8fc9d6c` `e6609b7`, merge `ed422f8` | Perfil com `PATCH /api/auth/me`. Doc: `telas/perfil.md`. |
+| D5 — fechamento | `2ce3e3c` `fdb592e` `dcec808` `7d56257` `6fa0e6a` + docs | Legado `.jsx` apagado (22 arquivos em 18 pastas de `src/components/`), sem `declare module '*.jsx'` nem ignore de `.jsx` no ESLint: lint e TS cobrem todo o `src`. Helpers únicos: `marcarErrosDeCampo` (422 → erro por campo, `lib/api`) e `dataHora` (`criado_em` UTC, `lib/utils`); telas usam `LoadError`/`mensagemDeErro` em vez de cópias locais. `LineCard` diz "Rota". `LoadError` na vitrine. |
+
+Verificação D5: `./fsc check` verde. Smoke real pelo proxy (`./fsc up`, curl em `localhost:5173/api` com cookie jar): login gestão → `me`, `linhas`, `cargas`, `alertas`, `dashboard`, `usuarios`, `cargos` 200; `POST` carga e alerta 201; `PATCH /api/auth/me` telefone 200, senha com `senha_atual` errada 400, certa 200, login com a senha nova 200 (senha e telefone devolvidos ao seed); cliente → `/api/linhas` 403; as 11 rotas da SPA respondem 200. Sem verificação visual (decisão do usuário).
+
+#### Desvios / decisões das telas (D2–D5)
+
+- **Formulário em `Dialog`, não em rota própria**: cadastro de carga; detalhe, edição e cadastro de usuário. Saíram `/admin/usuarios/:id` e `/admin/usuarios/:id/editar`; `…/cadastro` nunca entrou.
+- **Removido por L28 (sem dado no schema)**: Dashboard — manutenções pendentes/finalizadas, modal "Cadastrar Manutenção", horários, sensores individuais e velocidade por rota. Carga — ocupação de vagões, poltronas e a aba Passageiros. Rotas — o "Mapa de Rotas" (era foto de banco de imagens, não dado). Login/Cadastro — toggle de localização; toggle de termos no login; login Google/boas-vindas (sem backend).
+- **`criado_em` sem fuso, em UTC**: o front soma `Z` antes do `new Date` (`dataHora`), senão a hora sai 3 h adiantada.
+- **Sem endpoint de trens**: na carga o trem é um campo numérico (id); id inexistente → `409` "Trem não encontrado". Vira `Select` quando existir `GET /api/trens`.
+- **Cadastro → toast + `/login`**, sem login automático (a API não abre sessão no cadastro).
+- **Recuperar senha** mostra sempre a mesma mensagem neutra (a API responde `202` igual exista o e-mail ou não; é stub, nenhum e-mail sai).
+- **Rótulo do cargo** (slug → texto) fica local no `UsuariosLista.tsx`: é o único que mostra cargo.
+- **Dados de dev criados pelo smoke D5**: carga `id 4` ("Soja smoke D5") e alerta `id 4` ("smoke D5") ficaram no volume local; `./fsc db:reset` limpa.
 
 ### Pendente fora do repo
 
