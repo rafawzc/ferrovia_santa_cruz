@@ -233,6 +233,30 @@ Criar a worktree `feat/fundacao` e disparar em paralelo `A2` (db fix), `A4` (too
 - **Collation fixada no compose** (`command:` do db), já que o `CREATE DATABASE` que a definia saiu do `schema.sql`.
 - **Telas `.jsx` legadas fora do typecheck e do lint** até a reescrita em TSX (fase 4).
 
+### Fase 2 — design system (branch `feat/design-system`) — 2026-09-22
+
+| Item do plano (5.7) | Commit | O que entrou |
+|---------------------|--------|--------------|
+| B1 — tokens shadcn + tema (L10) | `70fa9b9` | `index.css` no vocabulário shadcn + `overlay` + status (`success warning danger delay`), hex direto em `:root`/`.black`, `@theme inline`, `@custom-variant dark`. Codemod dos `.jsx` (tabela de→para em `frontend/tema.md`). `ThemeContext` em TSX, mesma mecânica. Deps do DS. |
+| B2 — primitivos (L11, L13, L14, R6) | `3db6fc7` | `components.json`, `cn()`, 19 primitivos via `./fsc ui add`, ajustados à marca por token/cva (pílulas, variantes de status). |
+| B3 — compostos | `b969428` | `PageShell` (dock), `AuthLayout`, `ScreenHeader`, `StatusBadge`, `MetricCard`, `LineCard`, `UserCard`, `ThemeToggle`, `PasswordInput`. |
+| B4 — vitrine | `b4cec6f` | Rota `/ui` (`src/pages/Vitrine.tsx`) com todos os tokens, variantes e compostos, formulário Field + react-hook-form + zod. |
+| Lint | `14987c7` | Páginas não importam `radix-ui` (pacote unificado que o shadcn usa agora). |
+| B4 — docs | commit `docs(ui)` seguinte | `design-system.md`, `tema.md`, `tema-escuro.md`, `ui/CLAUDE.md`, `frontend/CLAUDE.md`, índice. |
+
+#### Desvios da fase 2
+
+- **Registry do shadcn gera `import { cn } from "cn"`** (pacote npm novo do shadcn) e instala a dep `cn`. Mantido `cn()` em `@/lib/utils` (clsx + tailwind-merge) como planejado; imports reescritos e lint barra `cn`/`next-themes` em `ui/`. Todo `./fsc ui add` futuro precisa do mesmo conserto (documentado em `ui/CLAUDE.md`).
+- **shadcn usa o pacote `radix-ui`**, não `@radix-ui/*`: a regra L13c das páginas foi estendida.
+- **`field` em vez de `form`**: o padrão atual do shadcn pra react-hook-form + zod é `Field` + `Controller`.
+- **`Progress` virou `<progress>` nativo**: o gerado usava `style` (proibido sem exceção). **Toaster** lê o tema do `ThemeContext` (sem `next-themes`).
+- **`react-refresh/only-export-components` desligado em `ui/`** (shadcn exporta `buttonVariants` etc. junto).
+- **Tokens extras:** `overlay` (fundo de modal) e `delay` (atraso = laranja, L7). `bg-base` virou `muted` (é o "Componente 2" da paleta).
+- **`success` escureceu** de `#16a34a` pra `#15803d` (texto branco em cima passa 4.5:1). `ring` escuro virou `#c9b29c` (o marrom tinha 2.9:1 no fundo escuro).
+- **`PasswordInput` extra**: login, cadastro e perfil usam senha com mostrar/ocultar.
+- **Verificação visual no navegador não foi feita** (extensão do Chrome indisponível); `/ui` e `/login` responderam 200 com a stack de pé.
+- Build avisa chunk JS de ~686 kB (> 500 kB); code-split fica pra fase 4.
+
 ### Pendente fora do repo
 
 - Ruleset da `main` (L20, R4): o dono (rafawzc) cria seguindo [`../arquitetura/operacao.md`](../arquitetura/operacao.md).
