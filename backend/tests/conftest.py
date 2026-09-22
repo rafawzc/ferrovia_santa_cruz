@@ -5,9 +5,10 @@ from app.core.security import criar_token
 from app.main import app
 from app.repositories.alertas import AlertasMySQL
 from app.repositories.cargas import CargasMySQL
+from app.repositories.dashboard import DashboardMySQL
 from app.repositories.linhas import LinhasMySQL
 from app.repositories.usuarios import UsuariosMySQL
-from tests.fakes import AlertasFake, CargasFake, LinhasFake, UsuariosFake
+from tests.fakes import AlertasFake, CargasFake, DashboardFake, LinhasFake, UsuariosFake
 
 
 @pytest.fixture
@@ -19,6 +20,7 @@ def usuarios():
 def client(usuarios):
     app.dependency_overrides[UsuariosMySQL] = lambda: usuarios
     app.dependency_overrides[LinhasMySQL] = LinhasFake
+    app.dependency_overrides[DashboardMySQL] = DashboardFake
     cargas, alertas = CargasFake(), AlertasFake()
     app.dependency_overrides[CargasMySQL] = lambda: cargas
     app.dependency_overrides[AlertasMySQL] = lambda: alertas

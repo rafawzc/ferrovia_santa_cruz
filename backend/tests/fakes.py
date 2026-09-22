@@ -146,3 +146,13 @@ class AlertasFake:
         alerta["criado_em"] = AGORA
         self.dados.insert(0, alerta)
         return alerta
+
+
+class DashboardFake:
+    def metricas(self):
+        return {
+            "linhas_ativas": 3,
+            "linhas_em_manutencao": 1,
+            "sensores": 4,
+            "velocidade_media": 90.4,
+        }
