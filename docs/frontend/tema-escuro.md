@@ -1,30 +1,26 @@
 # Frontend — sistema de tema (claro/escuro)
 
-> Complementa [`responsividade.md`](responsividade.md). Cobre os tokens de cor e a troca de tema — leia antes de mexer em cores ou `index.css`. Onde os tokens moram no Tailwind v4: [`tema.md`](tema.md).
+> Complementa [`responsividade.md`](responsividade.md). Onde os tokens moram, a tabela de valores e o mapa dos nomes antigos: [`tema.md`](tema.md). Desde a fase 2 (2026-09-22) os nomes são os do shadcn/ui; esta página guarda a regra semântica e o histórico.
 
 ## Como funciona
 
-`ThemeContext` (`src/contexts/ThemeContext.jsx`) guarda o tema em `localStorage` e aplica a classe `white` ou `black` na tag `<html>`. Cada classe define um conjunto de CSS custom properties em `src/index.css`, e o `@theme` do mesmo arquivo mapeia as classes utilitárias (`text-texto1`, `bg-componente1`, etc.) pra essas variáveis. Trocar de tema é só trocar a classe do `<html>` — nenhum componente sabe em qual tema está.
+`ThemeContext` (`src/contexts/ThemeContext.tsx`) guarda o tema em `localStorage` e aplica a classe `white` ou `black` na tag `<html>`. O `src/index.css` define os tokens no `:root` (claro) e sobrescreve no `.black` (escuro). Trocar de tema é só trocar a classe do `<html>` — nenhum componente sabe em qual tema está.
 
 ## A regra semântica dos tokens
 
-Os tokens não são "cor clara" / "cor escura" — são papéis, e o papel de cada um não muda entre os temas:
+Tokens são papéis, e o papel não muda entre os temas:
 
-- **`componente1`** é a cor de destaque/CTA (botões primários, header de modal, toasts, tabs ativas). Em ambos os temas ela funciona como uma superfície "acentuada" que precisa de texto claro em cima.
-- **`texto2`** é *exclusivamente* o texto/ícone que fica **diretamente** sobre `componente1`. Nada mais usa `texto2`.
-- **`texto1`** é o texto padrão pra qualquer outra superfície (página, `bg-card`, `componente3`, `componente4`). No tema claro ele é escuro; no tema escuro ele é claro — mas o *papel* (texto padrão) não muda.
-- **`componente3`** / **`componente4`** são superfícies neutras (chips, cards aninhados, tabs inativas) — sempre pareiam com `texto1`.
+- **`primary`** (antigo `componente1`) é a cor de destaque/CTA (botões primários, dock, header de modal, tabs ativas).
+- **`primary-foreground`** (antigo `texto2`) é *só* o texto/ícone pousado **direto** em `primary`.
+- **`foreground`** (antigo `texto1`) é o texto padrão de qualquer outra superfície. Claro no escuro, escuro no claro — o papel é o mesmo.
+- **`secondary`** / **`accent`** (antigos `componente3`/`componente4`) são superfícies neutras e pareiam com `secondary-foreground`/`accent-foreground` (= `foreground`).
 
-Regra prática: **se o elemento está pousado direto em `bg-componente1`, o texto é `texto2`. Em qualquer outra superfície, é `texto1`.** Essa regra vale igual nos dois temas — foi verificada com contraste WCAG (`ratio ≥ 4.5:1`) pros dois lados antes de fechar a paleta escura.
+Regra prática: **cada fundo `bg-X` usa o texto `text-X-foreground`.** Os pares foram verificados com contraste WCAG (≥ 4.5:1) nos dois temas.
 
-## Gotcha: opacidade (`/60`, `/40`, etc.) em cor via CSS variable
+## Histórico: opacidade em cor via CSS variable
 
-Os tokens são CSS custom properties (pra poder trocar de valor por tema). No Tailwind 3 (até 2026-09-22), o Tailwind só conseguia aplicar o modificador de opacidade (`text-texto1/60`) numa cor-variável se ela for declarada como **tripla RGB sem função** (`68 49 43`) e referenciada no `tailwind.config.js` como `rgb(var(--texto1) / <alpha-value>)`. Se a variável for um hex direto (`#44312b`) ou já vier embrulhada (`var(--texto1)` puro), o Tailwind não consegue injetar o alpha — a classe gera **nenhuma regra CSS válida**, e o elemento cai pro preto padrão do browser (`rgb(0,0,0)`), **silenciosamente**, sem erro de build nem de lint.
+No Tailwind 3 (até 2026-09-22) o modificador de opacidade (`/60`) só funcionava com a variável declarada como tripla RGB (`68 49 43`) e referenciada como `rgb(var(--x) / <alpha-value>)`. Em 2026-07, ao introduzir o tema escuro, tokens viraram `var(--x)` sem essa técnica e ~70 usos de `/opacidade` viraram texto preto, silenciosamente. No Tailwind v4 o alpha sai via `color-mix()` sobre a cor final, então a fase 2 aposentou os canais RGB: token é hex direto. O que ainda quebra em silêncio: token no `@theme inline` apontando pra variável que não existe (a cor some). Token novo sempre nos dois lugares (ver [`tema.md`](tema.md)).
 
-Isso já mordeu o projeto uma vez: ao introduzir o tema escuro, alguém trocou os tokens de hex-fixo pra `var(--x)` sem essa técnica, e todo uso de `/opacidade` nesses tokens (~70 ocorrências) virou texto preto. No tema claro isso quase não se notava (preto sólido parece com "texto escuro em opacidade" a olho nu); no tema escuro ficou óbvio (texto devia ser quase-branco e saía preto).
+## Ajuste de paleta
 
-**No Tailwind v4 (atual)** a opacidade sai via `color-mix()` sobre a cor final, então o risco mudou: o que quebra agora é o token do `@theme` não virar uma cor válida (ex.: canal cru `--color-x: var(--x)` sem `rgb()`, ou autorreferência). **Token novo:** canal em `.white`/`.black` (`--novo-token: 12 34 56;`) e `--color-novo-token: rgb(var(--novo-token));` no `@theme`. `--input-bg` e `--overlay` são exceção — já são `rgba(...)` prontos e nunca são usados com sufixo `/NN`, então ficam como estão.
-
-## Paleta atual
-
-Valores em `src/index.css` (`.white` / `.black`). Qualquer ajuste de cor deve ser verificado com um cálculo de contraste (relative luminance / WCAG), não só "olhando" — o bug de 2026-07 (`text-texto2` trocado por `text-texto1` em massa, e `componente1`/`bg-base`/`bg-card` colapsados na mesma cor no escuro) só foi pego rodando a página de verdade, não lendo o diff.
+Valores em `src/index.css`. Qualquer ajuste de cor deve ser verificado com cálculo de contraste (relative luminance / WCAG), não "no olho" — o bug de 2026-07 só foi pego rodando a página de verdade. A vitrine `/ui` mostra todos os tokens lado a lado pra conferir os dois temas.

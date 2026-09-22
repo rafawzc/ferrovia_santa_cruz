@@ -74,12 +74,12 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
-      <div className="mx-4 w-full max-w-md rounded-3xl bg-componente1 p-6 shadow-xl">
+      <div className="mx-4 w-full max-w-md rounded-3xl bg-primary p-6 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-texto1">Cadastro de Carga</h2>
+          <h2 className="text-lg font-bold text-foreground">Cadastro de Carga</h2>
           <button
             onClick={onClose}
-            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
+            className="cursor-pointer text-foreground transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -91,9 +91,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="tipo"
               value={formData.tipo}
               onChange={handleChange('tipo')}
-              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                errors.tipo ? 'ring-2 ring-error' : ''
-              } ${!formData.tipo ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                errors.tipo ? 'ring-2 ring-destructive' : ''
+              } ${!formData.tipo ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Tipo de carga
@@ -104,7 +104,7 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 </option>
               ))}
             </select>
-            {errors.tipo && <span className="text-xs text-error">{errors.tipo}</span>}
+            {errors.tipo && <span className="text-xs text-destructive">{errors.tipo}</span>}
           </div>
 
           <FormField
@@ -122,9 +122,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="partida"
               value={formData.partida}
               onChange={handleChange('partida')}
-              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                errors.partida ? 'ring-2 ring-error' : ''
-              } ${!formData.partida ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                errors.partida ? 'ring-2 ring-destructive' : ''
+              } ${!formData.partida ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Local de partida
@@ -135,7 +135,7 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 </option>
               ))}
             </select>
-            {errors.partida && <span className="text-xs text-error">{errors.partida}</span>}
+            {errors.partida && <span className="text-xs text-destructive">{errors.partida}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -143,9 +143,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="destino"
               value={formData.destino}
               onChange={handleChange('destino')}
-              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                errors.destino ? 'ring-2 ring-error' : ''
-              } ${!formData.destino ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                errors.destino ? 'ring-2 ring-destructive' : ''
+              } ${!formData.destino ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Destino
@@ -156,7 +156,7 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 </option>
               ))}
             </select>
-            {errors.destino && <span className="text-xs text-error">{errors.destino}</span>}
+            {errors.destino && <span className="text-xs text-destructive">{errors.destino}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -164,9 +164,9 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
               id="vagao"
               value={formData.vagao}
               onChange={handleChange('vagao')}
-              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                errors.vagao ? 'ring-2 ring-error' : ''
-              } ${!formData.vagao ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                errors.vagao ? 'ring-2 ring-destructive' : ''
+              } ${!formData.vagao ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Vagão
@@ -177,7 +177,7 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 </option>
               ))}
             </select>
-            {errors.vagao && <span className="text-xs text-error">{errors.vagao}</span>}
+            {errors.vagao && <span className="text-xs text-destructive">{errors.vagao}</span>}
           </div>
 
           <div className="mt-2 flex justify-center">
