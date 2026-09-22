@@ -25,6 +25,26 @@ Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwind
 
 Tudo que desenha está em `src/components/ui/` (ler o `CLAUDE.md` de lá). Vitrine em `/ui` (`src/pages/Vitrine.tsx`). `components.json` configura o CLI do shadcn (`new-york`, aliases `@/components/ui` e `@/lib/utils`); `cn()` fica em `src/lib/utils.ts` (clsx + tailwind-merge). Os `src/components/<Nome>/*.jsx` são legado até a fase 4.
 
+## Camada de dados, auth e rotas
+
+Fluxo de uma tela: **página → hook de `src/hooks/<recurso>.ts` → `api.<recurso>` de `src/lib/api` → `fetch('/api/...')`**. Página nunca chama `fetch` (lint barra fora de `src/lib/api/**`) nem `api.*` direto: usa o hook.
+
+```tsx
+const { data: linhas, isPending, error } = useLinhas()
+const criar = useCriarCarga()
+criar.mutate(dados, { onSuccess: () => toast.success('Carga cadastrada') })
+```
+
+- **Hooks** (`src/hooks/`): um módulo por recurso, sem fábrica genérica. Chave = nome do recurso (`['cargas']`, `['usuarios', id]`); mutação invalida a chave do recurso. `usuarios.ts` também invalida `['me']` (a gestão pode editar a si mesma).
+- **Erro**: tudo que a API recusa vira `ApiError` (`status`, `body.detail`; `message` = `detail` quando é string). `422` traz `body.detail` como lista (`loc`/`type`) — traduza por campo no form. Falha de rede chega como `TypeError`, não `ApiError`.
+- **Retry**: queries só repetem erro que não é `ApiError` (rede); 4xx/5xx da API falham na hora.
+- **401 global**: `src/lib/query-client.ts` escuta erro de qualquer query/mutação; `401` zera `['me']` → o guard manda pro `/login`. Tela não trata 401.
+- **Sessão**: `contexts/AuthContext.tsx` → `useAuth()` dá `usuario` (`Usuario | null`), `carregando`, e as mutações `login`/`logout` (objetos do TanStack: `login.mutate(creds)`, `login.isPending`, `login.error`). `me` com `401` vira `null`, não erro. Login grava `['me']` direto; logout zera `['me']` e remove o resto do cache.
+- **Pós-login**: a tela de login só chama `login.mutate`. Quem navega é o `PublicLayout`: com usuário, manda pra `state.de` (URL que o guard guardou) ou pro início do papel (`cliente` → `/perfil`, resto → `/admin`).
+- **Rotas** (`src/App.tsx`, layout routes do react-router 7): `PublicLayout` (login/cadastro/recuperar), `ProtectedLayout` (exige sessão, envolve `PageShell` + `Suspense`), `Papeis` (papel errado → início do papel). Tabela completa em `docs/frontend/dados-e-rotas.md`. Rota nova: `lazy(() => import(...))` + `<Route>` dentro do grupo de papel certo + item no `NAV` do `page-shell.tsx` (com `papeis`).
+- **Raiz** (`main.tsx`): `QueryClientProvider` → `ThemeProvider` → `AuthProvider` → `TooltipProvider` → `App` + `Toaster`. Tela não monta `Toaster` nem `TooltipProvider`.
+- **Página legada `.jsx` importada do TSX**: o especificador leva `.jsx` (`import('@/pages/Perfil.jsx')`) pra casar com o `declare module '*.jsx'` de `vite-env.d.ts` (sem `allowJs`). Tela reescrita em TSX → tira o `.jsx` do import.
+
 ## TypeScript
 
 Pinado em `~6.0.x`: o `typescript-eslint` exige `typescript >=4.8.4 <6.1.0`; TS 7 quebra o lint type-aware. Só sobe quando o peer range do `typescript-eslint` aceitar.

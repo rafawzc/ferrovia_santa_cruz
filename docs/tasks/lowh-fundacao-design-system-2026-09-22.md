@@ -289,6 +289,25 @@ Verificação: `./fsc check` verde (53 testes). Smoke R1 real via proxy do Vite 
 - `null` no `PATCH` não apaga campo (SQL estático com `COALESCE`).
 - Ingestão IoT (L23): só o espaço nas camadas, descrito no `backend/CLAUDE.md`.
 
+### Fase 4 — D1: camada de dados + auth + rotas (branch `feat/telas`) — 2026-09-22
+
+| Item | Commit | O que entrou |
+|------|--------|--------------|
+| D1 — cliente da API + TanStack Query (L14) | `1ce1d84` | `src/lib/api` (`request`, `ApiError`, tipos do contrato, `api.<recurso>`), `src/lib/query-client.ts` (401 global zera `['me']`, retry só de erro de rede), `src/hooks/<recurso>.ts` com invalidação nas mutações. Inclui `PATCH /api/auth/me` (`useAtualizarPerfil`), que entrou no contrato durante o D1. |
+| D1 — auth + rotas (L15, L17) | `95f0a97` | `AuthContext.tsx` sobre `GET /api/auth/me` + mutações login/logout (mock `.jsx` removido). `main.tsx`/`App.tsx` com layout routes (`PublicLayout`, `ProtectedLayout` com `PageShell`, `Papeis`), renomes L1, dock filtrado por papel, `Toaster`/`TooltipProvider` na raiz, `React.lazy` por rota. |
+| D1 — docs | commit `docs(front)` seguinte | `frontend/CLAUDE.md` (camada de dados), `src/lib/api/CLAUDE.md`, `docs/frontend/dados-e-rotas.md`, `ui/CLAUDE.md`, índice. |
+
+Verificação: `./fsc check` verde (61 testes backend, build sem aviso de chunk: maior JS 429 kB, antes 686 kB). Smoke via proxy (`./fsc up`, `curl localhost:5173`): `me` sem cookie 401 → login `ana.admin` 200 + `Set-Cookie: sessao=…; HttpOnly; Max-Age=28800; Path=/; SameSite=lax` → `me` com cookie 200 (`papel: gestao`) → `linhas` 200 → logout 204 → `me` 401. Sem verificação visual (decisão do usuário).
+
+#### Desvios / pendências do D1
+
+- **Telas legadas ainda mock e com o próprio `BottomNav`**: dentro do `ProtectedLayout` aparecem dois docks até a reescrita. O `Login.jsx` legado navega pra `/admin` sem chamar a API, então o guard devolve pro `/login` — login real só com a tela reescrita (`useAuth().login.mutate`).
+- **Import de `.jsx` no TSX** via `declare module '*.jsx'` (especificador com `.jsx`), sem `allowJs`.
+- **401 tratado no `QueryClient`**, não no wrapper: todo dado passa por query/mutação, então o cache é o ponto único.
+- **`UsuariosLista.jsx`**: uma linha trocada (`isGestao` agora vem de `usuario.papel`), já que o mock `isGestao` saiu do contexto.
+- **Sem rota** pra `/admin/carga/cadastro` e `/admin/usuarios/cadastro` (PLANO §5): hoje são modais dentro das listas; entram se as telas reescritas virarem página.
+- `logo.svg` pesa 2 MB no build (asset, não JS) — fora do escopo do D1.
+
 ### Pendente fora do repo
 
 - Ruleset da `main` (L20, R4): o dono (rafawzc) cria seguindo [`../arquitetura/operacao.md`](../arquitetura/operacao.md).
