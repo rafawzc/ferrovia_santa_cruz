@@ -46,15 +46,13 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-bg">
-      <div className="lg:w-[45%] flex flex-col bg-bg">
-        <div className="bg-bg px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
+    <div className="flex min-h-screen flex-col bg-bg lg:flex-row">
+      <div className="flex flex-col bg-bg lg:w-[45%]">
+        <div className="flex justify-center bg-bg px-8 pt-10 pb-14 lg:justify-start lg:pb-20">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
-        <div className="flex-1 bg-surface rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
-          <h1 className="text-2xl lg:text-3xl font-bold text-text mb-8">
-            Entrar na Conta
-          </h1>
+        <div className="-mt-6 flex-1 rounded-tl-[3rem] rounded-tr-[3rem] bg-surface px-8 pt-10 pb-8 lg:mt-0 lg:rounded-tl-none lg:rounded-tr-[3rem] lg:rounded-br-[3rem] lg:rounded-bl-[3rem] lg:px-14 lg:pt-12">
+          <h1 className="mb-8 text-2xl font-bold text-text lg:text-3xl">Entrar na Conta</h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <FormField
               id="email"
@@ -76,11 +74,11 @@ export default function Login() {
             />
             <Link
               to="/recuperar-senha"
-              className="text-xs font-medium text-text hover:underline self-start -mt-1"
+              className="-mt-1 self-start text-xs font-medium text-text hover:underline"
             >
               Esqueceu sua senha?
             </Link>
-            <div className="flex flex-col gap-3 mt-1">
+            <div className="mt-1 flex flex-col gap-3">
               <Toggle
                 id="terms"
                 label="Aceito os termos e a política de privacidade."
@@ -98,7 +96,7 @@ export default function Login() {
               <Button type="submit">Entrar</Button>
             </div>
           </form>
-          <p className="text-center text-sm text-text-muted mt-6">
+          <p className="mt-6 text-center text-sm text-text-muted">
             Não tem uma conta?{' '}
             <Link to="/cadastro" className="font-semibold text-primary hover:underline">
               Criar Conta
@@ -106,11 +104,11 @@ export default function Login() {
           </p>
         </div>
       </div>
-      <div className="hidden lg:block lg:w-[55%] bg-panel relative overflow-hidden">
+      <div className="relative hidden overflow-hidden bg-panel lg:block lg:w-[55%]">
         <img
           src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80"
           alt="Trem em movimento"
-          className="w-full h-full object-cover opacity-80"
+          className="h-full w-full object-cover opacity-80"
         />
       </div>
     </div>

@@ -41,7 +41,7 @@ export default function FormField({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+            className="absolute top-1/2 right-4 -translate-y-1/2 text-text-muted transition-colors hover:text-text"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -49,9 +49,7 @@ export default function FormField({
         )}
       </div>
       {error && <span className="text-xs text-error">{error}</span>}
-      {helperText && !error && (
-        <span className={`text-xs ${helperColor}`}>{helperText}</span>
-      )}
+      {helperText && !error && <span className={`text-xs ${helperColor}`}>{helperText}</span>}
     </div>
   )
 }

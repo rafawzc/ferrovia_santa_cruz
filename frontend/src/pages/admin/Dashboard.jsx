@@ -22,13 +22,17 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-bg pb-28">
       <div className="px-6 pt-8">
-        <div className="flex justify-end mb-4">
-          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-on-primary text-xs font-bold text-center leading-tight">FERROVIA<br/>SANTA CRUZ</span>
+        <div className="mb-4 flex justify-end">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+            <span className="text-center text-xs leading-tight font-bold text-on-primary">
+              FERROVIA
+              <br />
+              SANTA CRUZ
+            </span>
           </div>
         </div>
 
-        <div className="bg-surface-2 rounded-3xl p-5 mb-8">
+        <div className="mb-8 rounded-3xl bg-surface-2 p-5">
           <div className="flex flex-wrap gap-6">
             <InfoCard icon={BarChart3} label="Linhas ativas" value="10 / 07" />
             <InfoCard icon={Wrench} label="Manutenção" value="3" />
@@ -36,18 +40,48 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-text text-center mb-6">Cadastro de Manutenção</h2>
+        <h2 className="mb-6 text-center text-xl font-bold text-text">Cadastro de Manutenção</h2>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row">
           <div className="flex-1">
             <Modal title="Insira o Problema" onClose={() => {}}>
               <div className="flex flex-col gap-4">
-                <FormField id="motivo" label="Motivo:" placeholder="" value={problema.motivo} onChange={handleProblemaChange('motivo')} onDark />
-                <FormField id="linha" label="Linha:" placeholder="" value={problema.linha} onChange={handleProblemaChange('linha')} onDark />
-                <FormField id="trem" label="Trem:" placeholder="" value={problema.trem} onChange={handleProblemaChange('trem')} onDark />
-                <FormField id="setor" label="Setor:" placeholder="" value={problema.setor} onChange={handleProblemaChange('setor')} onDark />
-                <div className="flex justify-end mt-2">
-                  <Button variant="secondary" onClick={() => {}} className="w-auto px-8">Adicionar</Button>
+                <FormField
+                  id="motivo"
+                  label="Motivo:"
+                  placeholder=""
+                  value={problema.motivo}
+                  onChange={handleProblemaChange('motivo')}
+                  onDark
+                />
+                <FormField
+                  id="linha"
+                  label="Linha:"
+                  placeholder=""
+                  value={problema.linha}
+                  onChange={handleProblemaChange('linha')}
+                  onDark
+                />
+                <FormField
+                  id="trem"
+                  label="Trem:"
+                  placeholder=""
+                  value={problema.trem}
+                  onChange={handleProblemaChange('trem')}
+                  onDark
+                />
+                <FormField
+                  id="setor"
+                  label="Setor:"
+                  placeholder=""
+                  value={problema.setor}
+                  onChange={handleProblemaChange('setor')}
+                  onDark
+                />
+                <div className="mt-2 flex justify-end">
+                  <Button variant="secondary" onClick={() => {}} className="w-auto px-8">
+                    Adicionar
+                  </Button>
                 </div>
               </div>
             </Modal>
@@ -62,10 +96,10 @@ export default function Dashboard() {
                       type="text"
                       value={horario.horas}
                       onChange={handleHorarioChange('horas')}
-                      className="w-20 h-20 bg-surface rounded-xl text-center text-3xl font-bold text-text focus:ring-2 focus:ring-primary/30"
+                      className="h-20 w-20 rounded-xl bg-surface text-center text-3xl font-bold text-text focus:ring-2 focus:ring-primary/30"
                       maxLength={2}
                     />
-                    <span className="text-xs text-on-primary mt-2">Horas</span>
+                    <span className="mt-2 text-xs text-on-primary">Horas</span>
                   </div>
                   <span className="text-3xl font-bold text-on-primary">:</span>
                   <div className="flex flex-col items-center">
@@ -73,22 +107,26 @@ export default function Dashboard() {
                       type="text"
                       value={horario.minutos}
                       onChange={handleHorarioChange('minutos')}
-                      className="w-20 h-20 bg-surface rounded-xl text-center text-3xl font-bold text-text focus:ring-2 focus:ring-primary/30"
+                      className="h-20 w-20 rounded-xl bg-surface text-center text-3xl font-bold text-text focus:ring-2 focus:ring-primary/30"
                       maxLength={2}
                     />
-                    <span className="text-xs text-on-primary mt-2">Minutos</span>
+                    <span className="mt-2 text-xs text-on-primary">Minutos</span>
                   </div>
                 </div>
-                <div className="flex justify-end mt-2">
-                  <Button variant="secondary" onClick={() => {}} className="w-auto px-8">Adicionar</Button>
+                <div className="mt-2 flex justify-end">
+                  <Button variant="secondary" onClick={() => {}} className="w-auto px-8">
+                    Adicionar
+                  </Button>
                 </div>
               </div>
             </Modal>
           </div>
         </div>
 
-        <div className="flex justify-center mt-8">
-          <Button onClick={() => {}} className="w-auto px-10">Cadastrar Manutenção</Button>
+        <div className="mt-8 flex justify-center">
+          <Button onClick={() => {}} className="w-auto px-10">
+            Cadastrar Manutenção
+          </Button>
         </div>
       </div>
 

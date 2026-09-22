@@ -4,13 +4,13 @@ export default function UserCard({ nome, cargo, status, foto, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="bg-primary rounded-2xl p-4 flex flex-col items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity w-full"
+      className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl bg-primary p-4 transition-opacity hover:opacity-90"
     >
-      <div className="w-20 h-20 rounded-xl overflow-hidden bg-surface">
+      <div className="h-20 w-20 overflow-hidden rounded-xl bg-surface">
         {foto ? (
-          <img src={foto} alt={nome} className="w-full h-full object-cover" />
+          <img src={foto} alt={nome} className="h-full w-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-on-primary text-2xl font-bold">
+          <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-on-primary">
             {nome?.charAt(0)}
           </div>
         )}
@@ -18,7 +18,7 @@ export default function UserCard({ nome, cargo, status, foto, onClick }) {
       <div className="text-center">
         <p className="text-sm font-semibold text-on-primary">{nome}</p>
         <p className="text-xs text-on-primary/80">{cargo}</p>
-        <p className={`text-xs font-medium mt-0.5 ${isActive ? 'text-green-300' : 'text-red-300'}`}>
+        <p className={`mt-0.5 text-xs font-medium ${isActive ? 'text-green-300' : 'text-red-300'}`}>
           {status}
         </p>
       </div>
