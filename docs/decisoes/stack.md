@@ -34,7 +34,7 @@ Formato: cada decisão tem contexto, o que foi decidido, e a consequência. Data
 
 ## D3 — Frontend: React + Vite, testes com Vitest
 
-**Data:** 2026-06-02 · **Status:** vigente
+**Data:** 2026-06-02 · **Status:** React + Vite vigente · **Vitest + Testing Library superado em 2026-09-22 → [`frontend-e-qualidade.md`](frontend-e-qualidade.md) (F5: sem testes de front)**. Estilo e linguagem do front (Tailwind v4, TypeScript strict, shadcn) também decididos lá.
 
 **Contexto:** SPA responsiva (desktop + mobile), dois lados (admin e cliente).
 

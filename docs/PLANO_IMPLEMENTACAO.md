@@ -20,6 +20,8 @@ A **Ferrovia Santa Cruz** é um sistema web de **gestão e informação** de uma
 
 ### Decisão de stack
 
+> **Superado em 2026-09-22:** a linha *Estilo* (CSS Modules + tokens) deu lugar a Tailwind v4 + shadcn/ui + TypeScript strict. O porquê está em [`decisoes/frontend-e-qualidade.md`](decisoes/frontend-e-qualidade.md). O resto da tabela segue valendo.
+
 A SA já tem a stack decidida e registrada em [`docs/decisoes/stack.md`](decisoes/stack.md). Resumo com a justificativa de cada escolha:
 
 | Camada | Escolha | Por quê (e não a alternativa) |
@@ -35,6 +37,8 @@ A SA já tem a stack decidida e registrada em [`docs/decisoes/stack.md`](decisoe
 ---
 
 ## 2. Arquitetura de arquivos e pastas
+
+> **Superado em 2026-09-22:** a árvore abaixo planeja `.jsx`, `*.module.css` e `styles/tokens.css`. O real é TypeScript (`.tsx`), Tailwind v4 com tokens no `@theme` de `src/index.css` e componentes do design system em `src/components/ui/`. Ver [`decisoes/frontend-e-qualidade.md`](decisoes/frontend-e-qualidade.md) e `frontend/CLAUDE.md`.
 
 A estrutura segue a separação já estabelecida no repositório (frontend / backend / db / docs em containers). Abaixo, o detalhe de **onde cada tela e cada peça reutilizável vive**.
 
@@ -179,6 +183,8 @@ Duas decisões de modelagem que valem destacar:
 
 ## 3. Componentes reutilizáveis identificados
 
+> **Superado em parte em 2026-09-22:** o levantamento dos componentes segue valendo, mas eles viram componentes shadcn/compostos em `src/components/ui/`, e as cores de status vão pros tokens do `src/index.css` (não `styles/tokens.css`). Ver [`decisoes/frontend-e-qualidade.md`](decisoes/frontend-e-qualidade.md).
+
 Levantados varrendo as telas do mockup ([`docs/design/`](design/)). Cada um aparece em mais de uma tela — construir uma vez, reutilizar.
 
 | Componente | Telas em que aparece | Variações observadas |
@@ -208,6 +214,8 @@ Levantados varrendo as telas do mockup ([`docs/design/`](design/)). Cada um apar
 ---
 
 ## 4. Ordem de implementação
+
+> **Superado em parte em 2026-09-22:** o passo 1 (`tokens.css`, `global.css`) virou o `@theme` + `@layer base` do `src/index.css` (Tailwind v4). A ordem geral agora segue as fases do plano [`tasks/lowh-fundacao-design-system-2026-09-22.md`](tasks/lowh-fundacao-design-system-2026-09-22.md). Ver [`decisoes/frontend-e-qualidade.md`](decisoes/frontend-e-qualidade.md).
 
 Ordenado por **dependência técnica**: o que é base de outras coisas vem antes. Componente reutilizável existe antes da tela que o usa; lista existe antes de detalhe/cadastro.
 
@@ -340,6 +348,8 @@ flowchart LR
 ---
 
 ## 6. Critérios de "pronto"
+
+> **Superado em parte em 2026-09-22:** "estilos em CSS Modules / `tokens.css`" vira "classes Tailwind com tokens do `@theme`", e o item *Tem teste* (Vitest) caiu — não há teste de front; o gate é `./fsc check` (typecheck + lint + build) mais a checagem manual mobile/desktop. Ver [`decisoes/frontend-e-qualidade.md`](decisoes/frontend-e-qualidade.md).
 
 Checklist aplicado a **toda tela** antes de fechá-la. Adaptado ao paradigma de componentes (React), mantendo a intenção do enunciado.
 
