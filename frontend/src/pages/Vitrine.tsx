@@ -61,7 +61,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Toaster } from '@/components/ui/sonner'
 import { STATUSES, StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -74,7 +73,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { UserCard } from '@/components/ui/user-card'
 
 const TOKENS = [
@@ -240,7 +239,6 @@ export default function Vitrine() {
 
   return (
     <PageShell>
-      <Toaster />
       <ScreenHeader title="Vitrine do design system" actions={<ThemeToggle />} />
 
       <div className="flex flex-col gap-10">
@@ -417,14 +415,12 @@ export default function Vitrine() {
               <AvatarFallback>MW</AvatarFallback>
             </Avatar>
             <Skeleton className="h-10 w-40" />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline">Passe o mouse</Button>
-                </TooltipTrigger>
-                <TooltipContent>Dica</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline">Passe o mouse</Button>
+              </TooltipTrigger>
+              <TooltipContent>Dica</TooltipContent>
+            </Tooltip>
           </div>
           <Separator />
         </Section>

@@ -63,7 +63,7 @@ const funcionariosIniciais = [
 ]
 
 export default function UsuariosLista() {
-  const { isGestao } = useAuth()
+  const isGestao = useAuth().usuario?.papel === 'gestao'
   const [funcionarios, setFuncionarios] = useState(funcionariosIniciais)
   const [selectedFuncionario, setSelectedFuncionario] = useState(null)
   const [showModal, setShowModal] = useState(false)
