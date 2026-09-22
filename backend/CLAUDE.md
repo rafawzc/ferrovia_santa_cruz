@@ -49,6 +49,7 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 - `BOOLEAN` volta como `0/1`: o `bool` do Pydantic converte na saída. `DECIMAL` volta `Decimal`: campo `float` no model converte.
 - `COALESCE(%(x)s, DEFAULT(cargo_id))` no INSERT deixa o **banco** decidir o cargo padrão (cadastro público → `comum`). Não chumbe `1` no Python.
 - PATCH parcial é `SET col = COALESCE(%(col)s, col)`: SQL estático, sem montar SET dinâmico. Preço: `null` não apaga campo.
+- `UsuariosMySQL.atualizar` usa `%(nome)s` pra **todas** as colunas: o `dados` precisa ter todas as chaves, senão `KeyError` no execute (o fake não pega isso). Por isso `atualizar_perfil` (`PATCH /api/auth/me`) completa `cargo_id`/`ativo` com `None` em vez de o router omitir.
 - INSERT que falha com 409 **queima** o `AUTO_INCREMENT` (InnoDB). Não assuma id sequencial em smoke.
 - `DB_HOST` vem do `environment:` do compose (é o nome do serviço, não segredo), não do `.env`. `JWT_SECRET` < 32 bytes só gera warning do PyJWT, mas troque.
 

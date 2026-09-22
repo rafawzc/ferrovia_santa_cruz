@@ -1,15 +1,11 @@
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.core.auth import exige_papel
 from app.deps import Usuarios
-from app.routers.auth import Email, Nome, Senha, UsuarioSaida
+from app.routers.auth import Email, Nome, Senha, Telefone, UsuarioSaida
 
 router = APIRouter(prefix="/api", tags=["usuarios"], dependencies=[Depends(exige_papel("gestao"))])
-
-Telefone = Annotated[str, Field(max_length=20)]
 
 
 class UsuarioNovo(BaseModel):
