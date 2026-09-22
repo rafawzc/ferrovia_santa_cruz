@@ -3,14 +3,11 @@ from fastapi.responses import JSONResponse
 from mysql.connector import errorcode
 from mysql.connector.errors import IntegrityError
 
-from app.routers import alertas, auth, cargas, linhas, usuarios
+from app.routers import alertas, auth, cargas, dashboard, linhas, usuarios
 
 app = FastAPI(title="Ferrovia Santa Cruz")
-app.include_router(auth.router)
-app.include_router(usuarios.router)
-app.include_router(linhas.router)
-app.include_router(cargas.router)
-app.include_router(alertas.router)
+for modulo in (auth, usuarios, linhas, cargas, alertas, dashboard):
+    app.include_router(modulo.router)
 
 CONFLITOS = {
     errorcode.ER_DUP_ENTRY: "Registro duplicado",
