@@ -1,7 +1,7 @@
 -- =============================================================
 -- Ferrovia Santa Cruz - Script de criacao do banco (MySQL 8)
 -- =============================================================
--- Cria o banco e todas as tabelas conforme o modelo relacional
+-- Cria todas as tabelas conforme o modelo relacional
 -- documentado em docs/banco/modelo-de-dados.md.
 -- Une o lado de GESTAO (usuario, linha, carga, alerta) com o
 -- monitoramento IoT (trem, sensor, leitura_sensor, relatorio).
@@ -10,12 +10,6 @@
 -- referenciada e criada antes de quem a referencia.
 -- Sem DROP destrutivo: usa IF NOT EXISTS (nao apaga dado existente).
 -- =============================================================
-
-CREATE DATABASE IF NOT EXISTS ferrovia_santa_cruz
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE ferrovia_santa_cruz;
 
 -- -------------------------------------------------------------
 -- cargo: funcao do usuario (maquinista, rh, admin...). Antes era
