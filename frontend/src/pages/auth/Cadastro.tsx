@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Switch } from '@/components/ui/switch'
 import { useCadastro } from '@/hooks/auth'
-import { ApiError } from '@/lib/api'
+import { ApiError, marcarErrosDeCampo } from '@/lib/api'
 
 const schema = z
   .object({
@@ -27,8 +27,6 @@ const schema = z
   })
 
 type FormValues = z.infer<typeof schema>
-
-const CAMPOS_DA_API = ['nome', 'email', 'senha'] as const
 
 export default function Cadastro() {
   const navigate = useNavigate()
@@ -51,13 +49,7 @@ export default function Cadastro() {
             form.setError('email', { message: 'Este e-mail já está cadastrado' })
             return
           }
-          if (erro instanceof ApiError && erro.status === 422 && Array.isArray(erro.body?.detail)) {
-            for (const { loc } of erro.body.detail) {
-              const campo = CAMPOS_DA_API.find((c) => c === loc[1])
-              if (campo) form.setError(campo, { message: 'Valor inválido' })
-            }
-            return
-          }
+          if (marcarErrosDeCampo(erro, form)) return
           toast.error('Não foi possível criar a conta. Tente de novo.')
         },
       },

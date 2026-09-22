@@ -1,3 +1,5 @@
+import type { FieldValues, Path, UseFormReturn } from 'react-hook-form'
+
 export interface ErroValidacao {
   type: string
   loc: (string | number)[]
@@ -32,4 +34,21 @@ export async function request<T>(method: string, path: string, body?: unknown): 
   }
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
+}
+
+export function marcarErrosDeCampo<T extends FieldValues>(
+  erro: unknown,
+  form: UseFormReturn<T>,
+): boolean {
+  if (!(erro instanceof ApiError) || erro.status !== 422 || !Array.isArray(erro.body?.detail)) {
+    return false
+  }
+  const valores = form.getValues()
+  for (const { loc } of erro.body.detail) {
+    const campo = loc[1]
+    if (typeof campo === 'string' && campo in valores) {
+      form.setError(campo as Path<T>, { message: 'Valor inválido' })
+    }
+  }
+  return true
 }
