@@ -23,13 +23,50 @@ Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwind
 
 ## Design system
 
-Tudo que desenha está em `src/components/ui/` (ler o `CLAUDE.md` de lá). Vitrine em `/ui` (`src/pages/Vitrine.tsx`). `components.json` configura o CLI do shadcn (`new-york`, aliases `@/components/ui` e `@/lib/utils`); `cn()` fica em `src/lib/utils.ts` (clsx + tailwind-merge). Os `src/components/<Nome>/*.jsx` são legado até a fase 4.
+Tudo que desenha está em `src/components/ui/` (ler o `CLAUDE.md` de lá). Vitrine em `/ui` (`src/pages/Vitrine.tsx`). `components.json` configura o CLI do shadcn (`new-york`, aliases `@/components/ui` e `@/lib/utils`); `cn()` fica em `src/lib/utils.ts` (clsx + tailwind-merge). Não há mais componente fora de `ui/` (o legado `.jsx` saiu na fase 4).
+
+## Camada de dados, auth e rotas
+
+Fluxo de uma tela: **página → hook de `src/hooks/<recurso>.ts` → `api.<recurso>` de `src/lib/api` → `fetch('/api/...')`**. Página nunca chama `fetch` (lint barra fora de `src/lib/api/**`) nem `api.*` direto: usa o hook.
+
+```tsx
+import { toast } from 'sonner'
+import { LoadError, mensagemDeErro } from '@/components/ui/load-error'
+import { useCriarCarga } from '@/hooks/cargas'
+import { useLinhas } from '@/hooks/linhas'
+import { marcarErrosDeCampo } from '@/lib/api'
+
+const { data: linhas, isPending, error } = useLinhas()
+const criar = useCriarCarga()
+if (error) return <LoadError error={error} />
+criar.mutate(dados, {
+  onSuccess: () => toast.success('Carga cadastrada'),
+  onError: (e) => {
+    if (marcarErrosDeCampo(e, form)) return
+    toast.error(mensagemDeErro(e))
+  },
+})
+```
+
+- **Hooks** (`src/hooks/`): um módulo por recurso, sem fábrica genérica. Chave = nome do recurso (`['cargas']`, `['usuarios', id]`); mutação invalida a chave do recurso. `usuarios.ts` também invalida `['me']` (a gestão pode editar a si mesma).
+- **Erro**: tudo que a API recusa vira `ApiError` (`status`, `body.detail`; `message` = `detail` quando é string). Falha de rede chega como `TypeError`, não `ApiError`. Helpers únicos, não reescreva na página:
+  - `422` (lista `loc`/`type`) → `if (marcarErrosDeCampo(erro, form)) return` (`@/lib/api`): marca "Valor inválido" em cada campo do `loc` que existe no form.
+  - Estado de erro de query → `<LoadError error={error} />`; texto de toast → `mensagemDeErro(erro)` (os dois de `@/components/ui/load-error`).
+  - `criado_em` vem sem fuso e em UTC → `dataHora(iso)` de `@/lib/utils` (soma `Z` antes do `new Date`).
+- **Retry**: queries só repetem erro que não é `ApiError` (rede); 4xx/5xx da API falham na hora.
+- **401 global**: `src/lib/query-client.ts` escuta erro de qualquer query/mutação; `401` zera `['me']` → o guard manda pro `/login`. Tela não trata 401.
+- **Sessão**: `contexts/AuthContext.tsx` → `useAuth()` dá `usuario` (`Usuario | null`), `carregando`, e as mutações `login`/`logout` (objetos do TanStack: `login.mutate(creds)`, `login.isPending`, `login.error`). `me` com `401` vira `null`, não erro. Login grava `['me']` direto; logout zera `['me']` e remove o resto do cache.
+- **Pós-login**: a tela de login só chama `login.mutate`. Quem navega é o `PublicLayout`: com usuário, manda pra `state.de` (URL que o guard guardou) ou pro início do papel (`cliente` → `/perfil`, resto → `/admin`).
+- **Rotas** (`src/App.tsx`, layout routes do react-router 7): `PublicLayout` (login/cadastro/recuperar), `ProtectedLayout` (exige sessão, envolve `PageShell` + `Suspense`), `Papeis` (papel errado → início do papel). Tabela completa em `docs/frontend/dados-e-rotas.md`. Rota nova: `lazy(() => import(...))` + `<Route>` dentro do grupo de papel certo + item no `NAV` do `page-shell.tsx` (com `papeis`).
+- **Raiz** (`main.tsx`): `QueryClientProvider` → `ThemeProvider` → `AuthProvider` → `TooltipProvider` → `App` + `Toaster`. Tela não monta `Toaster` nem `TooltipProvider`.
+- **Formulário de cadastro/edição** abre em `Dialog` sobre a lista (carga, usuários), não em rota própria.
+- **Tela logada não monta `PageShell`**: o `ProtectedLayout` já envolve.
 
 ## TypeScript
 
 Pinado em `~6.0.x`: o `typescript-eslint` exige `typescript >=4.8.4 <6.1.0`; TS 7 quebra o lint type-aware. Só sobe quando o peer range do `typescript-eslint` aceitar.
 
-`tsconfig.json` é strict e só cobre `src/**/*.ts`, `src/**/*.tsx` e `vite.config.ts`. As telas `.jsx` antigas ficam fora do typecheck até serem reescritas em TSX (fase 4). Alias `@/*` → `src/*` configurado nos dois lugares: `tsconfig.json` (`paths`) e `vite.config.ts` (`resolve.alias`). Mudou um, mude o outro.
+`tsconfig.json` é strict e cobre `src/**/*.ts`, `src/**/*.tsx` e `vite.config.ts` — ou seja, todo o `src/` (não existe mais `.js`/`.jsx` lá; arquivo novo é `.ts`/`.tsx`, sem `allowJs`). Alias `@/*` → `src/*` configurado nos dois lugares: `tsconfig.json` (`paths`) e `vite.config.ts` (`resolve.alias`). Mudou um, mude o outro.
 
 ## Dev server
 
@@ -39,7 +76,7 @@ Pinado em `~6.0.x`: o `typescript-eslint` exige `typescript >=4.8.4 <6.1.0`; TS 
 
 ESLint 9 flat (`eslint.config.js`) — 9 e não 10 porque o `eslint-plugin-jsx-a11y` só aceita até `^9`. Base: `typescript-eslint` `strictTypeChecked` (type-aware via `projectService`), `react-hooks` recommended, `jsx-a11y` recommended, `react-refresh` (vite), `eslint-config-prettier` por último. Prettier com `prettier-plugin-tailwindcss` (ordena classes; lê o `@theme` de `src/index.css` via `tailwindStylesheet`).
 
-Escopo: só `**/*.{ts,tsx}` + `eslint.config.js` + `eslint-rules/`. **Os `.jsx` legados de `src/` estão ignorados** até serem reescritos em TSX na fase 4 — tela reescrita passa a ser linted automaticamente.
+Escopo: `**/*.{ts,tsx}` + `eslint.config.js` + `eslint-rules/`, sem ignore em `src/` — lint cobre tudo.
 
 | Regra                             | Proíbe                                                                                                                                           | Exceção                                                                 |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |

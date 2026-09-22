@@ -27,6 +27,6 @@ Depois do add, conserte na mão o que o lint pegar. Os casos já vistos:
 
 ## Compostos do domínio
 
-`page-shell` (layout logado + dock; a lista de rotas do dock mora ali), `auth-layout`, `screen-header`, `status-badge` (mapa status do banco → rótulo/variante; tipo `Status`), `metric-card`, `line-card`, `user-card`, `theme-toggle`, `password-input`. Tooltip precisa de `TooltipProvider` — o `PageShell` já embrulha o dock.
+`page-shell` (layout logado + dock; a lista de rotas do dock mora ali, cada item com os `papeis` que o veem — filtrado pelo `useAuth`), `auth-layout`, `screen-header`, `status-badge` (mapa status do banco → rótulo/variante; tipo `Status`), `metric-card`, `line-card` (escreve "Rota", vocabulário L1), `user-card`, `theme-toggle`, `password-input`, `load-error` (`LoadError` pro estado de erro de query + `mensagemDeErro(error)` pro texto de toast; importa `ApiError` de `@/lib/api`). `TooltipProvider` e `Toaster` são montados uma vez no `main.tsx`; não monte de novo.
 
 Tudo novo aparece na vitrine `src/pages/Vitrine.tsx` (rota `/ui`) — adicione lá quando criar componente ou variante.

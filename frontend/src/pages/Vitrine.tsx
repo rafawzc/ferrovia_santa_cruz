@@ -39,6 +39,7 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { LineCard } from '@/components/ui/line-card'
+import { LoadError } from '@/components/ui/load-error'
 import { MetricCard } from '@/components/ui/metric-card'
 import { PageShell } from '@/components/ui/page-shell'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -61,7 +62,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Toaster } from '@/components/ui/sonner'
 import { STATUSES, StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -74,8 +74,9 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { UserCard } from '@/components/ui/user-card'
+import { ApiError } from '@/lib/api'
 
 const TOKENS = [
   { name: 'background', className: 'bg-background text-foreground' },
@@ -240,7 +241,6 @@ export default function Vitrine() {
 
   return (
     <PageShell>
-      <Toaster />
       <ScreenHeader title="Vitrine do design system" actions={<ThemeToggle />} />
 
       <div className="flex flex-col gap-10">
@@ -303,7 +303,7 @@ export default function Vitrine() {
         <Section title="Card">
           <Card className="max-w-md">
             <CardHeader>
-              <CardTitle>Linha 1778</CardTitle>
+              <CardTitle>Rota 1778</CardTitle>
               <CardDescription>Última leitura há 2 min</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
@@ -375,7 +375,7 @@ export default function Vitrine() {
             <Button
               variant="ghost"
               onClick={() => {
-                toast('Alerta enviado', { description: 'Linha 1778' })
+                toast('Alerta enviado', { description: 'Rota 1778' })
               }}
             >
               Disparar toast
@@ -417,14 +417,12 @@ export default function Vitrine() {
               <AvatarFallback>MW</AvatarFallback>
             </Avatar>
             <Skeleton className="h-10 w-40" />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline">Passe o mouse</Button>
-                </TooltipTrigger>
-                <TooltipContent>Dica</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline">Passe o mouse</Button>
+              </TooltipTrigger>
+              <TooltipContent>Dica</TooltipContent>
+            </Tooltip>
           </div>
           <Separator />
         </Section>
@@ -440,6 +438,10 @@ export default function Vitrine() {
             <LineCard numero="2645" status="atraso" ativo />
             <LineCard numero="9845" status="fechado" ativo={false} />
             <LineCard numero="5463" status="na_estacao" ativo />
+          </div>
+          <div className="flex flex-col gap-2">
+            <LoadError error={new ApiError(500, { detail: 'Erro interno' })} />
+            <LoadError error={new TypeError('Failed to fetch')} />
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <UserCard nome="Anna Rossi" cargo="RH" ativo />

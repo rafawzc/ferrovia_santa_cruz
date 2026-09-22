@@ -21,7 +21,7 @@ const IMPORT_PAGES = {
 }
 
 export default defineConfig(
-  { ignores: ['dist', 'node_modules', 'src/**/*.jsx'] },
+  { ignores: ['dist', 'node_modules'] },
   {
     files: ['eslint.config.js', 'eslint-rules/**/*.js'],
     extends: [js.configs.recommended],
