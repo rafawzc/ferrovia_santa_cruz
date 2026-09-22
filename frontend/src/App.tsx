@@ -9,9 +9,7 @@ const Login = lazy(() => import('@/pages/auth/Login.jsx'))
 const Cadastro = lazy(() => import('@/pages/auth/Cadastro.jsx'))
 const RecuperarSenha = lazy(() => import('@/pages/auth/RecuperarSenha.jsx'))
 const Dashboard = lazy(() => import('@/pages/admin/Dashboard.jsx'))
-const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista.jsx'))
-const UsuarioDetalhe = lazy(() => import('@/pages/admin/UsuarioDetalhe.jsx'))
-const UsuarioEditar = lazy(() => import('@/pages/admin/UsuarioEditar.jsx'))
+const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista'))
 const CargaLista = lazy(() => import('@/pages/admin/CargaLista'))
 const Linhas = lazy(() => import('@/pages/admin/Linhas.jsx'))
 const Alertas = lazy(() => import('@/pages/admin/Alertas.jsx'))
@@ -83,8 +81,6 @@ export default function App() {
             </Route>
             <Route element={<Papeis papeis={GESTAO} />}>
               <Route path="/admin/usuarios" element={<UsuariosLista />} />
-              <Route path="/admin/usuarios/:id" element={<UsuarioDetalhe />} />
-              <Route path="/admin/usuarios/:id/editar" element={<UsuarioEditar />} />
             </Route>
             <Route path="/perfil" element={<Perfil />} />
           </Route>
