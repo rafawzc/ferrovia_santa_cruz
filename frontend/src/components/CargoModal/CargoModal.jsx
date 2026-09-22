@@ -4,14 +4,7 @@ import FormField from '../FormField/FormField'
 import Button from '../Button/Button'
 import Toast from '../Toast/Toast'
 
-const tiposCarga = [
-  'Minério',
-  'Grãos',
-  'Container',
-  'Madeira',
-  'Combustível',
-  'Químicos',
-]
+const tiposCarga = ['Minério', 'Grãos', 'Container', 'Madeira', 'Combustível', 'Químicos']
 
 const locaisPartida = [
   'Porto de Santos',
@@ -21,14 +14,7 @@ const locaisPartida = [
   'Porto de Aratu',
 ]
 
-const destinos = [
-  'São Paulo',
-  'Curitiba',
-  'Porto Alegre',
-  'Belo Horizonte',
-  'Goiânia',
-  'Brasília',
-]
+const destinos = ['São Paulo', 'Curitiba', 'Porto Alegre', 'Belo Horizonte', 'Goiânia', 'Brasília']
 
 export default function CargoModal({ onClose, onAdd, selectedTrain }) {
   const [formData, setFormData] = useState({
@@ -88,12 +74,12 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
-      <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="mx-4 w-full max-w-md rounded-3xl bg-componente1 p-6 shadow-xl">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-bold text-texto1">Cadastro de Carga</h2>
           <button
             onClick={onClose}
-            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
+            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -109,9 +95,13 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 errors.tipo ? 'ring-2 ring-error' : ''
               } ${!formData.tipo ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Tipo de carga</option>
+              <option value="" disabled>
+                Tipo de carga
+              </option>
               {tiposCarga.map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
             {errors.tipo && <span className="text-xs text-error">{errors.tipo}</span>}
@@ -136,9 +126,13 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 errors.partida ? 'ring-2 ring-error' : ''
               } ${!formData.partida ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Local de partida</option>
+              <option value="" disabled>
+                Local de partida
+              </option>
               {locaisPartida.map((l) => (
-                <option key={l} value={l}>{l}</option>
+                <option key={l} value={l}>
+                  {l}
+                </option>
               ))}
             </select>
             {errors.partida && <span className="text-xs text-error">{errors.partida}</span>}
@@ -153,9 +147,13 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 errors.destino ? 'ring-2 ring-error' : ''
               } ${!formData.destino ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Destino</option>
+              <option value="" disabled>
+                Destino
+              </option>
               {destinos.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
             {errors.destino && <span className="text-xs text-error">{errors.destino}</span>}
@@ -170,34 +168,27 @@ export default function CargoModal({ onClose, onAdd, selectedTrain }) {
                 errors.vagao ? 'ring-2 ring-error' : ''
               } ${!formData.vagao ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Vagão</option>
+              <option value="" disabled>
+                Vagão
+              </option>
               {vagoes.map((v) => (
-                <option key={v} value={v}>Vagão {v}</option>
+                <option key={v} value={v}>
+                  Vagão {v}
+                </option>
               ))}
             </select>
             {errors.vagao && <span className="text-xs text-error">{errors.vagao}</span>}
           </div>
 
-          <div className="flex justify-center mt-2">
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={sending}
-              className="w-auto px-10"
-            >
+          <div className="mt-2 flex justify-center">
+            <Button type="submit" variant="secondary" disabled={sending} className="w-auto px-10">
               {sending ? 'Cadastrando...' : 'Cadastrar'}
             </Button>
           </div>
         </form>
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }

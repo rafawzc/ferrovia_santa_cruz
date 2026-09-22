@@ -32,4 +32,4 @@ Pense nas rotas e nos guards de acesso desde cedo: o que é público (cliente) v
 
 ## Testes
 
-Vitest + Testing Library, rodando no container (`docker compose exec frontend npm run test`). Teste comportamento (o que o usuário vê/faz), não detalhe de implementação — ver `/tdd` skill.
+**Não há teste de front** (decisão de 2026-09-22, [`../decisoes/frontend-e-qualidade.md`](../decisoes/frontend-e-qualidade.md) F5 — substitui o Vitest + Testing Library planejado antes). O gate do front é `./fsc check` (typecheck + lint + build). Toda tela se verifica **à mão no navegador**, em mobile E desktop, antes de ser dada como pronta.

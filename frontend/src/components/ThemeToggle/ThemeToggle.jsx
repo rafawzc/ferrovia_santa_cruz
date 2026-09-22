@@ -6,53 +6,37 @@ export default function ThemeToggle({ className = '' }) {
 
   return (
     <div
-      className={`flex w-16 h-8 p-1 rounded-full cursor-pointer transition-all duration-300 ${
-        isDark
-          ? 'bg-bg-page border border-componente3'
-          : 'bg-componente4 border border-componente3'
+      className={`flex h-8 w-16 cursor-pointer rounded-full p-1 transition-all duration-300 ${
+        isDark ? 'border border-componente3 bg-bg-page' : 'border border-componente3 bg-componente4'
       } ${className}`}
       onClick={toggleTheme}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && toggleTheme()}
     >
-      <div className="flex justify-between items-center w-full">
+      <div className="flex w-full items-center justify-between">
         <div
-          className={`flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300 ${
+          className={`flex h-6 w-6 items-center justify-center rounded-full transition-transform duration-300 ${
             isDark
-              ? 'transform translate-x-0 bg-componente1'
-              : 'transform translate-x-8 bg-componente4'
+              ? 'translate-x-0 transform bg-componente1'
+              : 'translate-x-8 transform bg-componente4'
           }`}
         >
           {isDark ? (
-            <Moon
-              className="w-4 h-4 text-texto1"
-              strokeWidth={1.5}
-            />
+            <Moon className="h-4 w-4 text-texto1" strokeWidth={1.5} />
           ) : (
-            <Sun
-              className="w-4 h-4 text-texto1"
-              strokeWidth={1.5}
-            />
+            <Sun className="h-4 w-4 text-texto1" strokeWidth={1.5} />
           )}
         </div>
         <div
-          className={`flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300 ${
-            isDark
-              ? 'bg-transparent'
-              : 'transform -translate-x-8'
+          className={`flex h-6 w-6 items-center justify-center rounded-full transition-transform duration-300 ${
+            isDark ? 'bg-transparent' : '-translate-x-8 transform'
           }`}
         >
           {isDark ? (
-            <Sun
-              className="w-4 h-4 text-texto1"
-              strokeWidth={1.5}
-            />
+            <Sun className="h-4 w-4 text-texto1" strokeWidth={1.5} />
           ) : (
-            <Moon
-              className="w-4 h-4 text-texto1"
-              strokeWidth={1.5}
-            />
+            <Moon className="h-4 w-4 text-texto1" strokeWidth={1.5} />
           )}
         </div>
       </div>

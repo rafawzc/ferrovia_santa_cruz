@@ -12,20 +12,20 @@ export default function WagonIcon({ letter, percentage = 0, onClick, className =
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition-transform ${className}`}
+      className={`flex cursor-pointer flex-col items-center gap-1 transition-transform hover:scale-105 ${className}`}
     >
       <div className="relative">
         <img
           src={getStatusImage()}
           alt={`Vagão ${letter}`}
-          className="w-20 h-auto"
+          className="h-auto w-20"
           style={{ filter: 'drop-shadow(2px 2px 3px rgba(0,0,0,0.5))' }}
         />
-      <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-texto1 text-sm font-bold drop-shadow-lg">
-        {letter}
-      </span>
-    </div>
-    <span className="text-texto1 text-xs font-semibold">{percentage}%</span>
+        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold text-texto1 drop-shadow-lg">
+          {letter}
+        </span>
+      </div>
+      <span className="text-xs font-semibold text-texto1">{percentage}%</span>
     </button>
   )
 }

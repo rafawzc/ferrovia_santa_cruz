@@ -4,21 +4,9 @@ import FormField from '../FormField/FormField'
 import Button from '../Button/Button'
 import Toast from '../Toast/Toast'
 
-const linhas = [
-  'Linha 1778',
-  'Linha 2341',
-  'Linha 0912',
-  'Linha 5567',
-  'Linha 3321',
-]
+const linhas = ['Linha 1778', 'Linha 2341', 'Linha 0912', 'Linha 5567', 'Linha 3321']
 
-const setores = [
-  'Setor Norte',
-  'Setor Sul',
-  'Setor Leste',
-  'Setor Oeste',
-  'Setor Central',
-]
+const setores = ['Setor Norte', 'Setor Sul', 'Setor Leste', 'Setor Oeste', 'Setor Central']
 
 export default function MaintenanceModal({ onClose, onAdd }) {
   const [formData, setFormData] = useState({
@@ -72,12 +60,12 @@ export default function MaintenanceModal({ onClose, onAdd }) {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
-      <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="mx-4 w-full max-w-md rounded-3xl bg-componente1 p-6 shadow-xl">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-bold text-texto1">Cadastrar Manutenção</h2>
           <button
             onClick={onClose}
-            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
+            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -103,9 +91,13 @@ export default function MaintenanceModal({ onClose, onAdd }) {
                 errors.linha ? 'ring-2 ring-error' : ''
               } ${!formData.linha ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Selecione a linha</option>
+              <option value="" disabled>
+                Selecione a linha
+              </option>
               {linhas.map((l) => (
-                <option key={l} value={l}>{l}</option>
+                <option key={l} value={l}>
+                  {l}
+                </option>
               ))}
             </select>
             {errors.linha && <span className="text-xs text-error">{errors.linha}</span>}
@@ -120,34 +112,27 @@ export default function MaintenanceModal({ onClose, onAdd }) {
                 errors.setor ? 'ring-2 ring-error' : ''
               } ${!formData.setor ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Selecione o setor</option>
+              <option value="" disabled>
+                Selecione o setor
+              </option>
               {setores.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
             {errors.setor && <span className="text-xs text-error">{errors.setor}</span>}
           </div>
 
-          <div className="flex justify-center mt-2">
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={sending}
-              className="w-auto px-10"
-            >
+          <div className="mt-2 flex justify-center">
+            <Button type="submit" variant="secondary" disabled={sending} className="w-auto px-10">
               {sending ? 'Cadastrando...' : 'Cadastrar'}
             </Button>
           </div>
         </form>
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }

@@ -1,10 +1,10 @@
 # Frontend — sistema de tema (claro/escuro)
 
-> Complementa [`responsividade.md`](responsividade.md). Cobre os tokens de cor e a troca de tema — leia antes de mexer em cores, `index.css` ou `tailwind.config.js`.
+> Complementa [`responsividade.md`](responsividade.md). Cobre os tokens de cor e a troca de tema — leia antes de mexer em cores ou `index.css`. Onde os tokens moram no Tailwind v4: [`tema.md`](tema.md).
 
 ## Como funciona
 
-`ThemeContext` (`src/contexts/ThemeContext.jsx`) guarda o tema em `localStorage` e aplica a classe `white` ou `black` na tag `<html>`. Cada classe define um conjunto de CSS custom properties em `src/index.css`, e `tailwind.config.js` mapeia as classes utilitárias (`text-texto1`, `bg-componente1`, etc.) pra essas variáveis. Trocar de tema é só trocar a classe do `<html>` — nenhum componente sabe em qual tema está.
+`ThemeContext` (`src/contexts/ThemeContext.jsx`) guarda o tema em `localStorage` e aplica a classe `white` ou `black` na tag `<html>`. Cada classe define um conjunto de CSS custom properties em `src/index.css`, e o `@theme` do mesmo arquivo mapeia as classes utilitárias (`text-texto1`, `bg-componente1`, etc.) pra essas variáveis. Trocar de tema é só trocar a classe do `<html>` — nenhum componente sabe em qual tema está.
 
 ## A regra semântica dos tokens
 
@@ -19,11 +19,11 @@ Regra prática: **se o elemento está pousado direto em `bg-componente1`, o text
 
 ## Gotcha: opacidade (`/60`, `/40`, etc.) em cor via CSS variable
 
-Os tokens são CSS custom properties (pra poder trocar de valor por tema). Tailwind só consegue aplicar o modificador de opacidade (`text-texto1/60`) numa cor-variável se ela for declarada como **tripla RGB sem função** (`68 49 43`) e referenciada no `tailwind.config.js` como `rgb(var(--texto1) / <alpha-value>)`. Se a variável for um hex direto (`#44312b`) ou já vier embrulhada (`var(--texto1)` puro), o Tailwind não consegue injetar o alpha — a classe gera **nenhuma regra CSS válida**, e o elemento cai pro preto padrão do browser (`rgb(0,0,0)`), **silenciosamente**, sem erro de build nem de lint.
+Os tokens são CSS custom properties (pra poder trocar de valor por tema). No Tailwind 3 (até 2026-09-22), o Tailwind só conseguia aplicar o modificador de opacidade (`text-texto1/60`) numa cor-variável se ela for declarada como **tripla RGB sem função** (`68 49 43`) e referenciada no `tailwind.config.js` como `rgb(var(--texto1) / <alpha-value>)`. Se a variável for um hex direto (`#44312b`) ou já vier embrulhada (`var(--texto1)` puro), o Tailwind não consegue injetar o alpha — a classe gera **nenhuma regra CSS válida**, e o elemento cai pro preto padrão do browser (`rgb(0,0,0)`), **silenciosamente**, sem erro de build nem de lint.
 
 Isso já mordeu o projeto uma vez: ao introduzir o tema escuro, alguém trocou os tokens de hex-fixo pra `var(--x)` sem essa técnica, e todo uso de `/opacidade` nesses tokens (~70 ocorrências) virou texto preto. No tema claro isso quase não se notava (preto sólido parece com "texto escuro em opacidade" a olho nu); no tema escuro ficou óbvio (texto devia ser quase-branco e saía preto).
 
-**Se for adicionar um token novo que precisa suportar `/opacidade`:** declare em `index.css` como tripla RGB (`--novo-token: 12 34 56;`) e em `tailwind.config.js` como `'rgb(var(--novo-token) / <alpha-value>)'`. `--input-bg` e `--overlay` são exceção — já são `rgba(...)` prontos e nunca são usados com sufixo `/NN`, então ficam como estão.
+**No Tailwind v4 (atual)** a opacidade sai via `color-mix()` sobre a cor final, então o risco mudou: o que quebra agora é o token do `@theme` não virar uma cor válida (ex.: canal cru `--color-x: var(--x)` sem `rgb()`, ou autorreferência). **Token novo:** canal em `.white`/`.black` (`--novo-token: 12 34 56;`) e `--color-novo-token: rgb(var(--novo-token));` no `@theme`. `--input-bg` e `--overlay` são exceção — já são `rgba(...)` prontos e nunca são usados com sufixo `/NN`, então ficam como estão.
 
 ## Paleta atual
 

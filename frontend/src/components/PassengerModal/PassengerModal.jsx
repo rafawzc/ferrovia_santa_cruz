@@ -28,9 +28,7 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
   const handleSeatClick = (seatIndex) => {
     if (ocupadas.includes(seatIndex)) return
     setSelectedSeats((prev) =>
-      prev.includes(seatIndex)
-        ? prev.filter((s) => s !== seatIndex)
-        : [...prev, seatIndex]
+      prev.includes(seatIndex) ? prev.filter((s) => s !== seatIndex) : [...prev, seatIndex],
     )
   }
 
@@ -50,7 +48,10 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
         assentos: selectedSeats,
         timestamp: Date.now(),
       })
-      setToast({ message: `${selectedSeats.length} assento(s) cadastrado(s) com sucesso!`, type: 'success' })
+      setToast({
+        message: `${selectedSeats.length} assento(s) cadastrado(s) com sucesso!`,
+        type: 'success',
+      })
       setTimeout(() => onClose(), 2000)
     } catch {
       setToast({ message: 'Erro ao cadastrar passageiro.', type: 'error' })
@@ -70,7 +71,7 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
     ]
 
     return (
-      <div className="flex flex-col items-center gap-1 mt-4">
+      <div className="mt-4 flex flex-col items-center gap-1">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex}>
             <div className="flex gap-1">
@@ -79,17 +80,17 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                   key={seatIndex}
                   onClick={() => handleSeatClick(seatIndex)}
                   disabled={ocupadas.includes(seatIndex)}
-                  className={`w-5 h-5 rounded-full transition-all duration-200 ${
+                  className={`h-5 w-5 rounded-full transition-all duration-200 ${
                     ocupadas.includes(seatIndex)
-                      ? 'bg-error cursor-not-allowed'
+                      ? 'cursor-not-allowed bg-error'
                       : selectedSeats.includes(seatIndex)
-                      ? 'bg-error ring-2 ring-texto2 scale-110'
-                      : 'bg-success hover:scale-110 cursor-pointer'
+                        ? 'scale-110 bg-error ring-2 ring-texto2'
+                        : 'cursor-pointer bg-success hover:scale-110'
                   }`}
                 />
               ))}
             </div>
-            {rowIndex === 1 && <div className="w-full h-px bg-texto2/30 my-1" />}
+            {rowIndex === 1 && <div className="my-1 h-px w-full bg-texto2/30" />}
           </div>
         ))}
       </div>
@@ -98,12 +99,12 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
-      <div className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-componente1 p-6 shadow-xl">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-texto1">Cadastrar Passageiro</h2>
           <button
             onClick={onClose}
-            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
+            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -122,9 +123,13 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                 !selectedTrain ? 'text-texto1/60' : ''
               }`}
             >
-              <option value="" disabled>Trem</option>
+              <option value="" disabled>
+                Trem
+              </option>
               {trenes.map((t) => (
-                <option key={t.id} value={t.id}>{t.nome}</option>
+                <option key={t.id} value={t.id}>
+                  {t.nome}
+                </option>
               ))}
             </select>
 
@@ -139,9 +144,13 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                   !selectedWagon ? 'text-texto1/60' : ''
                 }`}
               >
-                <option value="" disabled>Vagão</option>
+                <option value="" disabled>
+                  Vagão
+                </option>
                 {vagoes.map((v) => (
-                  <option key={v} value={v}>{v}</option>
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
                 ))}
               </select>
             )}
@@ -149,13 +158,13 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
 
           {renderSeats()}
 
-              {selectedSeats.length > 0 && (
-            <p className="text-sm text-texto1 text-center">
+          {selectedSeats.length > 0 && (
+            <p className="text-center text-sm text-texto1">
               {selectedSeats.length} assento(s) selecionado(s)
             </p>
           )}
 
-          <div className="flex justify-center mt-2">
+          <div className="mt-2 flex justify-center">
             <Button
               type="button"
               variant="secondary"
@@ -169,13 +178,7 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
         </div>
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }
