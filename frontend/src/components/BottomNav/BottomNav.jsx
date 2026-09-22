@@ -24,7 +24,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-3 px-4">
       <div
-        className="flex items-center justify-center gap-2 px-3 py-2 rounded-2xl bg-componente1 shadow-lg outline-none border border-border"
+        className="flex items-center justify-center gap-2 px-3 py-2 rounded-2xl bg-componente1 shadow-lg outline-hidden border border-border"
         style={{ transform: 'perspective(600px) rotateX(8deg)', willChange: 'transform' }}
       >
         {navItems.map((item, i) => {
@@ -41,7 +41,7 @@ export default function BottomNav() {
             >
               <button
                 onClick={() => navigate(item.path)}
-                className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200 outline-none ${
+                className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200 outline-hidden ${
                   isHovered
                     ? 'bg-componente3'
                     : active
@@ -60,7 +60,7 @@ export default function BottomNav() {
                 <div className="w-1.5 h-1.5 rounded-full bg-texto2 mt-1" />
               )}
               {isHovered && (
-                <div className="absolute -top-8 px-2 py-1 bg-componente3 text-texto1 text-xs rounded whitespace-nowrap">
+                <div className="absolute -top-8 px-2 py-1 bg-componente3 text-texto1 text-xs rounded-sm whitespace-nowrap">
                   {item.label}
                 </div>
               )}

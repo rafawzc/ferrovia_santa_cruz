@@ -214,15 +214,15 @@ export default function CargaLista() {
 
               <div className="flex flex-wrap gap-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-success" />
+                  <div className="w-3 h-3 rounded-sm bg-success" />
                   <span className="text-xs text-texto2">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-sm bg-yellow-500" />
                   <span className="text-xs text-texto2">Quase lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-error" />
+                  <div className="w-3 h-3 rounded-sm bg-error" />
                   <span className="text-xs text-texto2">Lotado</span>
                 </div>
               </div>
@@ -332,15 +332,15 @@ export default function CargaLista() {
 
               <div className="flex flex-wrap gap-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-success" />
+                  <div className="w-3 h-3 rounded-sm bg-success" />
                   <span className="text-xs text-texto2">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-sm bg-yellow-500" />
                   <span className="text-xs text-texto2">Quase lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded bg-error" />
+                  <div className="w-3 h-3 rounded-sm bg-error" />
                   <span className="text-xs text-texto2">Lotado</span>
                 </div>
               </div>
