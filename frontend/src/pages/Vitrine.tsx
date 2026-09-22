@@ -301,7 +301,7 @@ export default function Vitrine() {
         <Section title="Card">
           <Card className="max-w-md">
             <CardHeader>
-              <CardTitle>Linha 1778</CardTitle>
+              <CardTitle>Rota 1778</CardTitle>
               <CardDescription>Última leitura há 2 min</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
@@ -373,7 +373,7 @@ export default function Vitrine() {
             <Button
               variant="ghost"
               onClick={() => {
-                toast('Alerta enviado', { description: 'Linha 1778' })
+                toast('Alerta enviado', { description: 'Rota 1778' })
               }}
             >
               Disparar toast

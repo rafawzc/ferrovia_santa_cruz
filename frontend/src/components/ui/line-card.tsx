@@ -11,7 +11,7 @@ export function LineCard({ numero, status, ativo }: LineCardProps) {
   return (
     <Card className="items-center gap-2 bg-secondary p-5 text-center text-secondary-foreground">
       <p className="text-lg">
-        Linha <span className="font-bold">{numero}</span>
+        Rota <span className="font-bold">{numero}</span>
       </p>
       <StatusBadge status={status} />
       <p className="text-sm text-muted-foreground">{ativo ? 'Ativo' : 'Inativo'}</p>
