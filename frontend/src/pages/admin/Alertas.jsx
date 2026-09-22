@@ -1,12 +1,10 @@
 import { useState } from 'react'
+import { Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import ScreenHeader from '../../components/ScreenHeader/ScreenHeader'
 import FormField from '../../components/FormField/FormField'
 import Button from '../../components/Button/Button'
+import Toast from '../../components/Toast/Toast'
 import BottomNav from '../../components/BottomNav/BottomNav'
-
-const notificacoesEnviadas = [
-  { linha: 'Linha 1778', espera: '15 a 30 min', motivo: 'manutenção no trilho', status: 'Parado' },
-]
 
 export default function Alertas() {
   const [formData, setFormData] = useState({
@@ -15,84 +13,179 @@ export default function Alertas() {
     motivo: '',
     status: '',
   })
+  const [errors, setErrors] = useState({})
+  const [sending, setSending] = useState(false)
+  const [toast, setToast] = useState(null)
+  const [history, setHistory] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
 
   const handleChange = (field) => (e) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }))
+    }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setFormData({ linha: '', espera: '', motivo: '', status: '' })
+  const validate = () => {
+    const newErrors = {}
+    if (!formData.linha.trim()) newErrors.linha = 'Preencha o nome da linha'
+    if (!formData.espera.trim()) newErrors.espera = 'Preencha o tempo de espera'
+    if (!formData.motivo.trim()) newErrors.motivo = 'Preencha o motivo'
+    if (!formData.status.trim()) newErrors.status = 'Preencha o status'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!validate()) return
+
+    setSending(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const newNotification = {
+        ...formData,
+        timestamp: Date.now(),
+      }
+      setHistory((prev) => [newNotification, ...prev])
+      setFormData({ linha: '', espera: '', motivo: '', status: '' })
+      setToast({ message: 'Notificação enviada com sucesso!', type: 'success' })
+    } catch {
+      setToast({ message: 'Erro ao enviar notificação.', type: 'error' })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const getRecentHistory = () => {
+    const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000
+    return history.filter((item) => item.timestamp > thirtyMinutesAgo)
+  }
+
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  const recentHistory = getRecentHistory()
 
   return (
-    <div className="min-h-screen bg-bg pb-28">
+    <div className="min-h-screen bg-bg-page pb-28">
       <div className="px-6 pt-8">
-        <ScreenHeader title="Alerta e Notificações" showBack={true} />
-
-        <div className="mb-6 flex justify-end">
-          <div className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-on-primary">
-            Notificações enviadas
-          </div>
+        <div className="flex justify-center">
+          <ScreenHeader title="Alerta e Notificações" showBack={false} />
         </div>
 
-        <div className="flex flex-col gap-6 lg:flex-row">
-          <div className="flex-1 rounded-3xl bg-primary p-6">
+        <div className="flex justify-center mt-8">
+          <div className="w-full max-w-md bg-componente1 rounded-3xl p-6">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <FormField
                 id="linha"
                 label="Nome da linha:"
-                placeholder=""
+                placeholder="Nome da linha"
                 value={formData.linha}
                 onChange={handleChange('linha')}
-                onDark
+                error={errors.linha}
+                hideLabel
               />
               <FormField
                 id="espera"
                 label="Tempo de espera:"
-                placeholder=""
+                placeholder="Tempo de espera"
                 value={formData.espera}
                 onChange={handleChange('espera')}
-                onDark
+                error={errors.espera}
+                hideLabel
               />
               <FormField
                 id="motivo"
                 label="Motivo:"
-                placeholder=""
+                placeholder="Motivo"
                 value={formData.motivo}
                 onChange={handleChange('motivo')}
-                onDark
+                error={errors.motivo}
+                hideLabel
               />
               <FormField
                 id="status"
-                label="Status"
-                placeholder=""
+                label="Status:"
+                placeholder="Status"
                 value={formData.status}
                 onChange={handleChange('status')}
-                onDark
+                error={errors.status}
+                hideLabel
               />
-              <div className="mt-2 flex justify-center">
-                <Button type="submit" variant="secondary" className="w-auto px-10">
-                  Enviar
+              <div className="flex justify-center mt-2">
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={sending}
+                  className="w-auto px-10"
+                >
+                  {sending ? 'Enviando...' : 'Enviar'}
                 </Button>
               </div>
             </form>
           </div>
+        </div>
 
-          <div className="flex-1 rounded-3xl bg-primary p-6">
-            <div className="flex flex-col gap-4">
-              {notificacoesEnviadas.map((n, i) => (
-                <div key={i} className="flex flex-col gap-3 rounded-2xl bg-surface p-5">
-                  <p className="text-sm font-medium text-on-primary">{n.linha}</p>
-                  <p className="text-sm text-on-primary">Tempo de espera: {n.espera}</p>
-                  <p className="text-sm text-on-primary">Motivo: {n.motivo}</p>
-                  <p className="text-sm text-on-primary">Status: {n.status}</p>
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-2 text-texto1 font-medium hover:opacity-80 transition-opacity"
+          >
+            <Clock size={18} />
+            <span>Histórico de notificações</span>
+            {showHistory ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+        </div>
+
+        {showHistory && (
+          <div className="flex justify-center mt-4">
+            <div className="w-full max-w-md bg-componente1 rounded-3xl p-4">
+              {recentHistory.length === 0 ? (
+                 <p className="text-texto1 text-sm text-center py-4">
+                   Nenhuma notificação enviada nos últimos 30 minutos
+                 </p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {recentHistory.map((item, i) => (
+                    <div
+                      key={i}
+                      className="bg-componente3 rounded-2xl p-4 flex flex-col gap-2"
+                    >
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-semibold text-texto1">
+                          {item.linha}
+                        </p>
+                        <span className="text-xs text-texto1/70">
+                          {formatTime(item.timestamp)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-texto1">
+                        Motivo: {item.motivo}
+                      </p>
+                      <p className="text-xs text-texto1">
+                        Status: {item.status}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
       <BottomNav />
     </div>

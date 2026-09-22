@@ -10,16 +10,16 @@ export default function ScreenHeader({ title, showBack = true, onBack }) {
   }
 
   return (
-    <div className="mb-6 flex items-center gap-4">
+    <div className="flex items-center gap-4 mb-6">
       {showBack && (
         <button
           onClick={handleBack}
-          className="cursor-pointer text-text transition-opacity hover:opacity-70"
+          className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
         >
           <ArrowLeft size={28} />
         </button>
       )}
-      <h1 className="text-xl font-bold text-text lg:text-2xl">{title}</h1>
+      <h1 className="text-xl lg:text-2xl font-bold text-texto1">{title}</h1>
     </div>
   )
 }
