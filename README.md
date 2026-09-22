@@ -21,7 +21,7 @@ Aplicação web para **gerenciar** (lado admin) e **informar** (lado cliente e a
 
 | Camada | Stack | O que faz |
 |--------|-------|-----------|
-| **Frontend** | React · Vite · Vitest | UI responsiva (mobile-first) — dashboard admin e telas de informação do cliente |
+| **Frontend** | React 19 · TypeScript · Tailwind v4 · Vite | UI responsiva (mobile-first) — dashboard admin e telas de informação do cliente |
 | **Backend** | FastAPI · Python | API REST sob `/api/...`, acesso ao banco em SQL puro |
 | **Banco** | MySQL 8 | Persistência — schema e seed em `db/` |
 
@@ -69,27 +69,31 @@ Detalhe completo (proxy, `depends_on`, healthchecks) em [`docs/arquitetura/conta
 
 ```bash
 git clone https://github.com/rafawzc/ferrovia_santa_cruz.git && cd ferrovia_santa_cruz
-docker compose up --build
+./fsc up
 ```
 
-O Compose sobe os serviços na ordem certa (`db → backend → frontend`) e espera o banco aceitar conexão antes do backend ligar. Quando terminar, abra **http://localhost:5173**.
+Tudo passa pelo **`./fsc`**, que roda cada comando dentro dos containers — não precisa de node nem python na máquina. Na primeira vez ele cria o `.env` a partir do `.env.example`. O Compose sobe os serviços na ordem certa (`db → backend → frontend`) e espera cada um ficar saudável. Quando terminar, abra **http://localhost:5173**.
 
-As chamadas de API (`/api/...`) são repassadas internamente ao backend — não há porta de backend nem de banco exposta na sua máquina.
+As chamadas de API (`/api/...`) são repassadas internamente ao backend — não há porta de backend nem de banco exposta na sua máquina. Usuários de dev do seed usam a senha `ferrovia123`.
 
 ### Uso no dia a dia
 
 ```bash
-docker compose up -d        # sobe em background
-docker compose logs -f      # acompanha os logs
-docker compose down         # derruba tudo
+./fsc logs          # acompanha os logs
+./fsc down          # derruba tudo
+./fsc db            # shell do MySQL
+./fsc db:reset      # recria o banco de dev do zero (pede confirmação)
+./fsc help          # lista todos os comandos
 ```
 
-### Testes
+### Qualidade
 
 ```bash
-docker compose exec backend pytest          # backend (pytest)
-docker compose exec frontend npm run test   # frontend (Vitest)
+./fsc test          # testes do backend (pytest)
+./fsc check         # lint + typecheck + format + testes + build — o mesmo que o CI roda em todo PR
 ```
+
+O front não tem testes automatizados: o gate é typecheck + lint + build, e as telas são conferidas no navegador em mobile e desktop. Guia completo (comandos, usuários de dev, CI): [`docs/arquitetura/operacao.md`](docs/arquitetura/operacao.md).
 
 ## Estrutura do projeto
 
@@ -101,6 +105,8 @@ ferrovia_santa_cruz/
 ├── docs/               # documentação do projeto (ver docs/CLAUDE.md)
 ├── assets/             # mídia do README (logo)
 ├── docker-compose.yml  # 3 serviços: frontend, backend, db
+├── fsc                 # porta única: stack, qualidade, banco, npm
+├── .github/workflows/  # CI — ./fsc check em todo PR
 └── .claude/            # configuração e instruções do agente de IA
 ```
 
