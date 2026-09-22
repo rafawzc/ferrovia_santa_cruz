@@ -1,7 +1,7 @@
 export default function InfoCard({ icon: Icon, label, value, className = '' }) {
   return (
     <div className={`flex items-center gap-4 ${className}`}>
-      <div className="bg-primary rounded-xl p-3 flex items-center justify-center">
+      <div className="flex items-center justify-center rounded-xl bg-primary p-3">
         <Icon size={28} className="text-on-primary" />
       </div>
       <div>

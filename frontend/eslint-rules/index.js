@@ -7,7 +7,12 @@ const PALETTE_CLASS =
 const ARBITRARY = /(?:^|[-:!])\[/
 
 function classTokens(text) {
-  return text.split(/\s+/).map((token) => token.split(':').pop().replace(/^[!-]+/, ''))
+  return text.split(/\s+/).map((token) =>
+    token
+      .split(':')
+      .pop()
+      .replace(/^[!-]+/, ''),
+  )
 }
 
 function onStrings(check) {
@@ -64,7 +69,9 @@ const noRawColor = {
 const noArbitraryValue = {
   meta: {
     type: 'problem',
-    messages: { arbitrary: 'Valor arbitrário Tailwind "{{value}}": use a escala/tokens do tema (L13d).' },
+    messages: {
+      arbitrary: 'Valor arbitrário Tailwind "{{value}}": use a escala/tokens do tema (L13d).',
+    },
     schema: [],
   },
   create(context) {

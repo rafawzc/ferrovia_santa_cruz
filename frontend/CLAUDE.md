@@ -36,14 +36,14 @@ ESLint 9 flat (`eslint.config.js`) — 9 e não 10 porque o `eslint-plugin-jsx-a
 
 Escopo: só `**/*.{ts,tsx}` + `eslint.config.js` + `eslint-rules/`. **Os `.jsx` legados de `src/` estão ignorados** até serem reescritos em TSX na fase 4 — tela reescrita passa a ser linted automaticamente.
 
-| Regra | Proíbe | Exceção |
-|---|---|---|
-| `local/no-comments` (L7) | qualquer comentário; tem autofix que apaga | `eslint-disable*`/`eslint-enable`, `@ts-expect-error`, `/// <reference` |
-| `local/no-raw-color` (L13a) | hex, `rgb/hsl/oklch/oklab(`, classe de paleta (`bg-red-500`, `text-white/50`) em qualquer string | nenhuma (vale em `ui/` também); cor mora só no `src/index.css` |
-| `local/no-arbitrary-value` (L13d) | valor arbitrário Tailwind (`rounded-[3rem]`, `[&_svg]:…`) | `src/components/ui/**` (shadcn usa `has-[>svg]:`), desligado no config |
-| `no-restricted-syntax` (L13b/d) | `<button/input/select/textarea/dialog>` cru; atributo `style` | controles crus liberados em `src/components/ui/**`; `style` sem exceção |
-| `no-restricted-globals` (L13c) | `fetch` | `src/lib/api/**` |
-| `no-restricted-imports` (L13c) | páginas importando `@radix-ui/*`, `@/pages/*` ou qualquer import relativo (use `@/`); `ui/` importando páginas | — |
+| Regra                             | Proíbe                                                                                                         | Exceção                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `local/no-comments` (L7)          | qualquer comentário; tem autofix que apaga                                                                     | `eslint-disable*`/`eslint-enable`, `@ts-expect-error`, `/// <reference` |
+| `local/no-raw-color` (L13a)       | hex, `rgb/hsl/oklch/oklab(`, classe de paleta (`bg-red-500`, `text-white/50`) em qualquer string               | nenhuma (vale em `ui/` também); cor mora só no `src/index.css`          |
+| `local/no-arbitrary-value` (L13d) | valor arbitrário Tailwind (`rounded-[3rem]`, `[&_svg]:…`)                                                      | `src/components/ui/**` (shadcn usa `has-[>svg]:`), desligado no config  |
+| `no-restricted-syntax` (L13b/d)   | `<button/input/select/textarea/dialog>` cru; atributo `style`                                                  | controles crus liberados em `src/components/ui/**`; `style` sem exceção |
+| `no-restricted-globals` (L13c)    | `fetch`                                                                                                        | `src/lib/api/**`                                                        |
+| `no-restricted-imports` (L13c)    | páginas importando `@radix-ui/*`, `@/pages/*` ou qualquer import relativo (use `@/`); `ui/` importando páginas | —                                                                       |
 
 As regras locais são um plugin ESM em `eslint-rules/index.js`. As de string olham `Literal` e quasis de template e quebram por espaço — não sabem se a string é className, então um texto tipo `"[opcional]"` também cai no `no-arbitrary-value`.
 

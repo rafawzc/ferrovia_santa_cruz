@@ -12,6 +12,7 @@ Cada cor do app é um **token semântico por PAPEL** (`bg`, `surface`, `primary`
 **Trocar `data-theme` no `<html>` re-pinta tudo** — nenhum componente tem lógica de tema.
 
 > **Gotchas:**
+>
 > - O bloco `[data-theme="dark"]` fica **fora** de `@layer`: o `@theme` vira `@layer theme`, e CSS sem layer sempre ganha de CSS em layer. É isso que garante que o escuro sobrescreve o claro, sem depender de especificidade (`:root` e `[data-theme]` empatam).
 > - Valores são cor direta (hex). Opacidade (`bg-primary/90`) funciona porque o v4 gera `color-mix(in oklab, var(--color-primary) 90%, transparent)`. A regra antiga de "canais RGB separados por espaço" era do v3 e morreu.
 > - `--color-primary` escuro (`#9a5f38`) foi afinado pra dar AA (4.5:1) com `on-primary`. Não clareie/escureça sem medir contraste.
@@ -27,19 +28,19 @@ Cada cor do app é um **token semântico por PAPEL** (`bg`, `surface`, `primary`
 
 ## Mapa dos tokens (papel → onde usar)
 
-| Token | Papel | Classe |
-|-------|-------|--------|
-| `bg` | fundo de página | `bg-bg` |
-| `surface` | card/input taupe, secundário | `bg-surface` |
-| `surface-2` | superfície elevada mais clara | `bg-surface-2` |
-| `primary` | ação primária / card escuro / nav / Modal | `bg-primary`, `text-primary`, `border-primary` |
-| `on-primary` | tinta SOBRE `primary`/superfície escura | `text-on-primary` |
-| `text` | tinta principal (sobre fundo claro no claro, clara no escuro) | `text-text` |
-| `text-muted` | tinta secundária | `text-text-muted` |
-| `panel` | painel decorativo escuro (lateral do auth desktop) | `bg-panel` |
-| `field` | fundo de input | `bg-field` |
-| `border` | hairline / focus ring | `border-border`, `ring-primary` |
-| `error` / `success` | validação (hex fixo, fora do tema) | idem |
+| Token               | Papel                                                         | Classe                                         |
+| ------------------- | ------------------------------------------------------------- | ---------------------------------------------- |
+| `bg`                | fundo de página                                               | `bg-bg`                                        |
+| `surface`           | card/input taupe, secundário                                  | `bg-surface`                                   |
+| `surface-2`         | superfície elevada mais clara                                 | `bg-surface-2`                                 |
+| `primary`           | ação primária / card escuro / nav / Modal                     | `bg-primary`, `text-primary`, `border-primary` |
+| `on-primary`        | tinta SOBRE `primary`/superfície escura                       | `text-on-primary`                              |
+| `text`              | tinta principal (sobre fundo claro no claro, clara no escuro) | `text-text`                                    |
+| `text-muted`        | tinta secundária                                              | `text-text-muted`                              |
+| `panel`             | painel decorativo escuro (lateral do auth desktop)            | `bg-panel`                                     |
+| `field`             | fundo de input                                                | `bg-field`                                     |
+| `border`            | hairline / focus ring                                         | `border-border`, `ring-primary`                |
+| `error` / `success` | validação (hex fixo, fora do tema)                            | idem                                           |
 
 Cores de **status** (verde/amarelo/vermelho/laranja em `StatusBadge`, `UserCard`, `LineCard`) são paleta Tailwind pura de propósito — são sinais universais, não cor de marca.
 

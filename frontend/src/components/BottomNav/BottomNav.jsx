@@ -20,8 +20,8 @@ export default function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4">
-      <div className="flex items-center gap-1 bg-primary rounded-full px-2 py-2 shadow-lg">
+    <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center px-4 pb-4">
+      <div className="flex items-center gap-1 rounded-full bg-primary px-2 py-2 shadow-lg">
         {navItems.map((item) => {
           const active = isActive(item.path)
           const Icon = item.icon
@@ -29,9 +29,9 @@ export default function BottomNav() {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`flex items-center gap-2 rounded-full px-4 py-2.5 transition-all duration-200 cursor-pointer ${
+              className={`flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 transition-all duration-200 ${
                 active
-                  ? 'bg-surface text-text font-semibold'
+                  ? 'bg-surface font-semibold text-text'
                   : 'text-on-primary hover:bg-primary/80'
               }`}
             >

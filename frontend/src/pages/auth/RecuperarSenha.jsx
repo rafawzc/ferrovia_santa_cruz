@@ -52,38 +52,66 @@ export default function RecuperarSenha() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-bg">
-      <div className="lg:w-[45%] flex flex-col bg-bg">
-        <div className="bg-bg px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
+    <div className="flex min-h-screen flex-col bg-bg lg:flex-row">
+      <div className="flex flex-col bg-bg lg:w-[45%]">
+        <div className="flex justify-center bg-bg px-8 pt-10 pb-14 lg:justify-start lg:pb-20">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
-        <div className="flex-1 bg-surface rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
-          <Link to="/login" className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-text mb-6 transition-colors">
+        <div className="-mt-6 flex-1 rounded-tl-[3rem] rounded-tr-[3rem] bg-surface px-8 pt-10 pb-8 lg:mt-0 lg:rounded-tl-none lg:rounded-tr-[3rem] lg:rounded-br-[3rem] lg:rounded-bl-[3rem] lg:px-14 lg:pt-12">
+          <Link
+            to="/login"
+            className="mb-6 inline-flex items-center gap-2 text-sm text-text-muted transition-colors hover:text-text"
+          >
             <ArrowLeft size={16} />
             Voltar para o login
           </Link>
-          <h1 className="text-2xl lg:text-3xl font-bold text-text mb-3">
-            Recuperar Senha
-          </h1>
-          <p className="text-sm text-text-muted mb-8">
+          <h1 className="mb-3 text-2xl font-bold text-text lg:text-3xl">Recuperar Senha</h1>
+          <p className="mb-8 text-sm text-text-muted">
             Informe seu email e crie uma nova senha para acessar sua conta.
           </p>
           {success && (
-            <div className="bg-green-100 border border-green-300 rounded-xl p-4 mb-6">
-              <p className="text-sm text-green-700 font-medium">
+            <div className="mb-6 rounded-xl border border-green-300 bg-green-100 p-4">
+              <p className="text-sm font-medium text-green-700">
                 Senha redefinida com sucesso! Redirecionando para o login...
               </p>
             </div>
           )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <FormField id="email" label="Email" type="email" placeholder="seu@email.com" value={formData.email} onChange={handleChange('email')} error={errors.email} />
-            <FormField id="novaSenha" label="Nova Senha" type="password" placeholder="********" value={formData.novaSenha} onChange={handleChange('novaSenha')} error={errors.novaSenha} helperText="A senha deve ter no mínimo 8 caracteres." />
-            <FormField id="confirmarSenha" label="Confirmar Nova Senha" type="password" placeholder="********" value={formData.confirmarSenha} onChange={handleChange('confirmarSenha')} error={errors.confirmarSenha} />
+            <FormField
+              id="email"
+              label="Email"
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={handleChange('email')}
+              error={errors.email}
+            />
+            <FormField
+              id="novaSenha"
+              label="Nova Senha"
+              type="password"
+              placeholder="********"
+              value={formData.novaSenha}
+              onChange={handleChange('novaSenha')}
+              error={errors.novaSenha}
+              helperText="A senha deve ter no mínimo 8 caracteres."
+            />
+            <FormField
+              id="confirmarSenha"
+              label="Confirmar Nova Senha"
+              type="password"
+              placeholder="********"
+              value={formData.confirmarSenha}
+              onChange={handleChange('confirmarSenha')}
+              error={errors.confirmarSenha}
+            />
             <div className="mt-2">
-              <Button type="submit" disabled={success}>Redefinir Senha</Button>
+              <Button type="submit" disabled={success}>
+                Redefinir Senha
+              </Button>
             </div>
           </form>
-          <p className="text-center text-sm text-text-muted mt-6">
+          <p className="mt-6 text-center text-sm text-text-muted">
             Lembrou sua senha?{' '}
             <Link to="/login" className="font-semibold text-primary hover:underline">
               Fazer Login
@@ -91,8 +119,12 @@ export default function RecuperarSenha() {
           </p>
         </div>
       </div>
-      <div className="hidden lg:block lg:w-[55%] bg-panel relative overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80" alt="Trem em movimento" className="w-full h-full object-cover opacity-80" />
+      <div className="relative hidden overflow-hidden bg-panel lg:block lg:w-[55%]">
+        <img
+          src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80"
+          alt="Trem em movimento"
+          className="h-full w-full object-cover opacity-80"
+        />
       </div>
     </div>
   )
