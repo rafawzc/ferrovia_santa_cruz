@@ -16,7 +16,7 @@ git clone https://github.com/rafawzc/ferrovia_santa_cruz.git && cd ferrovia_sant
 ```
 
 - Na primeira chamada, o `./fsc` **cria o `.env` a partir do `.env.example`** (senhas de dev). O `.env` é gitignored — nunca commite.
-- `.env` criado antes da API (fase 3)? Ele não tem `DB_HOST=db` e o backend quebra no primeiro acesso ao banco. Copie a linha do `.env.example` (e o `JWT_SECRET` novo, com 32+ bytes).
+- `.env` criado antes da API (fase 3)? Troque o `JWT_SECRET` pelo do `.env.example` (32+ bytes; o antigo só gera warning do PyJWT).
 - O `up` builda as imagens e sobe `db → backend → frontend` em ordem, esperando cada um ficar healthy. A primeira subida do banco demora (roda `db/schema.sql` + `db/seed.sql`).
 - Abra **http://localhost:5173**.
 

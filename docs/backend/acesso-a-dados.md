@@ -65,7 +65,7 @@ def cursor():
 ```
 
 - **Pool preguiçoso** (`@cache`): só conecta na primeira query. Por isso importar o `app` nos testes não precisa de banco.
-- **Env:** `DB_HOST` (`db`, o nome do serviço na rede interna), `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD` — o compose injeta o `.env`. Nada chumbado.
+- **Env:** `DB_HOST` (`db`, o nome do serviço na rede interna), `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD` — `DB_HOST` vem do `environment:` do compose, o resto do `.env`. Nada chumbado.
 - **`cursor()` é a única porta:** devolve cursor `dictionary=True` (linha vira `dict`), faz `commit` se o bloco terminar sem erro e **sempre** devolve a conexão pro pool (`close()` num pooled = devolver). Erro no meio → sem commit; o pool reseta a sessão quando a conexão volta (o que não foi commitado é descartado).
 
 ## Regra nº 3 — sempre fechar cursor e conexão

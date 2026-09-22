@@ -43,7 +43,7 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 - `COALESCE(%(x)s, DEFAULT(cargo_id))` no INSERT deixa o **banco** decidir o cargo padrão (cadastro público → `comum`). Não chumbe `1` no Python.
 - PATCH parcial é `SET col = COALESCE(%(col)s, col)`: SQL estático, sem montar SET dinâmico. Preço: `null` não apaga campo.
 - INSERT que falha com 409 **queima** o `AUTO_INCREMENT` (InnoDB). Não assuma id sequencial em smoke.
-- `.env` antigo (antes da fase 3) não tem `DB_HOST` → o pool quebra com `KeyError` no primeiro acesso ao banco. Copie `DB_HOST=db` do `.env.example`. `JWT_SECRET` < 32 bytes só gera warning do PyJWT, mas troque.
+- `DB_HOST` vem do `environment:` do compose (é o nome do serviço, não segredo), não do `.env`. `JWT_SECRET` < 32 bytes só gera warning do PyJWT, mas troque.
 
 ## Smoke contra o banco real sem derrubar outra stack
 
