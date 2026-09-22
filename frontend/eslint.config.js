@@ -78,7 +78,7 @@ export default defineConfig(
         {
           patterns: [
             {
-              group: ['@radix-ui/*'],
+              group: ['radix-ui', '@radix-ui/*'],
               message: 'Páginas usam @/components/ui, não Radix direto (L13c).',
             },
             IMPORT_PAGES,
