@@ -8,7 +8,7 @@ import type { Papel } from '@/lib/api'
 const Login = lazy(() => import('@/pages/auth/Login.jsx'))
 const Cadastro = lazy(() => import('@/pages/auth/Cadastro.jsx'))
 const RecuperarSenha = lazy(() => import('@/pages/auth/RecuperarSenha.jsx'))
-const Dashboard = lazy(() => import('@/pages/admin/Dashboard.jsx'))
+const Dashboard = lazy(() => import('@/pages/admin/Dashboard'))
 const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista.jsx'))
 const UsuarioDetalhe = lazy(() => import('@/pages/admin/UsuarioDetalhe.jsx'))
 const UsuarioEditar = lazy(() => import('@/pages/admin/UsuarioEditar.jsx'))
