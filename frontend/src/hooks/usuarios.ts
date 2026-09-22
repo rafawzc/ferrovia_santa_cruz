@@ -17,10 +17,6 @@ export function useUsuarios() {
   return useQuery({ queryKey: chave, queryFn: api.usuarios.listar })
 }
 
-export function useUsuario(id: number) {
-  return useQuery({ queryKey: [...chave, id], queryFn: () => api.usuarios.obter(id) })
-}
-
 export function useCriarUsuario() {
   const invalidar = useInvalidarUsuarios()
   return useMutation({ mutationFn: api.usuarios.criar, onSuccess: invalidar })
