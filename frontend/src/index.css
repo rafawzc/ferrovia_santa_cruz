@@ -1,59 +1,52 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/*
- * Tokens de cor semânticos (por PAPEL, não por valor).
- * Canais RGB (space-separated) pra os modificadores de opacidade do Tailwind
- * funcionarem: rgb(var(--color-x) / <alpha-value>).
- * :root = tema claro (= paleta base). [data-theme="dark"] = tema escuro (marrom, sem preto puro).
- */
-:root {
-  --color-bg: 196 162 125;         /* #c4a27d — fundo de página */
-  --color-surface: 194 177 156;    /* #c2b19c — card/input taupe */
-  --color-surface-2: 218 204 190;  /* #daccbe — superfície elevada mais clara */
-  --color-primary: 109 65 42;      /* #6d412a — ação primária / card escuro */
-  --color-on-primary: 234 230 222; /* #eae6de — tinta sobre primary */
-  --color-text: 68 49 43;          /* #44312b — tinta principal */
-  --color-text-muted: 107 82 69;   /* #6b5245 — tinta secundária */
-  --color-panel: 68 49 43;         /* #44312b — painel decorativo (auth desktop) */
-  --color-field: 237 228 215;      /* #ede4d7 — fundo de input */
-  --color-border: 109 65 42;       /* #6d412a — hairline / focus ring */
+@theme {
+  --color-bg: #c4a27d;
+  --color-surface: #c2b19c;
+  --color-surface-2: #daccbe;
+  --color-primary: #6d412a;
+  --color-on-primary: #eae6de;
+  --color-text: #44312b;
+  --color-text-muted: #6b5245;
+  --color-panel: #44312b;
+  --color-field: #ede4d7;
+  --color-border: #6d412a;
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+
+  --font-poppins: Poppins, sans-serif;
 }
 
-[data-theme="dark"] {
-  --color-bg: 36 26 20;            /* #241a14 */
-  --color-surface: 51 36 27;       /* #33241b */
-  --color-surface-2: 64 47 36;     /* #402f24 */
-  --color-primary: 154 95 56;      /* #9a5f38 — afinado p/ AA com on-primary (4.5:1) */
-  --color-on-primary: 244 239 232; /* #f4efe8 */
-  --color-text: 239 231 221;       /* #efe7dd */
-  --color-text-muted: 183 164 147; /* #b7a493 */
-  --color-panel: 58 40 29;         /* #3a281d */
-  --color-field: 74 56 44;         /* #4a382c */
-  --color-border: 90 70 54;        /* #5a4636 */
+[data-theme='dark'] {
+  --color-bg: #241a14;
+  --color-surface: #33241b;
+  --color-surface-2: #402f24;
+  --color-primary: #9a5f38;
+  --color-on-primary: #f4efe8;
+  --color-text: #efe7dd;
+  --color-text-muted: #b7a493;
+  --color-panel: #3a281d;
+  --color-field: #4a382c;
+  --color-border: #5a4636;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@layer base {
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 
-html,
-body,
-#root {
-  min-height: 100%;
-  background-color: rgb(var(--color-bg));
-}
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background-color: var(--color-bg);
+  }
 
-body {
-  font-family: 'Poppins', sans-serif;
-  color: rgb(var(--color-text));
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-input:focus {
-  outline: none;
+  body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }

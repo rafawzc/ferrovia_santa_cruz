@@ -4,14 +4,17 @@ Camada que faz o app inteiro trocar de tema sem cada componente saber disso.
 
 ## Como funciona (o pulo do gato)
 
-Cada cor do app é um **token semântico por PAPEL** (`bg`, `surface`, `primary`, `text`, `on-primary`…), não por valor. O token é uma **CSS variable** definida em `src/index.css`:
+Cada cor do app é um **token semântico por PAPEL** (`bg`, `surface`, `primary`, `text`, `on-primary`…), não por valor. O token é uma CSS variable `--color-*` declarada no `@theme` de `src/index.css` (Tailwind v4, config em CSS):
 
-- `:root { --color-bg: 196 162 125; ... }` → tema **claro** (= paleta base da SA).
-- `[data-theme="dark"] { --color-bg: 36 26 20; ... }` → tema **escuro** (marrom, sem preto puro).
+- `@theme { --color-bg: #c4a27d; ... }` → tema **claro** (= paleta base da SA). O Tailwind emite essas vars em `:root` e gera `bg-bg`, `text-text` etc. apontando pra `var(--color-*)`.
+- `[data-theme="dark"] { --color-bg: #241a14; ... }` → tema **escuro** (marrom, sem preto puro). Sobrescreve as mesmas vars.
 
-O `tailwind.config.js` mapeia cada cor Tailwind pra `rgb(var(--color-x) / <alpha-value>)`. Então `bg-primary`, `text-text`, `bg-surface/50` etc. resolvem pro valor do tema ativo. **Trocar `data-theme` no `<html>` re-pinta tudo** — nenhum componente tem lógica de tema.
+**Trocar `data-theme` no `<html>` re-pinta tudo** — nenhum componente tem lógica de tema.
 
-> **Gotcha (não quebre isso):** as CSS vars são **canais RGB separados por espaço** (`"154 95 56"`), NÃO hex. É o que faz o modificador de opacidade do Tailwind (`bg-primary/90`, `text-text/60`) funcionar — vira `rgb(var(--color-primary) / .9)`. Se você trocar por hex (`#9a5f38`), TODA classe com `/opacidade` quebra silenciosamente.
+> **Gotchas:**
+> - O bloco `[data-theme="dark"]` fica **fora** de `@layer`: o `@theme` vira `@layer theme`, e CSS sem layer sempre ganha de CSS em layer. É isso que garante que o escuro sobrescreve o claro, sem depender de especificidade (`:root` e `[data-theme]` empatam).
+> - Valores são cor direta (hex). Opacidade (`bg-primary/90`) funciona porque o v4 gera `color-mix(in oklab, var(--color-primary) 90%, transparent)`. A regra antiga de "canais RGB separados por espaço" era do v3 e morreu.
+> - `--color-primary` escuro (`#9a5f38`) foi afinado pra dar AA (4.5:1) com `on-primary`. Não clareie/escureça sem medir contraste.
 
 ## Peças
 

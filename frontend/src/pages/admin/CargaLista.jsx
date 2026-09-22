@@ -76,7 +76,7 @@ export default function CargaLista() {
 
               <div className="flex flex-wrap gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded bg-green-600" />
+                  <div className="w-8 h-8 rounded-sm bg-green-600" />
                   <span className="text-xs text-on-primary">Vagão disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export default function CargaLista() {
                   <span className="text-xs text-on-primary">Poltrona disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded bg-red-500" />
+                  <div className="w-8 h-8 rounded-sm bg-red-500" />
                   <span className="text-xs text-on-primary">Vagão lotado</span>
                 </div>
                 <div className="flex items-center gap-2">

@@ -57,7 +57,7 @@ export default function RecuperarSenha() {
         <div className="bg-bg px-8 pt-10 pb-14 lg:pb-20 flex justify-center lg:justify-start">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
-        <div className="flex-1 bg-surface rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:-mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
+        <div className="flex-1 bg-surface rounded-tl-[3rem] rounded-tr-[3rem] lg:rounded-tl-none lg:rounded-bl-[3rem] lg:rounded-tr-[3rem] lg:rounded-br-[3rem] -mt-6 lg:mt-0 px-8 pt-10 pb-8 lg:px-14 lg:pt-12">
           <Link to="/login" className="inline-flex items-center gap-2 text-sm text-text-muted hover:text-text mb-6 transition-colors">
             <ArrowLeft size={16} />
             Voltar para o login
