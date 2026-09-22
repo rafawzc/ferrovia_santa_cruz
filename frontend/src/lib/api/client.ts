@@ -44,11 +44,13 @@ export function marcarErrosDeCampo<T extends FieldValues>(
     return false
   }
   const valores = form.getValues()
+  let marcou = false
   for (const { loc } of erro.body.detail) {
     const campo = loc[1]
     if (typeof campo === 'string' && campo in valores) {
       form.setError(campo as Path<T>, { message: 'Valor inválido' })
+      marcou = true
     }
   }
-  return true
+  return marcou
 }
