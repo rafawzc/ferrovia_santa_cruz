@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Papel } from '@/lib/api'
 
-const Login = lazy(() => import('@/pages/auth/Login.jsx'))
+const Login = lazy(() => import('@/pages/auth/Login'))
 const Cadastro = lazy(() => import('@/pages/auth/Cadastro.jsx'))
 const RecuperarSenha = lazy(() => import('@/pages/auth/RecuperarSenha.jsx'))
 const Dashboard = lazy(() => import('@/pages/admin/Dashboard.jsx'))
