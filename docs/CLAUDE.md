@@ -15,7 +15,7 @@ Este arquivo é o **mapa da pasta `docs/`**. Quem chega aqui lê isto primeiro e
 | Área | O que tem dentro |
 |------|------------------|
 | [`design/`](design/) | **Referência visual base** do projeto (mockup da Entrega 1). `mockup-entrega-1.md`: catálogo de telas com pareamento mobile↔desktop. Subpastas `mobile/`, `desktop/` (telas) e `guia-de-estilo/` (paleta de cores + tipografia/ícones). Abra a imagem da tela antes de implementá-la em React. |
-| [`arquitetura/`](arquitetura/) | Como o sistema é montado. `containers-e-rede.md`: modelo Docker dos 3 serviços, rede interna, proxy do frontend, `depends_on` em cadeia. |
+| [`arquitetura/`](arquitetura/) | Como o sistema é montado e operado. `containers-e-rede.md`: o `docker-compose.yml` real — 3 serviços, redes `internal`/`edge`, proxy do frontend, healthchecks, `depends_on` em cadeia, UID do host. `operacao.md`: quickstart com `./fsc`, usuários de dev, comandos do dia a dia, CI e o passo a passo do ruleset da `main` pro dono do repo. |
 | [`banco/`](banco/) | Modelo de dados do MySQL. `modelo-de-dados.md`: ERD, tabelas/tipos/chaves, integridade referencial, regra de exclusão restrita de sensores. Fonte da verdade pro `db/schema.sql`. |
 | [`backend/`](backend/) | API FastAPI e acesso a dados. `acesso-a-dados.md`: SQL puro, queries parametrizadas, conexão, padrões anti-injection. |
 | [`frontend/`](frontend/) | UI React. `responsividade.md`: mobile-first, padrões responsivos, consumo de API por caminho relativo, os dois lados (admin/cliente). `tema.md`: sistema de temas claro/escuro (tokens semânticos via CSS vars, paleta, toggle no Perfil, anti-FOUC) — issue #14. |
