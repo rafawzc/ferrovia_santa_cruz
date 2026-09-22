@@ -1,0 +1,203 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$(readlink -f "$0")")"
+
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
+export HOST_UID HOST_GID
+
+show_help() {
+  cat <<'EOF'
+Usage: ./fsc <command> [args]
+
+Stack
+  up                  build and start everything (detached)
+  down                stop and remove containers
+  restart [svc]       restart all services or one
+  logs [svc]          follow logs of all services or one
+  ps                  list services
+  build               build images
+  sh <svc>            open a shell inside a running service
+
+Quality
+  test [args]         backend pytest (args passed through)
+  lint [fe|be]        lint frontend, backend or both (default)
+  fmt                 format frontend and backend
+  typecheck           frontend typecheck
+  check               lint + typecheck + format check + test + frontend build
+
+Database
+  db                  mysql shell with the .env credentials
+  db:reset [--yes]    DESTROY dev data and recreate the database from db/*.sql
+
+Frontend
+  npm <args>          run npm in a throwaway frontend container
+  ui add <comps...>   add shadcn components and lint-fix them
+
+  help                show this message
+EOF
+}
+
+ensure_env_file() {
+  if [[ ! -f .env ]]; then
+    cp .env.example .env
+    echo "Created .env from .env.example"
+  fi
+}
+
+compose() {
+  docker compose "$@"
+}
+
+run_frontend() {
+  compose run --rm --no-deps frontend "$@"
+}
+
+run_backend() {
+  compose run --rm --no-deps backend "$@"
+}
+
+ensure_frontend_deps() {
+  if [[ ! -d frontend/node_modules ]]; then
+    run_frontend npm install --no-audit --no-fund
+  fi
+}
+
+lint_frontend() {
+  ensure_frontend_deps
+  run_frontend npm run lint
+}
+
+lint_backend() {
+  run_backend ruff check .
+  run_backend python scripts/check_comments.py
+}
+
+lint() {
+  case "${1:-all}" in
+    fe) lint_frontend ;;
+    be) lint_backend ;;
+    all) lint_frontend; lint_backend ;;
+    *) echo "lint: expected fe or be, got '$1'" >&2; exit 1 ;;
+  esac
+}
+
+fmt() {
+  ensure_frontend_deps
+  run_frontend npm run format
+  run_backend ruff format .
+}
+
+typecheck() {
+  ensure_frontend_deps
+  run_frontend npm run typecheck
+}
+
+run_step() {
+  local name="$1"
+  shift
+  echo "==> $name"
+  if ! "$@"; then
+    echo "check FAILED at step: $name" >&2
+    exit 1
+  fi
+}
+
+check() {
+  run_step "install frontend deps" ensure_frontend_deps
+  run_step "lint frontend" run_frontend npm run lint
+  run_step "lint backend (ruff)" run_backend ruff check .
+  run_step "lint backend (comments)" run_backend python scripts/check_comments.py
+  run_step "typecheck frontend" run_frontend npm run typecheck
+  run_step "format check frontend" run_frontend npm run format:check
+  run_step "format check backend" run_backend ruff format --check .
+  run_step "test backend" run_backend pytest
+  run_step "build frontend" run_frontend npm run build
+  echo "check passed"
+}
+
+open_shell() {
+  local svc="${1:?sh: missing service name}"
+  compose exec "$svc" sh -c 'if command -v bash >/dev/null 2>&1; then exec bash; else exec sh; fi'
+}
+
+open_db_shell() {
+  compose exec db sh -c "exec mysql -u\"\$MYSQL_USER\" -p\"\$MYSQL_PASSWORD\" \"\$MYSQL_DATABASE\""
+}
+
+db_volume_name() {
+  local project
+  project="$(compose config | sed -n 's/^name: //p')"
+  echo "${project}_db_data"
+}
+
+confirm_db_reset() {
+  local volume="$1"
+  echo "This DESTROYS the dev database:"
+  echo "  - removes the db container"
+  echo "  - deletes the docker volume '$volume' (all MySQL data)"
+  echo "  - recreates the database from db/schema.sql and db/seed.sql"
+  local answer
+  read -r -p "Type 'reset' to confirm: " answer
+  [[ "$answer" == "reset" ]]
+}
+
+wait_db_healthy() {
+  echo "Waiting for db to become healthy..."
+  compose up -d --wait db
+}
+
+db_reset() {
+  local volume
+  volume="$(db_volume_name)"
+  if [[ "${1:-}" != "--yes" ]] && ! confirm_db_reset "$volume"; then
+    echo "Aborted."
+    exit 1
+  fi
+  compose rm --stop --force db
+  if docker volume inspect "$volume" >/dev/null 2>&1; then
+    docker volume rm "$volume"
+  fi
+  wait_db_healthy
+  echo "db reset done"
+}
+
+ui() {
+  if [[ "${1:-}" != "add" || $# -lt 2 ]]; then
+    echo "usage: ./fsc ui add <components...>" >&2
+    exit 1
+  fi
+  shift
+  ensure_frontend_deps
+  run_frontend npx shadcn@latest add "$@"
+  run_frontend npx eslint --fix src/components/ui
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+  ensure_env_file
+  case "$cmd" in
+    up) compose up -d --build ;;
+    down) compose down ;;
+    restart) compose restart "$@" ;;
+    logs) compose logs -f "$@" ;;
+    ps) compose ps ;;
+    build) compose build ;;
+    sh) open_shell "$@" ;;
+    test) run_backend pytest "$@" ;;
+    lint) lint "$@" ;;
+    fmt) fmt ;;
+    typecheck) typecheck ;;
+    check) check ;;
+    db) open_db_shell ;;
+    db:reset) db_reset "$@" ;;
+    npm) run_frontend npm "$@" ;;
+    ui) ui "$@" ;;
+    help | -h | --help) show_help ;;
+    *) show_help; exit 1 ;;
+  esac
+}
+
+main "$@"
