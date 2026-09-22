@@ -10,20 +10,22 @@ Contrato HTTP de cada endpoint: [`../docs/backend/api.md`](../docs/backend/api.m
 app/main.py            FastAPI(), registra os routers num laço, handler IntegrityError → 409, /api/health
 app/db.py              pool único (lazy, @cache) + cursor() context manager: commit no fim, sempre devolve a conexão
 app/core/security.py   argon2 (pwdlib) + JWT HS256 (PyJWT). Lê JWT_SECRET do env na hora de usar.
-app/core/auth.py       usuario_atual (lê cookie 'sessao', recarrega o usuário do banco) + exige_papel(*papeis)
-app/routers/           só HTTP: Pydantic entra/sai, status, guard. Um arquivo por recurso.
-app/services/          regra em Python puro (sem FastAPI, sem mysql). Hoje só usuarios.py.
+app/core/auth.py       usuario_atual (lê cookie 'sessao', recarrega o usuário via UsuariosService) + exige_papel(*papeis)
+app/deps.py            ÚNICO lugar que liga Protocol → classe MySQL: <recurso>_repo() + alias Annotated do service
+app/routers/           só HTTP: Pydantic entra/sai, status, guard. Depende só do service (alias de deps). Um arquivo por recurso.
+app/services/          <Recurso>Repo (Protocol) + <Recurso>Service(repo). Python puro, sem FastAPI, sem mysql.
 app/repositories/      SQL puro. Uma classe <Recurso>MySQL por recurso, métodos finos.
-tests/fakes.py         repos em memória com a MESMA interface dos <Recurso>MySQL
-tests/conftest.py      client (todas as overrides), como(id) (loga com cookie forjado)
+tests/fakes.py         repos em memória que satisfazem o <Recurso>Repo
+tests/conftest.py      client (override de cada deps.<recurso>_repo), como(id) (loga com cookie forjado)
 scripts/check_comments.py  checagem de "zero comentários" (L7)
 ```
 
 ## Camadas como ficaram (L21)
 
-- **Router → repo direto quando não há regra** (`linhas`, `cargas`, `alertas`, `dashboard`): service que só repassa chamada é wrapper sem valor. O router depende da classe do repo.
-- **Router → service → repo quando há regra** (`auth`, `usuarios`): hash de senha, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE. O service declara o repo como `typing.Protocol` (`services/usuarios.py::UsuariosRepo`) e não importa nada de FastAPI/mysql.
-- **A classe do repo É a dependência.** `repo: Annotated[UsuariosMySQL, Depends()]` → o FastAPI instancia a classe; nos testes `app.dependency_overrides[UsuariosMySQL] = lambda: fake`. Sem função `get_repo`.
+- **Estrito em todo recurso: router → service → repo `Protocol`.** Decisão do usuário (vale mais que o atalho antigo "router → repo quando não há regra"). Nenhum router nem `core/` importa de `app.repositories` (`grep -rn repositories app/routers` tem que dar vazio).
+- **Service** = `services/<recurso>.py` com `class <Recurso>Repo(Protocol)` + `class <Recurso>Service` que recebe o repo no `__init__`. Sem regra → métodos que só repassam (`linhas`, `cargas`, `alertas`, `dashboard`) — esperado, não é bloat. Com regra → `usuarios` (hash, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE).
+- **Fiação só em `app/deps.py`:** `<recurso>_repo()` devolve o `<Recurso>MySQL`; `_<recurso>(repo=Depends(<recurso>_repo))` monta o service; `<Recurso> = Annotated[<Recurso>Service, Depends(_<recurso>)]` é o que o router usa (`servico: Linhas`).
+- **Teste troca o repo, não o service:** `app.dependency_overrides[deps.<recurso>_repo] = lambda: fake`. O service real roda em teste — a regra é coberta.
 - **Erro de integridade não é tratado no repo nem no service**: o `mysql.connector.errors.IntegrityError` sobe e o handler do `main.py` responde 409 (`1062` → "Registro duplicado", `1452` → "Referência inexistente"). Os fakes levantam o mesmo `IntegrityError` com o mesmo `errno` (`fakes.duplicado()`, `fakes.sem_referencia()`).
 - **Guard por papel** no `APIRouter(dependencies=[Depends(exige_papel(...))])`, não em cada rota. Sem cookie → 401 (`usuario_atual`), papel errado → 403.
 - O papel **não** vem do JWT: `usuario_atual` relê o usuário pelo `sub` a cada request. Desativar/trocar cargo vale na hora.
@@ -31,8 +33,13 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 ## Como adicionar um endpoint
 
 1. **RED:** teste em `tests/test_<recurso>.py` usando `como(GESTAO|OPERACIONAL|CLIENTE)` e/ou `client` (anônimo). Cubra sucesso, 401, 403, 422 e 404/409 se couber.
-2. Fake novo em `tests/fakes.py` com os mesmos métodos do repo real; registre em `conftest.py::client` (`app.dependency_overrides[XMySQL] = ...`). Fake com estado → instancie uma vez e sobrescreva com `lambda: instancia` (senão cada request pega um fake novo).
-3. **GREEN:** `repositories/<recurso>.py` (classe `XMySQL`, `with cursor() as cur`, `%s`/`%(nome)s`), `routers/<recurso>.py` (Pydantic + guard), regra só se existir → `services/`. Inclua o módulo no laço do `main.py`.
+2. Fake novo em `tests/fakes.py` com os métodos do `Protocol`; registre em `conftest.py::client` (`app.dependency_overrides[deps.x_repo] = ...`). Fake com estado → instancie uma vez e sobrescreva com `lambda: instancia` (senão cada request pega um fake novo).
+3. **GREEN**, sempre as cinco peças:
+   - `services/<recurso>.py`: `XRepo(Protocol)` + `XService(repo)` (repasse ou regra);
+   - `repositories/<recurso>.py`: `XMySQL` (`with cursor() as cur`, `%s`/`%(nome)s`);
+   - `deps.py`: `x_repo()` → `XMySQL()`, `_x(repo)` → `XService(repo)`, alias `X = Annotated[XService, Depends(_x)]`;
+   - `routers/<recurso>.py`: Pydantic + guard, parâmetro `servico: X`, zero import de `repositories`;
+   - inclua o router no laço do `main.py`.
 4. INSERT que precisa devolver a linha: faça o `SELECT ... WHERE id = %s` com `cur.lastrowid` **no mesmo `cursor()`** (mesma conexão/transação).
 5. **Smoke real (R1):** o SQL nunca roda em teste. Suba a stack e chame via curl pelo proxy (ver abaixo) antes de fechar.
 6. Atualize `docs/backend/api.md`.
@@ -63,7 +70,7 @@ HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p fsc-api-smoke -f docker-co
 Ingestão **não** existe ainda. Quando vier (`POST /api/leituras`, auth por API key do sensor), cabe sem mexer em nada que existe:
 
 - `repositories/leituras.py` (`LeiturasMySQL.criar`) — `leitura_sensor.sensor_id` é FK: sensor inexistente já vira 409 pelo handler global.
-- `services/leituras.py` se houver regra (ex: derivar `status_operacional`), com `Protocol` do repo.
+- `services/leituras.py` (`LeiturasRepo` + `LeiturasService`, regra se houver, ex: derivar `status_operacional`) e a fiação em `deps.py`.
 - `routers/leituras.py` com uma dependência própria de API key **no lugar** de `usuario_atual` — o cookie/JWT é só pra gente, sensor não loga.
 - `./fsc sim` (simulador) roda dentro do container `backend` e bate na mesma URL que o device real.
 

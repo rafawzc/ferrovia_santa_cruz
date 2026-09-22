@@ -1,10 +1,8 @@
-from typing import Annotated
-
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.core.auth import exige_papel
-from app.repositories.dashboard import DashboardMySQL
+from app.deps import Dashboard
 
 router = APIRouter(
     prefix="/api/dashboard",
@@ -21,5 +19,5 @@ class Metricas(BaseModel):
 
 
 @router.get("", response_model=Metricas)
-def metricas(repo: Annotated[DashboardMySQL, Depends()]):
-    return repo.metricas()
+def metricas(servico: Dashboard):
+    return servico.metricas()

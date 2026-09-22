@@ -1,10 +1,10 @@
-from typing import Annotated, Literal
+from typing import Literal
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.core.auth import exige_papel
-from app.repositories.linhas import LinhasMySQL
+from app.deps import Linhas
 
 router = APIRouter(
     prefix="/api/linhas",
@@ -21,5 +21,5 @@ class LinhaSaida(BaseModel):
 
 
 @router.get("", response_model=list[LinhaSaida])
-def listar(repo: Annotated[LinhasMySQL, Depends()]):
-    return repo.listar()
+def listar(servico: Linhas):
+    return servico.listar()

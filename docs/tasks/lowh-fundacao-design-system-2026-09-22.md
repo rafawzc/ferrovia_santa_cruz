@@ -243,13 +243,14 @@ Criar a worktree `feat/fundacao` e disparar em paralelo `A2` (db fix), `A4` (too
 | C3 — linhas, carga, alertas | `4de14b0` | `GET /api/linhas`, `GET/POST /api/cargas`, `GET/POST /api/alertas` (operacional + gestão). |
 | C3 — dashboard | `fc98ebd` | `GET /api/dashboard`: linhas ativas, em manutenção, sensores, velocidade média. |
 | C4 — docs | `301c2a9` | `docs/backend/api.md` (contrato), `backend/CLAUDE.md`, `acesso-a-dados.md` com o `db.py` real, índice. |
+| C5 — camadas estritas (L21) | ver `git log --grep 'camadas estritas'` | Decisão do usuário: todo router → service → repo `Protocol`; fiação só em `app/deps.py`; testes sobrescrevem `deps.<recurso>_repo`. 53 testes intactos. |
 
 Verificação: `./fsc check` verde (53 testes). Smoke R1 real via proxy do Vite (projeto compose isolado `fsc-api-smoke`, porta 5199, banco recém-seedado): todos os endpoints com 200/201/204/202 no caminho feliz e 401/403/404/409/422 nos erros esperados.
 
 #### Desvios da fase 3
 
 - **Sem `app/core/settings.py`.** Só dois lugares leem env (`db.py` e `core/security.py`); um módulo de settings seria wrapper de `os.environ`. Leitura é preguiçosa → importar o app em teste não exige banco.
-- **Router → repo direto quando não há regra** (linhas, cargas, alertas, dashboard). `services/` só existe onde há regra (`usuarios.py`: auth, cadastro, hash, desativar). O `Protocol` mora no service.
+- ~~Router → repo direto quando não há regra~~ — revertido no C5: camadas estritas em todo recurso (service de repasse onde não há regra). O `Protocol` continua morando no service.
 - **Papel relido do banco a cada request**, não só do JWT: desativar/trocar cargo vale na hora (o `papel` continua no token, como pedido).
 - **`DELETE /api/usuarios/{id}` desativa** (soft delete) — `relatorio.usuario_id` é `RESTRICT` e o histórico precisa do autor. `PATCH {"ativo": true}` reativa.
 - **`GET /api/cargos`** entrou (não estava no L18): o cadastro de funcionário precisa dos ids.
@@ -260,7 +261,7 @@ Verificação: `./fsc check` verde (53 testes). Smoke R1 real via proxy do Vite 
 #### Não coberto pelo schema / fora do escopo
 
 - Manutenções pendentes/finalizadas (sem tabela), ocupação de vagões/poltronas e passageiros (sem colunas), velocidade/sensores por linha (derivável, não pedido).
-- `PATCH` do próprio perfil (`/perfil/editar`) — fora do L18; reusa `services.usuarios.atualizar` quando vier.
+- `PATCH` do próprio perfil (`/perfil/editar`) — fora do L18; reusa `UsuariosService.atualizar` quando vier.
 - `null` no `PATCH` não apaga campo (SQL estático com `COALESCE`).
 - Ingestão IoT (L23): só o espaço nas camadas, descrito no `backend/CLAUDE.md`.
 

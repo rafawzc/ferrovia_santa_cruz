@@ -290,7 +290,7 @@ Histórico, mais recente primeiro.
 - **Manutenções pendentes/finalizadas** (Dashboard): não existe tabela de manutenção. O card "Manutenções" usa `linhas_em_manutencao`; o modal de manutenção segue mock no front.
 - **Ocupação de vagões/poltronas e passageiros** (Monitoramento de Carga): o banco não tem capacidade de vagão nem passageiro. A tela só consegue a lista de `carga` (histórico) e somar `peso_t`.
 - **Velocidade/sensores por linha** (lista do Dashboard): dá pra derivar (`sensor → trem → linha`), mas não foi pedido; fica pra rodada de sensores.
-- **Editar o próprio perfil** (`/perfil/editar`): fora do escopo L18. Quando vier, reusa `services.usuarios.atualizar` numa rota `PATCH /api/auth/me`.
+- **Editar o próprio perfil** (`/perfil/editar`): fora do escopo L18. Quando vier, reusa `UsuariosService.atualizar` numa rota `PATCH /api/auth/me`.
 - **Foto de perfil**: só `foto_url` em leitura; não há upload.
 - **Recuperar senha de verdade** (token + e-mail): stub.
 - **Ingestão IoT** (`POST /api/leituras`, L22/L23): só a arquitetura está pronta — ver `backend/CLAUDE.md`.

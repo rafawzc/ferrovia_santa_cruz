@@ -1,19 +1,16 @@
 from datetime import datetime
-from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.core.auth import exige_papel
-from app.repositories.alertas import AlertasMySQL
+from app.deps import Alertas
 
 router = APIRouter(
     prefix="/api/alertas",
     tags=["alertas"],
     dependencies=[Depends(exige_papel("operacional", "gestao"))],
 )
-
-Repo = Annotated[AlertasMySQL, Depends()]
 
 
 class AlertaNovo(BaseModel):
@@ -30,10 +27,10 @@ class AlertaSaida(AlertaNovo):
 
 
 @router.get("", response_model=list[AlertaSaida])
-def listar(repo: Repo):
-    return repo.listar()
+def listar(servico: Alertas):
+    return servico.listar()
 
 
 @router.post("", response_model=AlertaSaida, status_code=201)
-def criar(corpo: AlertaNovo, repo: Repo):
-    return repo.criar(corpo.model_dump())
+def criar(corpo: AlertaNovo, servico: Alertas):
+    return servico.criar(corpo.model_dump())
