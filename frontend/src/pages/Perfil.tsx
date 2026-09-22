@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { ScreenHeader } from '@/components/ui/screen-header'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { mensagemDeErro } from '@/components/ui/load-error'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAtualizarPerfil } from '@/hooks/auth'
 import { ApiError, marcarErrosDeCampo, type PerfilEdicao, type Usuario } from '@/lib/api'
@@ -125,9 +126,7 @@ function PerfilForm({ usuario }: { usuario: Usuario }) {
           return
         }
         if (marcarErrosDeCampo(erro, form)) return
-        toast.error(
-          erro instanceof ApiError ? erro.message : 'Sem conexão com o servidor. Tente de novo.',
-        )
+        toast.error(mensagemDeErro(erro))
       },
     })
   }

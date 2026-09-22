@@ -45,6 +45,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { UserCard } from '@/components/ui/user-card'
+import { LoadError, mensagemDeErro } from '@/components/ui/load-error'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCargos } from '@/hooks/cargos'
 import {
@@ -70,10 +71,8 @@ const CARGOS: Record<string, string> = {
 
 const rotuloCargo = (slug: string) => CARGOS[slug] ?? slug
 
-function erroTexto(e: unknown, recurso: string) {
-  return e instanceof ApiError
-    ? `Não foi possível ${recurso}: ${e.message}`
-    : 'Sem conexão com o servidor.'
+function erroTexto(e: Error, recurso: string) {
+  return `Não foi possível ${recurso}: ${mensagemDeErro(e)}`
 }
 
 const base = {
@@ -319,9 +318,7 @@ export default function UsuariosLista() {
           ))}
         </div>
       ) : error ? (
-        <p role="alert" className="text-destructive">
-          {erroTexto(error, 'carregar os usuários')}
-        </p>
+        <LoadError error={error} />
       ) : usuarios.length === 0 ? (
         <p className="text-muted-foreground">Nenhum usuário cadastrado.</p>
       ) : (
@@ -403,9 +400,7 @@ export default function UsuariosLista() {
           {cargos.isPending ? (
             <Skeleton className="h-80" />
           ) : cargos.error ? (
-            <p role="alert" className="text-destructive">
-              {erroTexto(cargos.error, 'carregar os cargos')}
-            </p>
+            <LoadError error={cargos.error} />
           ) : (
             <FormUsuario
               key={selecionado?.id ?? 'novo'}

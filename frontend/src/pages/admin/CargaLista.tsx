@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { LoadError, mensagemDeErro } from '@/components/ui/load-error'
 import { useCargas, useCriarCarga } from '@/hooks/cargas'
 import { ApiError, marcarErrosDeCampo } from '@/lib/api'
 import { dataHora } from '@/lib/utils'
@@ -87,7 +88,7 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
           if (e instanceof ApiError && e.status === 409) {
             form.setError('trem_id', { message: 'Trem não encontrado' })
           } else if (!marcarErrosDeCampo(e, form)) {
-            toast.error(e instanceof ApiError ? e.message : 'Sem conexão com o servidor')
+            toast.error(mensagemDeErro(e))
           }
         },
       },
@@ -163,11 +164,7 @@ export default function CargaLista() {
           ))}
         </div>
       ) : error ? (
-        <p role="alert" className="text-destructive">
-          {error instanceof ApiError
-            ? `Não foi possível carregar as cargas: ${error.message}`
-            : 'Sem conexão com o servidor.'}
-        </p>
+        <LoadError error={error} />
       ) : cargas.length === 0 ? (
         <p className="text-muted-foreground">Nenhuma carga cadastrada ainda.</p>
       ) : (
