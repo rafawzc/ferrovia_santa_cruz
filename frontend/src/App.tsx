@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import type { Papel } from '@/lib/api'
 
 const Login = lazy(() => import('@/pages/auth/Login'))
-const Cadastro = lazy(() => import('@/pages/auth/Cadastro.jsx'))
+const Cadastro = lazy(() => import('@/pages/auth/Cadastro'))
 const RecuperarSenha = lazy(() => import('@/pages/auth/RecuperarSenha.jsx'))
 const Dashboard = lazy(() => import('@/pages/admin/Dashboard.jsx'))
 const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista.jsx'))
