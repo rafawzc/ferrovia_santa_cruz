@@ -1,0 +1,36 @@
+from datetime import datetime
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field
+
+from app.core.auth import exige_papel
+from app.deps import Alertas
+
+router = APIRouter(
+    prefix="/api/alertas",
+    tags=["alertas"],
+    dependencies=[Depends(exige_papel("operacional", "gestao"))],
+)
+
+
+class AlertaNovo(BaseModel):
+    linha_id: int
+    tempo_espera: str | None = Field(default=None, max_length=40)
+    motivo: str = Field(min_length=1, max_length=200)
+    status: str = Field(min_length=1, max_length=40)
+
+
+class AlertaSaida(AlertaNovo):
+    id: int
+    linha_numero: str
+    criado_em: datetime
+
+
+@router.get("", response_model=list[AlertaSaida])
+def listar(servico: Alertas):
+    return servico.listar()
+
+
+@router.post("", response_model=AlertaSaida, status_code=201)
+def criar(corpo: AlertaNovo, servico: Alertas):
+    return servico.criar(corpo.model_dump())

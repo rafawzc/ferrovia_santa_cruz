@@ -2,36 +2,93 @@
 
 Leia antes: `docs/backend/acesso-a-dados.md` (regras de SQL) e o plano `docs/tasks/lowh-fundacao-design-system-2026-09-22.md` (L7, L16, L21, L26).
 
-## O que vive aqui hoje
+## O que vive aqui
 
-- `app/main.py` — o `FastAPI()` e `GET /api/health` (usado no healthcheck do compose).
-- `tests/` — pytest + `TestClient`.
-- `scripts/check_comments.py` — checagem de "zero comentários" (L7).
-- `pyproject.toml` + `uv.lock` — deps (uv), config do ruff e do pytest num lugar só (L26).
-
-## Camadas (L21) — criar só quando o primeiro endpoint real precisar
+Contrato HTTP de cada endpoint: [`../docs/backend/api.md`](../docs/backend/api.md). Aqui é o *como está montado*.
 
 ```
-app/routers/       só HTTP: rota, Pydantic entra/sai, status code. Sem SQL, sem regra.
-app/services/      regra de negócio em Python puro. Não importa FastAPI nem mysql.
-app/repositories/  SQL puro parametrizado (%s + tuple). Nada de regra.
+app/main.py            FastAPI(), registra os routers num laço, handler IntegrityError → 409, /api/health
+app/db.py              pool único (lazy, @cache) + cursor() context manager: commit no fim, sempre devolve a conexão
+app/core/security.py   argon2 (pwdlib) + JWT HS256 (PyJWT). Lê JWT_SECRET do env na hora de usar.
+app/core/auth.py       usuario_atual (lê cookie 'sessao', recarrega o usuário via UsuariosService) + exige_papel(*papeis)
+app/deps.py            ÚNICO lugar que liga Protocol → classe MySQL: <recurso>_repo() + alias Annotated do service
+app/routers/           só HTTP: Pydantic entra/sai, status, guard. Depende só do service (alias de deps). Um arquivo por recurso.
+app/services/          <Recurso>Repo (Protocol) + <Recurso>Service(repo). Python puro, sem FastAPI, sem mysql.
+app/repositories/      SQL puro. Uma classe <Recurso>MySQL por recurso, métodos finos.
+tests/fakes.py         repos em memória que satisfazem o <Recurso>Repo
+tests/conftest.py      client (override de cada deps.<recurso>_repo), como(id) (loga com cookie forjado)
+scripts/check_comments.py  checagem de "zero comentários" (L7)
 ```
 
-- O service declara o repo que precisa como um `typing.Protocol`; o repo real implementa.
-- O router recebe o service/repo via `Depends`. Teste troca por fake com `app.dependency_overrides` (L16: banco mockado, sem banco de teste).
-- Consequência (R1 do plano): SQL nunca roda em teste. Repo fino, só SQL; smoke manual contra o banco de dev antes de fechar.
-- SQL **sempre** parametrizado. f-string / `+` / `.format()` montando SQL = reprovado.
+## Camadas como ficaram (L21)
+
+- **Estrito em todo recurso: router → service → repo `Protocol`.** Decisão do usuário (vale mais que o atalho antigo "router → repo quando não há regra"). Nenhum router nem `core/` importa de `app.repositories` (`grep -rn repositories app/routers` tem que dar vazio).
+- **Service** = `services/<recurso>.py` com `class <Recurso>Repo(Protocol)` + `class <Recurso>Service` que recebe o repo no `__init__`. Sem regra → métodos que só repassam (`linhas`, `cargas`, `alertas`, `dashboard`) — esperado, não é bloat. Com regra → `usuarios` (hash, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE).
+- **Fiação só em `app/deps.py`:** `<recurso>_repo()` devolve o `<Recurso>MySQL`; `_<recurso>(repo=Depends(<recurso>_repo))` monta o service; `<Recurso> = Annotated[<Recurso>Service, Depends(_<recurso>)]` é o que o router usa (`servico: Linhas`).
+- **Teste troca o repo, não o service:** `app.dependency_overrides[deps.<recurso>_repo] = lambda: fake`. O service real roda em teste — a regra é coberta.
+- **Erro de integridade não é tratado no repo nem no service**: o `mysql.connector.errors.IntegrityError` sobe e o handler do `main.py` responde 409 (`1062` → "Registro duplicado", `1452` → "Referência inexistente"). Os fakes levantam o mesmo `IntegrityError` com o mesmo `errno` (`fakes.duplicado()`, `fakes.sem_referencia()`).
+- **Guard por papel** no `APIRouter(dependencies=[Depends(exige_papel(...))])`, não em cada rota. Sem cookie → 401 (`usuario_atual`), papel errado → 403.
+- O papel **não** vem do JWT: `usuario_atual` relê o usuário pelo `sub` a cada request. Desativar/trocar cargo vale na hora.
+
+## Como adicionar um endpoint
+
+1. **RED:** teste em `tests/test_<recurso>.py` usando `como(GESTAO|OPERACIONAL|CLIENTE)` e/ou `client` (anônimo). Cubra sucesso, 401, 403, 422 e 404/409 se couber.
+2. Fake novo em `tests/fakes.py` com os métodos do `Protocol`; registre em `conftest.py::client` (`app.dependency_overrides[deps.x_repo] = ...`). Fake com estado → instancie uma vez e sobrescreva com `lambda: instancia` (senão cada request pega um fake novo).
+3. **GREEN**, sempre as cinco peças:
+   - `services/<recurso>.py`: `XRepo(Protocol)` + `XService(repo)` (repasse ou regra);
+   - `repositories/<recurso>.py`: `XMySQL` (`with cursor() as cur`, `%s`/`%(nome)s`);
+   - `deps.py`: `x_repo()` → `XMySQL()`, `_x(repo)` → `XService(repo)`, alias `X = Annotated[XService, Depends(_x)]`;
+   - `routers/<recurso>.py`: Pydantic + guard, parâmetro `servico: X`, zero import de `repositories`;
+   - inclua o router no laço do `main.py`.
+4. INSERT que precisa devolver a linha: faça o `SELECT ... WHERE id = %s` com `cur.lastrowid` **no mesmo `cursor()`** (mesma conexão/transação).
+5. **Smoke real (R1):** o SQL nunca roda em teste. Suba a stack e chame via curl pelo proxy (ver abaixo) antes de fechar.
+6. Atualize `docs/backend/api.md`.
+
+## Gotchas de SQL (achados no smoke)
+
+- `BOOLEAN` volta como `0/1`: o `bool` do Pydantic converte na saída. `DECIMAL` volta `Decimal`: campo `float` no model converte.
+- `COALESCE(%(x)s, DEFAULT(cargo_id))` no INSERT deixa o **banco** decidir o cargo padrão (cadastro público → `comum`). Não chumbe `1` no Python.
+- PATCH parcial é `SET col = COALESCE(%(col)s, col)`: SQL estático, sem montar SET dinâmico. Preço: `null` não apaga campo.
+- INSERT que falha com 409 **queima** o `AUTO_INCREMENT` (InnoDB). Não assuma id sequencial em smoke.
+- `DB_HOST` vem do `environment:` do compose (é o nome do serviço, não segredo), não do `.env`. `JWT_SECRET` < 32 bytes só gera warning do PyJWT, mas troque.
+
+## Smoke contra o banco real sem derrubar outra stack
+
+Outra worktree pode estar usando a porta 5173. Suba um projeto separado com outra porta publicada (override com `ports: !override ["5199:5173"]`):
+
+```bash
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p fsc-api-smoke -f docker-compose.yml -f override.yml up -d --build --wait
+curl -c jar -H 'Content-Type: application/json' -d '{"email":"ana.admin@ferrovia.com","senha":"ferrovia123"}' localhost:5199/api/auth/login
+curl -b jar localhost:5199/api/usuarios
+HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p fsc-api-smoke -f docker-compose.yml -f override.yml down -v
+```
+
+`-p` diferente = volume próprio, banco recém-seedado.
+
+## IoT — espaço reservado (L22/L23)
+
+Ingestão **não** existe ainda. Quando vier (`POST /api/leituras`, auth por API key do sensor), cabe sem mexer em nada que existe:
+
+- `repositories/leituras.py` (`LeiturasMySQL.criar`) — `leitura_sensor.sensor_id` é FK: sensor inexistente já vira 409 pelo handler global.
+- `services/leituras.py` (`LeiturasRepo` + `LeiturasService`, regra se houver, ex: derivar `status_operacional`) e a fiação em `deps.py`.
+- `routers/leituras.py` com uma dependência própria de API key **no lugar** de `usuario_atual` — o cookie/JWT é só pra gente, sensor não loga.
+- `./fsc sim` (simulador) roda dentro do container `backend` e bate na mesma URL que o device real.
 
 ## Venv em `/opt/venv`, não em `/app/.venv`
 
 `/app` é bind mount do `./backend` no compose. Venv dentro de `/app` seria apagado/sombreado pelo mount. Por isso `UV_PROJECT_ENVIRONMENT=/opt/venv`, instalado no build com `uv sync --frozen` (inclui o grupo dev: pytest, httpx, ruff) e `chmod a+rX` porque o container roda com o UID do host. `/opt/venv/bin` está no `PATH`: `pytest`, `ruff`, `uvicorn` rodam direto. `uv run` também funciona (`UV_CACHE_DIR=/tmp/uv-cache` porque o UID do host não tem HOME no container).
 
-Mudou dependência → `uv lock` dentro de container e **rebuild** da imagem. O venv não é escrevível em runtime.
+Mudou dependência → `uv add --no-sync` num container descartável e **rebuild** (`./fsc build`). O venv não é escrevível em runtime, e `./fsc sh backend`/`compose run` não servem: o `backend` só está na rede `internal` (sem internet). Use a imagem já buildada com a rede padrão do docker:
+
+```bash
+docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp -e UV_CACHE_DIR=/tmp/uv \
+  -v $PWD/backend:/app -w /app <imagem-do-backend> uv add --no-sync <pacote>
+```
 
 ## Comandos (via `./fsc`, na raiz)
 
 - `./fsc test` → `pytest`
-- `./fsc lint be` → `ruff check .` + `ruff format --check .` + `python scripts/check_comments.py`
+- `./fsc lint be` → `ruff check .` + `python scripts/check_comments.py` (o `ruff format --check .` só roda no `./fsc check`)
 - `./fsc fmt` → `ruff format .`
 
 ## Checagem de comentários (L7)
