@@ -30,3 +30,33 @@ class UsuariosMySQL:
                 dados,
             )
             return cur.lastrowid
+
+    def listar(self):
+        with cursor() as cur:
+            cur.execute(SELECT_USUARIO + " ORDER BY u.nome")
+            return cur.fetchall()
+
+    def listar_cargos(self):
+        with cursor() as cur:
+            cur.execute("SELECT id, nome, nivel_acesso AS papel FROM cargo ORDER BY id")
+            return cur.fetchall()
+
+    def atualizar(self, id_, dados):
+        with cursor() as cur:
+            cur.execute(
+                """
+                UPDATE usuario SET
+                    nome = COALESCE(%(nome)s, nome),
+                    email = COALESCE(%(email)s, email),
+                    senha_hash = COALESCE(%(senha_hash)s, senha_hash),
+                    cargo_id = COALESCE(%(cargo_id)s, cargo_id),
+                    telefone = COALESCE(%(telefone)s, telefone),
+                    ativo = COALESCE(%(ativo)s, ativo)
+                WHERE id = %(id)s
+                """,
+                {**dados, "id": id_},
+            )
+
+    def desativar(self, id_):
+        with cursor() as cur:
+            cur.execute("UPDATE usuario SET ativo = FALSE WHERE id = %s", (id_,))

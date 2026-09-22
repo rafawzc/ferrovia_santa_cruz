@@ -7,6 +7,8 @@ class UsuariosRepo(Protocol):
     def por_id(self, id_: int) -> dict | None: ...
     def por_email(self, email: str) -> dict | None: ...
     def criar(self, dados: dict) -> int: ...
+    def atualizar(self, id_: int, dados: dict) -> None: ...
+    def desativar(self, id_: int) -> None: ...
 
 
 class CredenciaisInvalidas(Exception):
@@ -39,6 +41,20 @@ def cadastrar(repo: UsuariosRepo, nome: str, email: str, senha: str) -> dict:
 
 def criar(repo: UsuariosRepo, dados: dict) -> dict:
     return repo.por_id(repo.criar(_com_hash(dados)))
+
+
+def atualizar(repo: UsuariosRepo, id_: int, dados: dict) -> dict | None:
+    if repo.por_id(id_) is None:
+        return None
+    repo.atualizar(id_, _com_hash(dados))
+    return repo.por_id(id_)
+
+
+def desativar(repo: UsuariosRepo, id_: int) -> bool:
+    if repo.por_id(id_) is None:
+        return False
+    repo.desativar(id_)
+    return True
 
 
 def _com_hash(dados: dict) -> dict:
