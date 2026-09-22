@@ -1,24 +1,23 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@layer base {
-  *,
-  *::before,
-  *::after {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-timing-function: ease;
-    transition-duration: 300ms;
-  }
+@theme {
+  --color-texto1: rgb(var(--texto1));
+  --color-texto2: rgb(var(--texto2));
+  --color-componente1: rgb(var(--componente1));
+  --color-componente3: rgb(var(--componente3));
+  --color-componente4: rgb(var(--componente4));
+  --color-bg-base: rgb(var(--bg-base));
+  --color-bg-page: rgb(var(--bg-page));
+  --color-bg-card: rgb(var(--bg-card));
+  --color-input-bg: var(--input-bg);
+  --color-overlay: var(--overlay);
+  --color-border: rgb(var(--border));
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+
+  --font-poppins: Poppins, sans-serif;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Tema Claro (padrão) — componentes RGB (sem #) para suportar opacidade via Tailwind, ex: bg-texto1/60 */
 .white {
   --texto1: 68 49 43;
   --texto2: 234 230 222;
@@ -33,7 +32,6 @@
   --border: 255 255 255;
 }
 
-/* Tema Escuro */
 .black {
   --texto1: 247 242 238;
   --texto2: 234 230 222;
@@ -48,27 +46,38 @@
   --border: 201 178 156;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: ease;
+    transition-duration: 300ms;
+  }
 
-body {
-  font-family: 'Poppins', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 
-input:focus {
-  outline: none;
-}
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
 
-button:focus:not(:focus-visible) {
-  outline: none;
-}
+  body {
+    font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-button:focus-visible {
-  outline: 2px solid var(--componente1);
-  outline-offset: 2px;
+  button:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  button:focus-visible {
+    outline: 2px solid rgb(var(--componente1));
+    outline-offset: 2px;
+  }
 }
