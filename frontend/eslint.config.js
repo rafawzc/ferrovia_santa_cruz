@@ -56,8 +56,18 @@ export default defineConfig(
     files: ['src/components/ui/**/*.{ts,tsx}'],
     rules: {
       'local/no-arbitrary-value': 'off',
+      'react-refresh/only-export-components': 'off',
       'no-restricted-syntax': ['error', INLINE_STYLE],
-      'no-restricted-imports': ['error', { patterns: [IMPORT_PAGES] }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: 'cn', message: 'Use cn de @/lib/utils (o registry do shadcn gera "cn").' },
+            { name: 'next-themes', message: 'Use useTheme de @/contexts/ThemeContext.' },
+          ],
+          patterns: [IMPORT_PAGES],
+        },
+      ],
     },
   },
   {
