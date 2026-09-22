@@ -14,7 +14,7 @@ const UsuarioDetalhe = lazy(() => import('@/pages/admin/UsuarioDetalhe.jsx'))
 const UsuarioEditar = lazy(() => import('@/pages/admin/UsuarioEditar.jsx'))
 const CargaLista = lazy(() => import('@/pages/admin/CargaLista.jsx'))
 const Rotas = lazy(() => import('@/pages/admin/Rotas'))
-const Alertas = lazy(() => import('@/pages/admin/Alertas.jsx'))
+const Alertas = lazy(() => import('@/pages/admin/Alertas'))
 const Perfil = lazy(() => import('@/pages/Perfil.jsx'))
 const Vitrine = lazy(() => import('@/pages/Vitrine'))
 
