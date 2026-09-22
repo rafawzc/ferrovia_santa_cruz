@@ -17,6 +17,29 @@ Agora as cores são **tokens semânticos por papel** (`bg`, `surface`, `primary`
 <html data-theme="dark">    →   [data-theme=dark] sobrescreve   →   bg-primary = #9a5f38
 ```
 
+## Onde os tokens moram (Tailwind v4, desde 2026-09-22)
+
+Tudo em `frontend/src/index.css` — não existe mais `tailwind.config.js`:
+
+```css
+@theme {
+  --color-bg: #c4a27d;
+  --color-primary: #6d412a;
+}
+
+[data-theme='dark'] {
+  --color-bg: #241a14;
+  --color-primary: #9a5f38;
+}
+```
+
+- **`@theme`** declara os tokens do tema **claro**. O Tailwind v4 lê isso e gera as classes (`bg-bg`, `text-primary`…) apontando pra `var(--color-*)`.
+- **`[data-theme='dark']`** sobrescreve as mesmas variáveis no escuro. Fica **fora** de `@layer` de propósito: CSS sem layer ganha de CSS em layer, então o escuro sempre vence o claro.
+- **Cor direta (hex)**. O truque antigo de "canais RGB separados por espaço" (`--color-bg: 196 162 125`) era exigência do Tailwind 3 pra opacidade funcionar. No v4 a opacidade (`bg-primary/90`) sai via `color-mix`, então morreu.
+- Cor só existe nesse arquivo: o lint (`local/no-raw-color`) barra hex, `rgb(` e classe de paleta (`bg-red-500`) em qualquer outro lugar. Decisão em [`../decisoes/frontend-e-qualidade.md`](../decisoes/frontend-e-qualidade.md).
+
+> **Vai mudar na fase 2:** os nomes dos tokens serão trocados pro **vocabulário do shadcn/ui** (`--background`, `--foreground`, `--card`, `--primary`, `--muted`, `--accent`, `--border`, `--input`, `--ring`, `--radius`…), com a mesma paleta marrom/bege mapeada neles, mais tokens de status (`success`, `warning`, `danger`) — L10 do plano [`../tasks/lowh-fundacao-design-system-2026-09-22.md`](../tasks/lowh-fundacao-design-system-2026-09-22.md). A mecânica (`data-theme` + anti-FOUC) fica igual. A tabela abaixo descreve os nomes **de hoje**.
+
 ## Paleta
 
 | Token (papel) | Claro | Escuro |
@@ -43,9 +66,10 @@ No **claro** os valores são idênticos à paleta original — a migração não
 
 ## Como mexer
 
-Detalhe procedural (tokens, gotcha das CSS vars em canais RGB, anti-FOUC, regra ao criar tela) está em [`frontend/src/theme/CLAUDE.md`](../../frontend/src/theme/CLAUDE.md). **Leia antes de adicionar cor ou tela nova.**
+Detalhe procedural (tokens no `@theme`, por que o escuro fica fora de layer, anti-FOUC, regra ao criar tela) está em [`frontend/src/theme/CLAUDE.md`](../../frontend/src/theme/CLAUDE.md). **Leia antes de adicionar cor ou tela nova.**
 
 ## Pendente
 
 - Afinar estética tela-a-tela no escuro (rodada 2) — esta entrega garante legível + sem regressão no claro, não "lindo em cada pixel" no escuro.
 - Ajuste fino de tom das cores de status no escuro, se necessário.
+- Renomear os tokens pro vocabulário shadcn e criar tokens de status (fase 2, L10). Hoje as cores de status ainda são classes de paleta Tailwind nas telas `.jsx` legadas, que estão fora do lint até serem reescritas em TSX.
