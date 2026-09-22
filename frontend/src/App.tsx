@@ -8,13 +8,13 @@ import type { Papel } from '@/lib/api'
 const Login = lazy(() => import('@/pages/auth/Login.jsx'))
 const Cadastro = lazy(() => import('@/pages/auth/Cadastro.jsx'))
 const RecuperarSenha = lazy(() => import('@/pages/auth/RecuperarSenha.jsx'))
-const Dashboard = lazy(() => import('@/pages/admin/Dashboard.jsx'))
+const Dashboard = lazy(() => import('@/pages/admin/Dashboard'))
 const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista.jsx'))
 const UsuarioDetalhe = lazy(() => import('@/pages/admin/UsuarioDetalhe.jsx'))
 const UsuarioEditar = lazy(() => import('@/pages/admin/UsuarioEditar.jsx'))
 const CargaLista = lazy(() => import('@/pages/admin/CargaLista.jsx'))
-const Linhas = lazy(() => import('@/pages/admin/Linhas.jsx'))
-const Alertas = lazy(() => import('@/pages/admin/Alertas.jsx'))
+const Rotas = lazy(() => import('@/pages/admin/Rotas'))
+const Alertas = lazy(() => import('@/pages/admin/Alertas'))
 const Perfil = lazy(() => import('@/pages/Perfil'))
 const Vitrine = lazy(() => import('@/pages/Vitrine'))
 
@@ -77,7 +77,7 @@ export default function App() {
           <Route element={<ProtectedLayout />}>
             <Route element={<Papeis papeis={EQUIPE} />}>
               <Route path="/admin" element={<Dashboard />} />
-              <Route path="/admin/rotas" element={<Linhas />} />
+              <Route path="/admin/rotas" element={<Rotas />} />
               <Route path="/admin/carga" element={<CargaLista />} />
               <Route path="/admin/alertas" element={<Alertas />} />
             </Route>
