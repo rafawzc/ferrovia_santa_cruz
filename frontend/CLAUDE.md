@@ -14,11 +14,12 @@ Gate do front: `./fsc lint fe`, `./fsc typecheck`, `./fsc npm run format:check`,
 
 ## Tailwind v4: config mora no CSS
 
-Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwindcss/vite` (em `vite.config.ts`) e os tokens estão no `@theme` de `src/index.css`. Token novo = variável `--color-*`/`--font-*` no `@theme`, não arquivo JS. Detalhe dos tokens e do tema escuro: `src/theme/CLAUDE.md`.
+Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwindcss/vite` (em `vite.config.ts`) e os tokens estão no `@theme` de `src/index.css`. Token novo = variável `--color-*`/`--font-*` no `@theme`, não arquivo JS. Tokens (`texto*`, `componente*`, `bg-*`…) são `rgb(var(--canal))` no `@theme`; `.white`/`.black` no `<html>` (posto pelo `contexts/ThemeContext.jsx`) trocam os canais. Detalhe: `docs/frontend/tema.md` e `docs/frontend/tema-escuro.md` (regra semântica `componente1`→`texto2`).
 
 - Estilo global próprio vai dentro de `@layer base`. CSS **fora de layer** ganha de qualquer utilitário (as utilities do v4 vivem em `@layer utilities`), então um `* { padding: 0 }` solto zera todo `p-*`.
-- Não existe variante `dark:` ligada ao `data-theme`. Hoje nenhuma tela usa `dark:` (o tema troca pelas variáveis). Se precisar, declarar `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));` no `index.css`.
-- Renomes do v3→v4 já aplicados nas telas: `shadow-sm`→`shadow-xs`, `rounded`→`rounded-sm`, `aspect-[4/3]`→`aspect-4/3`.
+- Não existe variante `dark:`. Hoje nenhuma tela usa `dark:` (o tema troca pelas variáveis). Se precisar, declarar `@custom-variant dark (&:where(.black, .black *));` no `index.css`.
+- Nunca `--color-x: rgb(var(--color-x))` no `@theme`: autorreferência invalida a cor. Nome do token e do canal têm que diferir.
+- Renomes do v3→v4 já aplicados nas telas: `shadow-sm`→`shadow-xs`, `rounded`→`rounded-sm`, `outline-none`→`outline-hidden`, `aspect-[4/3]`→`aspect-4/3`. Código novo vindo da `main` com classe v3 precisa do mesmo renome.
 
 ## TypeScript
 
