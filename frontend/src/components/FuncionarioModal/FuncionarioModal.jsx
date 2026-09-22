@@ -73,16 +73,16 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
       onClick={onClose}
     >
       <div
-        className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-componente1 p-6 shadow-xl"
+        className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-primary p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-texto1">
+          <h2 className="text-lg font-bold text-foreground">
             {isCreate ? 'Cadastro de Funcionário' : 'Editar Funcionário'}
           </h2>
           <button
             onClick={onClose}
-            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
+            className="cursor-pointer text-foreground transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -91,7 +91,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="mb-2 flex justify-center">
             <div className="relative">
-              <div className="h-24 w-24 overflow-hidden rounded-2xl bg-componente3">
+              <div className="h-24 w-24 overflow-hidden rounded-2xl bg-secondary">
                 {formData.foto ? (
                   <img
                     src={formData.foto}
@@ -106,7 +106,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
                 <div
                   className={`h-full w-full items-center justify-center ${formData.foto ? 'hidden' : 'flex'}`}
                 >
-                  <Camera size={32} className="text-texto1/60" />
+                  <Camera size={32} className="text-foreground/60" />
                 </div>
               </div>
             </div>
@@ -153,14 +153,14 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-texto1">Cargo</label>
+            <label className="text-sm font-medium text-foreground">Cargo</label>
             <select
               id="cargo"
               value={formData.cargo}
               onChange={handleChange('cargo')}
-              className={`w-full rounded-full bg-componente3 px-5 py-3 text-sm text-texto1 transition-all duration-200 focus:ring-2 focus:ring-texto2/30 ${
-                errors.cargo ? 'ring-2 ring-error' : ''
-              } ${!formData.cargo ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-secondary px-5 py-3 text-sm text-foreground transition-all duration-200 focus:ring-2 focus:ring-primary-foreground/30 ${
+                errors.cargo ? 'ring-2 ring-destructive' : ''
+              } ${!formData.cargo ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Selecione o cargo
@@ -171,16 +171,16 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
                 </option>
               ))}
             </select>
-            {errors.cargo && <span className="text-xs text-error">{errors.cargo}</span>}
+            {errors.cargo && <span className="text-xs text-destructive">{errors.cargo}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-texto1">Status</label>
+            <label className="text-sm font-medium text-foreground">Status</label>
             <select
               id="status"
               value={formData.status}
               onChange={handleChange('status')}
-              className="w-full rounded-full bg-componente3 px-5 py-3 text-sm text-texto1 transition-all duration-200 focus:ring-2 focus:ring-texto2/30"
+              className="w-full rounded-full bg-secondary px-5 py-3 text-sm text-foreground transition-all duration-200 focus:ring-2 focus:ring-primary-foreground/30"
             >
               <option value="Ativo">Ativo</option>
               <option value="Inativo">Inativo</option>

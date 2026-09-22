@@ -7,8 +7,8 @@ export default function Tabs({ tabs, activeTab, onTabChange }) {
           onClick={() => onTabChange(tab.id)}
           className={`cursor-pointer rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ${
             activeTab === tab.id
-              ? 'bg-componente1 text-texto1'
-              : 'bg-componente3 text-texto1 hover:bg-componente3/80'
+              ? 'bg-primary text-foreground'
+              : 'bg-secondary text-foreground hover:bg-secondary/80'
           }`}
         >
           {tab.label}
