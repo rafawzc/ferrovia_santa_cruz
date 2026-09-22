@@ -202,3 +202,37 @@ Paralelismo: dentro da fase 1, `A2`, `A4`, `A6`, `A8` saem juntos. Fases 2 e 3 c
 ### 5.8 Next Action
 
 Criar a worktree `feat/fundacao` e disparar em paralelo `A2` (db fix), `A4` (toolchain FE) e `A6` (esqueleto backend).
+
+---
+
+## 6. Implementation Log
+
+### Fase 1 — fundação (branch `feat/fundacao`) — concluída em 2026-09-22
+
+| Item do plano (5.7) | Commit | O que entrou |
+|---------------------|--------|--------------|
+| Plano | `dfd50e8` | Esta spec. |
+| A8 — skill token-efficiency (L6) | `59b0fa7` | `.claude/skills/token-efficiency/`, tabela de owners enxugada. |
+| A1 — compose (L8, L9) | `f284867` | 3 serviços, só `frontend` publica porta (5173), redes `internal` + `edge`, `depends_on` em cadeia com `service_healthy`, healthcheck do db por TCP. |
+| A3 — `./fsc` (L19) | `d9deec7` | Stack, qualidade, banco (`db:reset` com confirmação), `npm`, `ui add`. |
+| A1 — collation | `c9625ff` | `utf8mb4_unicode_ci` fixada no `command:` do db. |
+| A2 — db fix (L25) | `53cd37d` | `schema.sql` sem `CREATE DATABASE`/`USE`; seed com argon2 real, senha de dev `ferrovia123`. |
+| A4 — toolchain FE (L3, L8) | `6c30da5` | Vite 8, React 19, Tailwind 4 (`@theme` no `index.css`), TS strict. |
+| A5 — lint/format FE (L7, L12, L13) | `2916aed`, `266c31b` | ESLint 9 flat + regras locais do DS + Prettier; formatação aplicada. |
+| A6 — backend esqueleto (L21, L26) | `b51f8c6` | FastAPI + `/api/health`, uv, ruff, `check_comments.py`, pytest. |
+| A7 — CI (L20) | `a123fd9` | `.github/workflows/ci.yml`, job `check` rodando `./fsc check` em PR e push na `main`. |
+| A9 — docs | `b12e451`, `204fc92`, `4d0ca26`, `e81e0ee`, `d765c03`, `6511560`, `fda0ce8` | Decisão `decisoes/frontend-e-qualidade.md` + superados no `stack.md`/`PLANO`; `arquitetura/containers-e-rede.md` alinhado ao compose real + `arquitetura/operacao.md` (quickstart, ruleset); `backend/acesso-a-dados.md` com tabelas reais; `frontend/tema.md` no Tailwind v4; notas de superado em `responsividade.md`/`requisitos.md`; README; `.claude/CLAUDE.md` + `.opencode/AGENTS.md`. |
+
+### Desvios do plano
+
+- **Frontend sem Dockerfile.** O plano previa `frontend/Dockerfile`; o serviço usa `node:24-slim` direto, com bind mount e UID do host. Não havia nada pra buildar que a imagem oficial não resolvesse.
+- **`shadcn init` foi pra fase 2.** Os nomes de token do shadcn (`--color-primary`, `--color-border`…) colidem com os atuais; o init vai junto com o renome dos tokens (L10).
+- **TypeScript pinado em `~6.0.x`.** O `typescript-eslint` só aceita `typescript <6.1.0`; TS 7 quebra o lint type-aware.
+- **ESLint 9, não 10.** O `eslint-plugin-jsx-a11y` só aceita até `^9`.
+- **`uv` instalado via `pip`** no `backend/Dockerfile`, em vez de `COPY --from=ghcr.io/astral-sh/uv`, pra não depender de lookup de credencial do `ghcr.io`.
+- **Collation fixada no compose** (`command:` do db), já que o `CREATE DATABASE` que a definia saiu do `schema.sql`.
+- **Telas `.jsx` legadas fora do typecheck e do lint** até a reescrita em TSX (fase 4).
+
+### Pendente fora do repo
+
+- Ruleset da `main` (L20, R4): o dono (rafawzc) cria seguindo [`../arquitetura/operacao.md`](../arquitetura/operacao.md).
