@@ -1,6 +1,6 @@
 # Fundação + Design System (Living Plan)
 
-> Status: **LOCKED** — plano travado, pronto pra execução.
+> Status: **LOCKED** — fases 1 a 4 concluídas (fundação, design system, backend API, 13 telas em TSX na API real). Pendente só o que está fora do repo (fim do log).
 > Owner: lowh · Created: 2026-09-22 · Locked: 2026-09-22
 > Este arquivo é o **plano de registro** e é pra ser iterado. As seções abaixo são o PISO, não o teto.
 
@@ -309,6 +309,31 @@ Verificação: `./fsc check` verde (61 testes backend, build sem aviso de chunk:
 - **`UsuariosLista.jsx`**: uma linha trocada (`isGestao` agora vem de `usuario.papel`), já que o mock `isGestao` saiu do contexto.
 - **Sem rota** pra `/admin/carga/cadastro` e `/admin/usuarios/cadastro` (PLANO §5): hoje são modais dentro das listas; entram se as telas reescritas virarem página.
 - `logo.svg` pesa 2 MB no build (asset, não JS) — fora do escopo do D1.
+
+### Fase 4 — D2..D5: telas na API + fechamento (branch `feat/telas`) — 2026-09-22
+
+D2–D4 rodaram em paralelo (uma branch por grupo de tela) e foram mergeadas na `feat/telas`; D5 fecha a fase. Detalhe por tela em [`../frontend/telas/`](../frontend/telas/).
+
+| Item | Commits | O que entrou |
+|------|---------|--------------|
+| D2 — auth | `9ee86bb` `5847eeb` `1798bad` `4ab9afe`, merge `1664b97` | Login, Cadastro, Recuperar senha em TSX (`AuthLayout`, react-hook-form + zod). Doc: `telas/auth.md`. |
+| D3a — monitoramento | `885fd2c` `59e6629` `c2fab3d` `4adb22c`, merge `f359c98` | Dashboard, Rotas, Alertas + composto `LoadError`. Doc: `telas/admin-monitoramento.md`. |
+| D3b — cadastros | `b84c056` `416a0a9` `0aa3bab`, merge `3f72bff` | Carga e Usuários. Doc: `telas/admin-cadastros.md`. |
+| D4 — perfil | `8fc9d6c` `e6609b7`, merge `ed422f8` | Perfil com `PATCH /api/auth/me`. Doc: `telas/perfil.md`. |
+| D5 — fechamento | `2ce3e3c` `fdb592e` `dcec808` `7d56257` `6fa0e6a` + docs | Legado `.jsx` apagado (22 arquivos em 18 pastas de `src/components/`), sem `declare module '*.jsx'` nem ignore de `.jsx` no ESLint: lint e TS cobrem todo o `src`. Helpers únicos: `marcarErrosDeCampo` (422 → erro por campo, `lib/api`) e `dataHora` (`criado_em` UTC, `lib/utils`); telas usam `LoadError`/`mensagemDeErro` em vez de cópias locais. `LineCard` diz "Rota". `LoadError` na vitrine. |
+
+Verificação D5: `./fsc check` verde. Smoke real pelo proxy (`./fsc up`, curl em `localhost:5173/api` com cookie jar): login gestão → `me`, `linhas`, `cargas`, `alertas`, `dashboard`, `usuarios`, `cargos` 200; `POST` carga e alerta 201; `PATCH /api/auth/me` telefone 200, senha com `senha_atual` errada 400, certa 200, login com a senha nova 200 (senha e telefone devolvidos ao seed); cliente → `/api/linhas` 403; as 11 rotas da SPA respondem 200. Sem verificação visual (decisão do usuário).
+
+#### Desvios / decisões das telas (D2–D5)
+
+- **Formulário em `Dialog`, não em rota própria**: cadastro de carga; detalhe, edição e cadastro de usuário. Saíram `/admin/usuarios/:id` e `/admin/usuarios/:id/editar`; `…/cadastro` nunca entrou.
+- **Removido por L28 (sem dado no schema)**: Dashboard — manutenções pendentes/finalizadas, modal "Cadastrar Manutenção", horários, sensores individuais e velocidade por rota. Carga — ocupação de vagões, poltronas e a aba Passageiros. Rotas — o "Mapa de Rotas" (era foto de banco de imagens, não dado). Login/Cadastro — toggle de localização; toggle de termos no login; login Google/boas-vindas (sem backend).
+- **`criado_em` sem fuso, em UTC**: o front soma `Z` antes do `new Date` (`dataHora`), senão a hora sai 3 h adiantada.
+- **Sem endpoint de trens**: na carga o trem é um campo numérico (id); id inexistente → `409` "Trem não encontrado". Vira `Select` quando existir `GET /api/trens`.
+- **Cadastro → toast + `/login`**, sem login automático (a API não abre sessão no cadastro).
+- **Recuperar senha** mostra sempre a mesma mensagem neutra (a API responde `202` igual exista o e-mail ou não; é stub, nenhum e-mail sai).
+- **Rótulo do cargo** (slug → texto) fica local no `UsuariosLista.tsx`: é o único que mostra cargo.
+- **Dados de dev criados pelo smoke D5**: carga `id 4` ("Soja smoke D5") e alerta `id 4` ("smoke D5") ficaram no volume local; `./fsc db:reset` limpa.
 
 ### Pendente fora do repo
 
