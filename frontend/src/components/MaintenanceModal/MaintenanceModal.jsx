@@ -60,12 +60,12 @@ export default function MaintenanceModal({ onClose, onAdd }) {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
-      <div className="mx-4 w-full max-w-md rounded-3xl bg-componente1 p-6 shadow-xl">
+      <div className="mx-4 w-full max-w-md rounded-3xl bg-primary p-6 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-texto1">Cadastrar Manutenção</h2>
+          <h2 className="text-lg font-bold text-foreground">Cadastrar Manutenção</h2>
           <button
             onClick={onClose}
-            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
+            className="cursor-pointer text-foreground transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -87,9 +87,9 @@ export default function MaintenanceModal({ onClose, onAdd }) {
               id="linha"
               value={formData.linha}
               onChange={handleChange('linha')}
-              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                errors.linha ? 'ring-2 ring-error' : ''
-              } ${!formData.linha ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                errors.linha ? 'ring-2 ring-destructive' : ''
+              } ${!formData.linha ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Selecione a linha
@@ -100,7 +100,7 @@ export default function MaintenanceModal({ onClose, onAdd }) {
                 </option>
               ))}
             </select>
-            {errors.linha && <span className="text-xs text-error">{errors.linha}</span>}
+            {errors.linha && <span className="text-xs text-destructive">{errors.linha}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -108,9 +108,9 @@ export default function MaintenanceModal({ onClose, onAdd }) {
               id="setor"
               value={formData.setor}
               onChange={handleChange('setor')}
-              className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                errors.setor ? 'ring-2 ring-error' : ''
-              } ${!formData.setor ? 'text-texto1/60' : ''}`}
+              className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                errors.setor ? 'ring-2 ring-destructive' : ''
+              } ${!formData.setor ? 'text-foreground/60' : ''}`}
             >
               <option value="" disabled>
                 Selecione o setor
@@ -121,7 +121,7 @@ export default function MaintenanceModal({ onClose, onAdd }) {
                 </option>
               ))}
             </select>
-            {errors.setor && <span className="text-xs text-error">{errors.setor}</span>}
+            {errors.setor && <span className="text-xs text-destructive">{errors.setor}</span>}
           </div>
 
           <div className="mt-2 flex justify-center">

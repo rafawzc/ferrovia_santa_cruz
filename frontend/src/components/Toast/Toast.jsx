@@ -35,17 +35,17 @@ export default function Toast({ message, type = 'success', duration = 5000, onCl
 
   const icons = {
     success: <CheckCircle size={20} className="text-success" />,
-    error: <XCircle size={20} className="text-error" />,
+    error: <XCircle size={20} className="text-destructive" />,
   }
 
   const barColors = {
     success: 'bg-success',
-    error: 'bg-error',
+    error: 'bg-destructive',
   }
 
   return (
     <div
-      className={`fixed right-6 bottom-24 z-[100] w-72 overflow-hidden rounded-2xl bg-componente1 text-texto1 shadow-xl transition-all duration-300 ${
+      className={`fixed right-6 bottom-24 z-[100] w-72 overflow-hidden rounded-2xl bg-primary text-foreground shadow-xl transition-all duration-300 ${
         isExiting ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'
       }`}
     >
@@ -53,7 +53,7 @@ export default function Toast({ message, type = 'success', duration = 5000, onCl
         {icons[type]}
         <span className="flex-1 text-sm font-medium">{message}</span>
       </div>
-      <div className="h-1 w-full bg-componente3/30">
+      <div className="h-1 w-full bg-secondary/30">
         <div
           className={`h-full ${barColors[type]} transition-all duration-75 ease-linear`}
           style={{ width: `${progress}%` }}

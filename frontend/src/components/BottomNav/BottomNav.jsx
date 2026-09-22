@@ -24,7 +24,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center px-4 pb-3">
       <div
-        className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-componente1 px-3 py-2 shadow-lg outline-hidden"
+        className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-primary px-3 py-2 shadow-lg outline-hidden"
         style={{ transform: 'perspective(600px) rotateX(8deg)', willChange: 'transform' }}
       >
         {navItems.map((item, i) => {
@@ -43,20 +43,20 @@ export default function BottomNav() {
                 onClick={() => navigate(item.path)}
                 className={`relative flex h-10 w-10 items-center justify-center rounded-xl outline-hidden transition-colors duration-200 ${
                   isHovered
-                    ? 'bg-componente3'
+                    ? 'bg-secondary'
                     : active
-                      ? 'bg-componente3'
-                      : 'bg-transparent hover:bg-componente3/50'
+                      ? 'bg-secondary'
+                      : 'bg-transparent hover:bg-secondary/50'
                 }`}
               >
                 <Icon
                   size={20}
-                  className={`transition-colors ${active ? 'text-texto1' : 'text-texto2'}`}
+                  className={`transition-colors ${active ? 'text-foreground' : 'text-primary-foreground'}`}
                 />
               </button>
-              {active && <div className="mt-1 h-1.5 w-1.5 rounded-full bg-texto2" />}
+              {active && <div className="mt-1 h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
               {isHovered && (
-                <div className="absolute -top-8 rounded-sm bg-componente3 px-2 py-1 text-xs whitespace-nowrap text-texto1">
+                <div className="absolute -top-8 rounded-sm bg-secondary px-2 py-1 text-xs whitespace-nowrap text-foreground">
                   {item.label}
                 </div>
               )}

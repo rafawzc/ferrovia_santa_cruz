@@ -94,14 +94,14 @@ export default function UsuariosLista() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-page pb-28">
+    <div className="min-h-screen bg-background pb-28">
       <div className="mx-auto max-w-3xl px-4 pt-8">
         <div className="mb-5 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-texto1">Funcionários</h1>
+          <h1 className="text-xl font-bold text-foreground">Funcionários</h1>
           {isGestao && (
             <button
               onClick={handleCreateClick}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-componente1 px-3 py-1.5 text-xs font-semibold text-texto1 transition-colors hover:bg-componente1/90"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-primary/90"
             >
               <Plus size={16} />
               Cadastrar
@@ -109,10 +109,10 @@ export default function UsuariosLista() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-componente4 p-4">
+        <div className="rounded-2xl bg-accent p-4">
           <div className="mb-3 flex items-center gap-2">
-            <Users size={18} className="text-texto1" />
-            <h2 className="text-base font-bold text-texto1">Lista</h2>
+            <Users size={18} className="text-foreground" />
+            <h2 className="text-base font-bold text-foreground">Lista</h2>
           </div>
 
           <div className="flex flex-col gap-2">

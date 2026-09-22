@@ -10,6 +10,7 @@ import CargaLista from './pages/admin/CargaLista'
 import Linhas from './pages/admin/Linhas'
 import Alertas from './pages/admin/Alertas'
 import Perfil from './pages/Perfil'
+import Vitrine from './pages/Vitrine'
 import ThemeToggle from './components/ThemeToggle/ThemeToggle'
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/admin/linhas" element={<Linhas />} />
         <Route path="/admin/alertas" element={<Alertas />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/ui" element={<Vitrine />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

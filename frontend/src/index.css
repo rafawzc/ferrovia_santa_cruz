@@ -1,49 +1,99 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
-@theme {
-  --color-texto1: rgb(var(--texto1));
-  --color-texto2: rgb(var(--texto2));
-  --color-componente1: rgb(var(--componente1));
-  --color-componente3: rgb(var(--componente3));
-  --color-componente4: rgb(var(--componente4));
-  --color-bg-base: rgb(var(--bg-base));
-  --color-bg-page: rgb(var(--bg-page));
-  --color-bg-card: rgb(var(--bg-card));
-  --color-input-bg: var(--input-bg);
+@custom-variant dark (&:where(.black, .black *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-overlay: var(--overlay);
-  --color-border: rgb(var(--border));
-  --color-error: #dc2626;
-  --color-success: #16a34a;
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-delay: var(--delay);
+  --color-delay-foreground: var(--delay-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 
   --font-poppins: Poppins, sans-serif;
 }
 
-.white {
-  --texto1: 68 49 43;
-  --texto2: 234 230 222;
-  --componente1: 109 65 42;
-  --componente3: 194 177 156;
-  --componente4: 218 204 190;
-  --bg-base: 196 162 125;
-  --bg-page: 213 196 168;
-  --bg-card: 194 177 156;
-  --input-bg: rgba(255, 255, 255, 0.6);
-  --overlay: rgba(0, 0, 0, 0.5);
-  --border: 255 255 255;
+:root {
+  --radius: 1rem;
+
+  --background: #d5c4a8;
+  --foreground: #44312b;
+  --card: #c2b19c;
+  --card-foreground: #44312b;
+  --popover: #daccbe;
+  --popover-foreground: #44312b;
+  --primary: #6d412a;
+  --primary-foreground: #eae6de;
+  --secondary: #c2b19c;
+  --secondary-foreground: #44312b;
+  --muted: #c4a27d;
+  --muted-foreground: #57412f;
+  --accent: #daccbe;
+  --accent-foreground: #44312b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #ffffff;
+  --input: #ffffff99;
+  --ring: #6d412a;
+  --overlay: #00000080;
+
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --warning: #eab308;
+  --warning-foreground: #44312b;
+  --danger: #dc2626;
+  --danger-foreground: #ffffff;
+  --delay: #c2410c;
+  --delay-foreground: #ffffff;
 }
 
 .black {
-  --texto1: 247 242 238;
-  --texto2: 234 230 222;
-  --componente1: 136 80 48;
-  --componente3: 81 67 56;
-  --componente4: 110 89 73;
-  --bg-base: 37 29 24;
-  --bg-page: 19 15 12;
-  --bg-card: 58 47 39;
-  --input-bg: rgba(0, 0, 0, 0.35);
-  --overlay: rgba(0, 0, 0, 0.7);
-  --border: 201 178 156;
+  --background: #130f0c;
+  --foreground: #f7f2ee;
+  --card: #3a2f27;
+  --card-foreground: #f7f2ee;
+  --popover: #6e5949;
+  --popover-foreground: #f7f2ee;
+  --primary: #885030;
+  --primary-foreground: #eae6de;
+  --secondary: #514338;
+  --secondary-foreground: #f7f2ee;
+  --muted: #251d18;
+  --muted-foreground: #c9b29c;
+  --accent: #6e5949;
+  --accent-foreground: #f7f2ee;
+  --border: #c9b29c;
+  --input: #00000059;
+  --ring: #c9b29c;
+  --overlay: #000000b3;
 }
 
 @layer base {
@@ -67,7 +117,7 @@
   }
 
   body {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-poppins);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -77,7 +127,7 @@
   }
 
   button:focus-visible {
-    outline: 2px solid rgb(var(--componente1));
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 }

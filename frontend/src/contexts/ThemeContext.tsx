@@ -1,15 +1,14 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-const ThemeContext = createContext()
+interface ThemeContextValue {
+  isDark: boolean
+  toggleTheme: () => void
+}
 
-export function ThemeProvider({ children }) {
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme')
-      return saved ? saved === 'dark' : false
-    }
-    return false
-  })
+const ThemeContext = createContext<ThemeContextValue | null>(null)
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark')
 
   useEffect(() => {
     const root = document.documentElement
@@ -25,6 +24,7 @@ export function ThemeProvider({ children }) {
   return <ThemeContext.Provider value={{ isDark, toggleTheme }}>{children}</ThemeContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const context = useContext(ThemeContext)
   if (!context) {

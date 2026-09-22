@@ -72,14 +72,14 @@ export default function Alertas() {
   const recentHistory = getRecentHistory()
 
   return (
-    <div className="min-h-screen bg-bg-page pb-28">
+    <div className="min-h-screen bg-background pb-28">
       <div className="px-6 pt-8">
         <div className="flex justify-center">
           <ScreenHeader title="Alerta e Notificações" showBack={false} />
         </div>
 
         <div className="mt-8 flex justify-center">
-          <div className="w-full max-w-md rounded-3xl bg-componente1 p-6">
+          <div className="w-full max-w-md rounded-3xl bg-primary p-6">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <FormField
                 id="linha"
@@ -134,7 +134,7 @@ export default function Alertas() {
         <div className="mt-6 flex justify-center">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 font-medium text-texto1 transition-opacity hover:opacity-80"
+            className="flex items-center gap-2 font-medium text-foreground transition-opacity hover:opacity-80"
           >
             <Clock size={18} />
             <span>Histórico de notificações</span>
@@ -144,21 +144,23 @@ export default function Alertas() {
 
         {showHistory && (
           <div className="mt-4 flex justify-center">
-            <div className="w-full max-w-md rounded-3xl bg-componente1 p-4">
+            <div className="w-full max-w-md rounded-3xl bg-primary p-4">
               {recentHistory.length === 0 ? (
-                <p className="py-4 text-center text-sm text-texto1">
+                <p className="py-4 text-center text-sm text-foreground">
                   Nenhuma notificação enviada nos últimos 30 minutos
                 </p>
               ) : (
                 <div className="flex flex-col gap-3">
                   {recentHistory.map((item, i) => (
-                    <div key={i} className="flex flex-col gap-2 rounded-2xl bg-componente3 p-4">
+                    <div key={i} className="flex flex-col gap-2 rounded-2xl bg-secondary p-4">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-texto1">{item.linha}</p>
-                        <span className="text-xs text-texto1/70">{formatTime(item.timestamp)}</span>
+                        <p className="text-sm font-semibold text-foreground">{item.linha}</p>
+                        <span className="text-xs text-foreground/70">
+                          {formatTime(item.timestamp)}
+                        </span>
                       </div>
-                      <p className="text-xs text-texto1">Motivo: {item.motivo}</p>
-                      <p className="text-xs text-texto1">Status: {item.status}</p>
+                      <p className="text-xs text-foreground">Motivo: {item.motivo}</p>
+                      <p className="text-xs text-foreground">Status: {item.status}</p>
                     </div>
                   ))}
                 </div>
