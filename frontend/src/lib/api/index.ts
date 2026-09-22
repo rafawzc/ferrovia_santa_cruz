@@ -31,7 +31,6 @@ export const api = {
   },
   usuarios: {
     listar: () => request<Usuario[]>('GET', '/usuarios'),
-    obter: (id: number) => request<Usuario>('GET', `/usuarios/${String(id)}`),
     criar: (dados: UsuarioNovo) => request<Usuario>('POST', '/usuarios', dados),
     atualizar: (id: number, dados: UsuarioEdicao) =>
       request<Usuario>('PATCH', `/usuarios/${String(id)}`, dados),
