@@ -73,30 +73,30 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
       onClick={onClose}
     >
       <div
-        className="bg-componente1 rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
+        className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-componente1 p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-bold text-texto1">
             {isCreate ? 'Cadastro de Funcionário' : 'Editar Funcionário'}
           </h2>
           <button
             onClick={onClose}
-            className="text-texto1 hover:opacity-70 transition-opacity cursor-pointer"
+            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex justify-center mb-2">
+          <div className="mb-2 flex justify-center">
             <div className="relative">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden bg-componente3">
+              <div className="h-24 w-24 overflow-hidden rounded-2xl bg-componente3">
                 {formData.foto ? (
                   <img
                     src={formData.foto}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none'
                       e.target.nextSibling.style.display = 'flex'
@@ -104,7 +104,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
                   />
                 ) : null}
                 <div
-                  className={`w-full h-full items-center justify-center ${formData.foto ? 'hidden' : 'flex'}`}
+                  className={`h-full w-full items-center justify-center ${formData.foto ? 'hidden' : 'flex'}`}
                 >
                   <Camera size={32} className="text-texto1/60" />
                 </div>
@@ -162,9 +162,13 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
                 errors.cargo ? 'ring-2 ring-error' : ''
               } ${!formData.cargo ? 'text-texto1/60' : ''}`}
             >
-              <option value="" disabled>Selecione o cargo</option>
+              <option value="" disabled>
+                Selecione o cargo
+              </option>
               {cargos.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
             {errors.cargo && <span className="text-xs text-error">{errors.cargo}</span>}
@@ -183,7 +187,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
             </select>
           </div>
 
-          <div className="flex justify-center mt-2">
+          <div className="mt-2 flex justify-center">
             <Button
               type="submit"
               variant="primary"
@@ -197,13 +201,7 @@ export default function FuncionarioModal({ funcionario, onClose, onSave, isCreat
         </form>
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }

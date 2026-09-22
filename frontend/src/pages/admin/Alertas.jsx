@@ -78,8 +78,8 @@ export default function Alertas() {
           <ScreenHeader title="Alerta e Notificações" showBack={false} />
         </div>
 
-        <div className="flex justify-center mt-8">
-          <div className="w-full max-w-md bg-componente1 rounded-3xl p-6">
+        <div className="mt-8 flex justify-center">
+          <div className="w-full max-w-md rounded-3xl bg-componente1 p-6">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <FormField
                 id="linha"
@@ -117,7 +117,7 @@ export default function Alertas() {
                 error={errors.status}
                 hideLabel
               />
-              <div className="flex justify-center mt-2">
+              <div className="mt-2 flex justify-center">
                 <Button
                   type="submit"
                   variant="secondary"
@@ -131,10 +131,10 @@ export default function Alertas() {
           </div>
         </div>
 
-        <div className="flex justify-center mt-6">
+        <div className="mt-6 flex justify-center">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="flex items-center gap-2 text-texto1 font-medium hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 font-medium text-texto1 transition-opacity hover:opacity-80"
           >
             <Clock size={18} />
             <span>Histórico de notificações</span>
@@ -143,33 +143,22 @@ export default function Alertas() {
         </div>
 
         {showHistory && (
-          <div className="flex justify-center mt-4">
-            <div className="w-full max-w-md bg-componente1 rounded-3xl p-4">
+          <div className="mt-4 flex justify-center">
+            <div className="w-full max-w-md rounded-3xl bg-componente1 p-4">
               {recentHistory.length === 0 ? (
-                 <p className="text-texto1 text-sm text-center py-4">
-                   Nenhuma notificação enviada nos últimos 30 minutos
-                 </p>
+                <p className="py-4 text-center text-sm text-texto1">
+                  Nenhuma notificação enviada nos últimos 30 minutos
+                </p>
               ) : (
                 <div className="flex flex-col gap-3">
                   {recentHistory.map((item, i) => (
-                    <div
-                      key={i}
-                      className="bg-componente3 rounded-2xl p-4 flex flex-col gap-2"
-                    >
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm font-semibold text-texto1">
-                          {item.linha}
-                        </p>
-                        <span className="text-xs text-texto1/70">
-                          {formatTime(item.timestamp)}
-                        </span>
+                    <div key={i} className="flex flex-col gap-2 rounded-2xl bg-componente3 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-texto1">{item.linha}</p>
+                        <span className="text-xs text-texto1/70">{formatTime(item.timestamp)}</span>
                       </div>
-                      <p className="text-xs text-texto1">
-                        Motivo: {item.motivo}
-                      </p>
-                      <p className="text-xs text-texto1">
-                        Status: {item.status}
-                      </p>
+                      <p className="text-xs text-texto1">Motivo: {item.motivo}</p>
+                      <p className="text-xs text-texto1">Status: {item.status}</p>
                     </div>
                   ))}
                 </div>
@@ -179,13 +168,7 @@ export default function Alertas() {
         )}
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <BottomNav />
     </div>

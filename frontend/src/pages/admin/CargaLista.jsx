@@ -29,31 +29,59 @@ const passageirosPorTrem = {
   1: {
     A: [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31],
     B: [0, 1, 2, 3, 8, 9, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30],
-    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    C: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+      28, 29,
+    ],
     D: [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27],
-    E: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    E: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29, 30, 31,
+    ],
     F: [0, 1, 2, 3, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29],
     G: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
     H: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
   },
   2: {
-    A: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    A: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+    ],
     B: [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30],
-    C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    C: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29,
+    ],
     D: [0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30],
-    E: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
-    F: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    E: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+      31,
+    ],
+    F: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29, 30, 31,
+    ],
     G: [0, 1, 2, 3, 4, 16, 17, 18, 19, 20, 21, 24, 25, 26],
     H: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
   },
   3: {
     A: [0, 1, 2, 3, 4, 5, 6, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30],
-    B: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    B: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+      28, 29, 30, 31,
+    ],
     C: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
-    D: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    D: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29, 30, 31,
+    ],
     E: [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
-    F: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
-    G: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    F: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+    ],
+    G: [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29, 30, 31,
+    ],
     H: [0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
   },
 }
@@ -87,7 +115,9 @@ export default function CargaLista() {
   }))
   const vagoesPassageirosOcupados = vagoesPassageiros.filter((v) => v.percentage >= 90).length
   const vagoesPassageirosDisponiveis = vagoesPassageiros.filter((v) => v.percentage < 70).length
-  const vagoesPassageirosQuaseLotados = vagoesPassageiros.filter((v) => v.percentage >= 70 && v.percentage < 90).length
+  const vagoesPassageirosQuaseLotados = vagoesPassageiros.filter(
+    (v) => v.percentage >= 70 && v.percentage < 90,
+  ).length
 
   const handleAddCargo = (newCargo) => {
     setCargos((prev) => [newCargo, ...prev])
@@ -139,13 +169,13 @@ export default function CargaLista() {
               {row.map((seatIndex) => (
                 <div
                   key={seatIndex}
-                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
+                  className={`h-4 w-4 rounded-full transition-all duration-200 ${
                     passageirosAtuais.includes(seatIndex) ? 'bg-error' : 'bg-success'
                   }`}
                 />
               ))}
             </div>
-            {rowIndex === 1 && <div className="w-full h-px bg-texto2/30 my-1" />}
+            {rowIndex === 1 && <div className="my-1 h-px w-full bg-texto2/30" />}
           </div>
         ))}
       </div>
@@ -154,20 +184,20 @@ export default function CargaLista() {
 
   return (
     <div className="min-h-screen bg-bg-page pb-28">
-      <div className="px-6 pt-8 max-w-4xl mx-auto">
-        <h1 className="text-xl lg:text-2xl font-bold text-texto1 text-center mb-6">
+      <div className="mx-auto max-w-4xl px-6 pt-8">
+        <h1 className="mb-6 text-center text-xl font-bold text-texto1 lg:text-2xl">
           Monitoramento de Carga e Passageiro
         </h1>
 
-        <div className="flex justify-start mb-6">
+        <div className="mb-6 flex justify-start">
           <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
 
         {activeTab === 'carga' && (
           <div className="flex flex-col gap-6">
-            <div className="bg-componente1 rounded-3xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-texto2 flex items-center gap-2">
+            <div className="rounded-3xl bg-componente1 p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-texto2">
                   <Package size={20} />
                   Carga
                 </h2>
@@ -176,35 +206,39 @@ export default function CargaLista() {
                   <select
                     value={selectedTrainCarga}
                     onChange={(e) => setSelectedTrainCarga(Number(e.target.value))}
-                    className="bg-componente3 text-texto1 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
+                    className="rounded-full border-none bg-componente3 px-4 py-2 text-sm text-texto1 focus:ring-2 focus:ring-componente1/30"
                   >
                     {trenes.map((t) => (
-                      <option key={t.id} value={t.id}>{t.nome}</option>
+                      <option key={t.id} value={t.id}>
+                        {t.nome}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div className="bg-componente3 rounded-2xl p-4 mb-4">
+              <div className="mb-4 rounded-2xl bg-componente3 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-texto2 mb-1">Limite de carga por vagão</p>
+                    <p className="mb-1 text-sm font-medium text-texto2">
+                      Limite de carga por vagão
+                    </p>
                     <p className="text-xl font-bold text-texto2">170 Toneladas</p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-componente1/50 border-2 border-componente1 rounded-xl p-2 text-center">
+                    <div className="rounded-xl border-2 border-componente1 bg-componente1/50 p-2 text-center">
                       <p className="text-lg font-bold text-texto2">{totalVagoes}</p>
                       <p className="text-xs text-texto2">Total</p>
                     </div>
-                    <div className="bg-success/30 border-2 border-success rounded-xl p-2 text-center">
+                    <div className="rounded-xl border-2 border-success bg-success/30 p-2 text-center">
                       <p className="text-lg font-bold text-success">{vagoesDisponiveis}</p>
                       <p className="text-xs text-texto2">Disponíveis</p>
                     </div>
-                    <div className="bg-yellow-500/30 border-2 border-yellow-500 rounded-xl p-2 text-center">
+                    <div className="rounded-xl border-2 border-yellow-500 bg-yellow-500/30 p-2 text-center">
                       <p className="text-lg font-bold text-yellow-600">{vagoesQuaseLotados}</p>
                       <p className="text-xs text-texto2">Quase lotados</p>
                     </div>
-                    <div className="bg-error/30 border-2 border-error rounded-xl p-2 text-center">
+                    <div className="rounded-xl border-2 border-error bg-error/30 p-2 text-center">
                       <p className="text-lg font-bold text-error">{vagoesOcupados}</p>
                       <p className="text-xs text-texto2">Lotados</p>
                     </div>
@@ -212,23 +246,23 @@ export default function CargaLista() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-3 mb-4">
+              <div className="mb-4 flex flex-wrap gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-success" />
+                  <div className="h-3 w-3 rounded-sm bg-success" />
                   <span className="text-xs text-texto2">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-yellow-500" />
+                  <div className="h-3 w-3 rounded-sm bg-yellow-500" />
                   <span className="text-xs text-texto2">Quase lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-error" />
+                  <div className="h-3 w-3 rounded-sm bg-error" />
                   <span className="text-xs text-texto2">Lotado</span>
                 </div>
               </div>
 
               <div className="mb-4">
-                <p className="text-sm font-medium text-texto2 mb-3">Vagões disponíveis</p>
+                <p className="mb-3 text-sm font-medium text-texto2">Vagões disponíveis</p>
                 <div className="grid grid-cols-4 gap-3">
                   {Object.entries(vagoesCarga).map(([letter, percentage]) => (
                     <WagonIcon
@@ -249,26 +283,34 @@ export default function CargaLista() {
             </div>
 
             {cargos.length > 0 && (
-              <div className="bg-componente1 rounded-3xl p-4">
+              <div className="rounded-3xl bg-componente1 p-4">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className="flex items-center justify-between w-full mb-3"
+                  className="mb-3 flex w-full items-center justify-between"
                 >
                   <h2 className="text-base font-bold text-texto2">Histórico de Cargas</h2>
-                  {showHistory ? <ChevronUp size={18} className="text-texto2" /> : <ChevronDown size={18} className="text-texto2" />}
+                  {showHistory ? (
+                    <ChevronUp size={18} className="text-texto2" />
+                  ) : (
+                    <ChevronDown size={18} className="text-texto2" />
+                  )}
                 </button>
                 {showHistory && (
                   <div className="flex flex-col gap-2">
                     {cargos.map((cargo) => (
-                      <div key={cargo.id} className="bg-componente3 rounded-xl p-3">
-                        <div className="flex justify-between items-center mb-1">
+                      <div key={cargo.id} className="rounded-xl bg-componente3 p-3">
+                        <div className="mb-1 flex items-center justify-between">
                           <p className="text-sm font-semibold text-texto1">{cargo.tipo}</p>
                           <span className="text-xs text-texto1/70">
                             {new Date(cargo.timestamp).toLocaleString('pt-BR')}
                           </span>
                         </div>
-                        <p className="text-xs text-texto1">Peso: {cargo.peso}t | Vagão: {cargo.vagao}</p>
-                        <p className="text-xs text-texto1/70">{cargo.partida} → {cargo.destino}</p>
+                        <p className="text-xs text-texto1">
+                          Peso: {cargo.peso}t | Vagão: {cargo.vagao}
+                        </p>
+                        <p className="text-xs text-texto1/70">
+                          {cargo.partida} → {cargo.destino}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -280,9 +322,9 @@ export default function CargaLista() {
 
         {activeTab === 'passageiros' && (
           <div className="flex flex-col gap-6">
-            <div className="bg-componente1 rounded-3xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-texto2 flex items-center gap-2">
+            <div className="rounded-3xl bg-componente1 p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-texto2">
                   <Users size={20} />
                   Passageiros
                 </h2>
@@ -294,35 +336,43 @@ export default function CargaLista() {
                       setSelectedTrainPassageiro(Number(e.target.value))
                       setSelectedWagonPassageiro('A')
                     }}
-                    className="bg-componente3 text-texto1 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
+                    className="rounded-full border-none bg-componente3 px-4 py-2 text-sm text-texto1 focus:ring-2 focus:ring-componente1/30"
                   >
                     {trenes.map((t) => (
-                      <option key={t.id} value={t.id}>{t.nome}</option>
+                      <option key={t.id} value={t.id}>
+                        {t.nome}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div className="bg-componente3 rounded-2xl p-4 mb-4">
+              <div className="mb-4 rounded-2xl bg-componente3 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-texto2 mb-1">Limite de pessoas por vagão</p>
+                    <p className="mb-1 text-sm font-medium text-texto2">
+                      Limite de pessoas por vagão
+                    </p>
                     <p className="text-xl font-bold text-texto2">32 Pessoas</p>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-componente1/50 border-2 border-componente1 rounded-xl p-2 text-center">
+                    <div className="rounded-xl border-2 border-componente1 bg-componente1/50 p-2 text-center">
                       <p className="text-lg font-bold text-texto2">{totalPoltronas}</p>
                       <p className="text-xs text-texto2">Total</p>
                     </div>
-                    <div className="bg-success/30 border-2 border-success rounded-xl p-2 text-center">
-                      <p className="text-lg font-bold text-success">{vagoesPassageirosDisponiveis}</p>
+                    <div className="rounded-xl border-2 border-success bg-success/30 p-2 text-center">
+                      <p className="text-lg font-bold text-success">
+                        {vagoesPassageirosDisponiveis}
+                      </p>
                       <p className="text-xs text-texto2">Disponíveis</p>
                     </div>
-                    <div className="bg-yellow-500/30 border-2 border-yellow-500 rounded-xl p-2 text-center">
-                      <p className="text-lg font-bold text-yellow-600">{vagoesPassageirosQuaseLotados}</p>
+                    <div className="rounded-xl border-2 border-yellow-500 bg-yellow-500/30 p-2 text-center">
+                      <p className="text-lg font-bold text-yellow-600">
+                        {vagoesPassageirosQuaseLotados}
+                      </p>
                       <p className="text-xs text-texto2">Quase lotados</p>
                     </div>
-                    <div className="bg-error/30 border-2 border-error rounded-xl p-2 text-center">
+                    <div className="rounded-xl border-2 border-error bg-error/30 p-2 text-center">
                       <p className="text-lg font-bold text-error">{vagoesPassageirosOcupados}</p>
                       <p className="text-xs text-texto2">Ocupados</p>
                     </div>
@@ -330,23 +380,23 @@ export default function CargaLista() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-3 mb-4">
+              <div className="mb-4 flex flex-wrap gap-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-success" />
+                  <div className="h-3 w-3 rounded-sm bg-success" />
                   <span className="text-xs text-texto2">Disponível</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-yellow-500" />
+                  <div className="h-3 w-3 rounded-sm bg-yellow-500" />
                   <span className="text-xs text-texto2">Quase lotado</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-sm bg-error" />
+                  <div className="h-3 w-3 rounded-sm bg-error" />
                   <span className="text-xs text-texto2">Lotado</span>
                 </div>
               </div>
 
               <div className="mb-4">
-                <p className="text-sm font-medium text-texto2 mb-3">Vagões</p>
+                <p className="mb-3 text-sm font-medium text-texto2">Vagões</p>
                 <div className="grid grid-cols-4 gap-3">
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((letter) => {
                     const ocupadas = passageiros[selectedTrainPassageiro]?.[letter]?.length || 0
@@ -363,30 +413,32 @@ export default function CargaLista() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm font-medium text-texto2">
                   Poltronas no vagão {selectedWagonPassageiro}
                 </p>
                 <select
                   value={selectedWagonPassageiro}
                   onChange={(e) => setSelectedWagonPassageiro(e.target.value)}
-                  className="bg-componente3 text-texto1 text-sm rounded-full px-4 py-2 border-none focus:ring-2 focus:ring-componente1/30"
+                  className="rounded-full border-none bg-componente3 px-4 py-2 text-sm text-texto1 focus:ring-2 focus:ring-componente1/30"
                 >
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((v) => (
-                    <option key={v} value={v}>Vagão {v}</option>
+                    <option key={v} value={v}>
+                      Vagão {v}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <div className="bg-componente3 rounded-2xl p-4">
+              <div className="rounded-2xl bg-componente3 p-4">
                 {renderPassengerSeats()}
-                <div className="flex justify-center gap-4 mt-3">
+                <div className="mt-3 flex justify-center gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-success" />
+                    <div className="h-3 w-3 rounded-full bg-success" />
                     <span className="text-xs text-texto2">Livre</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-error" />
+                    <div className="h-3 w-3 rounded-full bg-error" />
                     <span className="text-xs text-texto2">Ocupado</span>
                   </div>
                 </div>
