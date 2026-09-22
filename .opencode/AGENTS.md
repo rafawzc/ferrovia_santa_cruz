@@ -2,7 +2,7 @@
 
 Web app de **gerenciamento** (lado admin) e **informação** (lado cliente E admin) sobre a ferrovia Santa Cruz. Dashboard, responsivo desktop + mobile. É uma SA (Situação de Aprendizagem) — trabalho de curso técnico que dura o ano inteiro, composta de várias atividades entregues ao longo do tempo.
 
-**Stack:** React (Vite) no frontend · FastAPI no backend (API REST) · MySQL no banco · tudo em Docker Compose.
+**Stack:** React 19 + TypeScript strict + Tailwind v4 (Vite) no frontend · FastAPI no backend (API REST) · MySQL no banco · tudo em Docker Compose, operado pelo `./fsc`.
 
 ## Core Beliefs
 
@@ -10,10 +10,10 @@ Web app de **gerenciamento** (lado admin) e **informação** (lado cliente E adm
 
 - ***Introspection Before Expansion*** — Quando bater num erro, limite ou rejeição (sistema, teste ou usuário), interrogue seu PRÓPRIO output antes de tentar contornar a restrição. Assuma que a falha é sintoma de lógica falha ou inchada, não uma limitação dura — "o pacote é grande demais pra porta" significa reempacotar o pacote, não quebrar a parede. Só parta pra workarounds externos (subir limites, mover arquivos, adicionar complexidade de infra) DEPOIS de confirmar que seu output está correto e mínimo e a restrição é genuinamente inevitável. Essa é a disciplina de root-cause que `/systematic-debugging` e *No Bloat* abaixo operacionalizam.
 - ***Planning First*** — Ao desenhar um plano, entrar em Plan Mode, ou idear qualquer feature/arquitetura — use a skill `/brainstorming` ***SEMPRE*** antes de pular pra implementação.
-- ***TDD*** — Ao implementar qualquer feature ou bugfix, SEMPRE use `/tdd` antes de escrever código de implementação. RED → GREEN → REFACTOR.
+- ***TDD*** — Ao implementar qualquer feature ou bugfix **no backend**, SEMPRE use `/tdd` antes de escrever código de implementação. RED → GREEN → REFACTOR. O front **não tem teste** (L27): a verificação de tela é manual, no navegador, em mobile E desktop.
 - ***Systematic Debugging*** — Ao debugar qualquer bug, falha de teste ou comportamento inesperado, SEMPRE use `/systematic-debugging`. Sem fix sem investigar a causa raiz primeiro.
 - ***Managing Tasks*** — Externalize qualquer trabalho não-trivial no TaskManager (TaskCreate com dependências explícitas via `blockedBy`). Nunca execute lógica multi-passo inline sem um grafo de tarefas.
-- ***Docker Compose only*** — Tudo roda em containers. Use `docker compose` a partir da raiz do repo pra TODAS as operações (subir, logs, exec, testes). Nunca rode o backend/frontend direto na máquina host esperando que "funcione igual" — o ambiente de verdade é o do container.
+- ***Docker Compose only, via `./fsc`*** — Tudo roda em containers. O `./fsc` (na raiz) é a **porta única** pra TODAS as operações: stack (`up`, `down`, `logs`, `ps`, `sh`), qualidade (`test`, `lint`, `fmt`, `typecheck`, `check`), banco (`db`, `db:reset`) e front (`npm`, `ui add`). `./fsc help` lista tudo. `docker compose` direto só quando o `./fsc` não tem o comando. Nunca rode node/npm/python do host esperando que "funcione igual" — o ambiente de verdade é o do container.
 - ***SQL sempre parametrizado*** — O acesso ao MySQL é **SQL puro** (sem ORM). Isso significa que VOCÊ é responsável pela segurança: TODA query com valor vindo de fora (request, query param, body, header) usa placeholders parametrizados (`%s` no mysql-connector / `cursor.execute(sql, params)`), NUNCA f-string / concatenação / `.format()` montando SQL. String interpolada em SQL = SQL injection = reprovado. Sem exceção, nem em "query interna que ninguém chama de fora".
 - ***Evidence Before Completion*** — Nunca declare trabalho "pronto", "corrigido", "passando" ou "funcionando" sem ter ACABADO de rodar o comando de verificação e lido o output. Sem exceção, sem "deve passar", sem confiar em rodada anterior, sem confiar no relatório de sucesso de um agente — re-cheque o diff/output você mesmo. Vale pra: testes passando, lint verde, build ok, bug corrigido, requisito satisfeito, trabalho delegado a agente. Se não consegue mostrar evidência na mesma mensagem, diga o status real em vez disso.
 - ***Documentar ao fechar*** — Implementação NÃO está completa quando o código passa nos testes — está completa quando está **documentada**. Todo fechamento de feature/bugfix/atividade tem um **step de documentação obrigatório** (ver seção *Documentação* abaixo): (1) atualizar os `CLAUDE.md` de pasta tocados com qualquer quirk/decisão/gotcha não-óbvio que você descobriu, e (2) atualizar a pasta `docs/` (incluindo `docs/CLAUDE.md`, o índice) com o que o cliente/professora/próximo-agente precisa saber. Isso é uma SA avaliada — documentação fraca = nota fraca, independente de o código funcionar. Pulou o step de doc = trabalho não fechado. Não diga "pronto" sem ter documentado.
@@ -32,7 +32,7 @@ Web app de **gerenciamento** (lado admin) e **informação** (lado cliente E adm
 
 - **Pragmático sobre dogmático** — Adapte à realidade do projeto e à entrega da SA.
 - **Intenção clara sobre código esperto** — Seja chato e óbvio.
-- Sem comentários no código — seu código já deve ser legível por humano. (Exceção: comentário explicando um *porquê* não-óbvio, nunca um *o quê*.)
+- **Zero comentários no código, sem exceção** (L7) — o código tem que se explicar sozinho. O *porquê* não-óbvio vai pro `CLAUDE.md` da pasta ou pra `docs/`, nunca pro arquivo. Só passam pragmas de ferramenta (`eslint-disable*`, `@ts-expect-error`, `# noqa`, `# type: ignore`, shebang). Imposto pelo lint (ver *Lint e padrões*).
 - Single Responsibility, mas pragmático sobre quando aplicar.
 - **Exponha confusão, não esconda** — Se um pedido tem múltiplas interpretações válidas, apresente-as, não escolha em silêncio. Se algo está incerto, nomeie o que confunde e pergunte.
 
@@ -45,19 +45,22 @@ ferrovia_santa_cruz/
 ├── backend/            # FastAPI — API REST, SQL puro pro MySQL
 │   └── CLAUDE.md       # + CLAUDE.md por módulo relevante
 ├── db/                 # init/seed SQL do MySQL (schema, dados iniciais)
+│   └── CLAUDE.md
 ├── docs/               # documentação do projeto (ver seção Documentação)
 │   └── CLAUDE.md       # ÍNDICE da pasta docs
 ├── docker-compose.yml  # 3 serviços: frontend, backend, db
+├── fsc                 # porta única de operação (./fsc help)
+├── .github/workflows/  # ci.yml — roda ./fsc check em todo PR
 └── .claude/
     ├── CLAUDE.md       # este arquivo — instruções raiz do agente
-    └── skills/         # brainstorming, tdd, systematic-debugging, ponytail
+    └── skills/         # brainstorming, tdd, systematic-debugging, ponytail, token-efficiency
 ```
 
 Os `CLAUDE.md` de pasta (`backend/`, `frontend/`, …) são os "espalhados" do P1 — conhecimento procedural local. Este (`.claude/CLAUDE.md`) é a raiz que governa tudo.
 
 ### Modelo de containers e rede (requisito firme)
 
-**Detalhe completo, com o porquê do proxy, o esqueleto do compose e o checklist: [`docs/arquitetura/containers-e-rede.md`](../docs/arquitetura/containers-e-rede.md). LEIA antes de mexer no compose, Dockerfiles ou na forma como o front chama a API.**
+**Detalhe completo, com o porquê do proxy, o compose real explicado e o checklist: [`docs/arquitetura/containers-e-rede.md`](../docs/arquitetura/containers-e-rede.md). LEIA antes de mexer no compose, Dockerfiles ou na forma como o front chama a API.**
 
 Três containers (`frontend`, `backend`, `db`), conectados **só por rede interna**. As regras firmes que NÃO podem cair:
 
@@ -72,7 +75,7 @@ Navegador (você)  ──:5173──►  [frontend]  ──rede interna──►
 
 ## Documentação
 
-**Mapa vivo da documentação: [`docs/CLAUDE.md`](../docs/CLAUDE.md) (índice). Decisões técnicas com o *porquê*: [`docs/decisoes/stack.md`](../docs/decisoes/stack.md). Comece por aí quando precisar de contexto.**
+**Mapa vivo da documentação: [`docs/CLAUDE.md`](../docs/CLAUDE.md) (índice). Decisões técnicas com o *porquê*: [`docs/decisoes/stack.md`](../docs/decisoes/stack.md) e [`docs/decisoes/frontend-e-qualidade.md`](../docs/decisoes/frontend-e-qualidade.md). Como operar (quickstart, `./fsc`, ruleset do GitHub): [`docs/arquitetura/operacao.md`](../docs/arquitetura/operacao.md). Comece por aí quando precisar de contexto.**
 
 Documentação é cidadã de primeira classe aqui (ver P0 *Documentar ao fechar*). É uma SA avaliada por entregas ao longo do ano — a doc é metade da nota e o que faz o trabalho ser navegável daqui a 6 meses. Duas frentes complementares: **`docs/`** (documentação do projeto, pra humano — você, professora, colegas) e **`CLAUDE.md` espalhados** (conhecimento procedural local, pro próximo agente). As duas se atualizam no fechamento de cada implementação.
 
@@ -123,12 +126,15 @@ Pulou qualquer caixa = trabalho não fechado.
 - Centralize a conexão/pool num único módulo; não abra conexão crua espalhada. Sempre feche cursor/conexão (context manager).
 - Valide input na fronteira com Pydantic (models de request/response). Erro de validação → 4xx com mensagem clara, nunca 500 silencioso.
 - Segredos (senha do MySQL etc.) vêm de variável de ambiente / `.env` gitignored — nunca hardcoded.
+- **Camadas** (L21): `routers/` (só HTTP + Pydantic) → `services/` (regra, Python puro) → `repositories/` (SQL parametrizado atrás de um `Protocol`). Detalhe e gotchas (venv em `/opt/venv`, uv): [`backend/CLAUDE.md`](../backend/CLAUDE.md).
+- **Testes com banco mockado** (L16): pytest + `TestClient`, repo trocado por fake via `app.dependency_overrides`. Sem banco de teste. SQL não roda em teste → repo fino + smoke manual contra o banco de dev.
 
-## Frontend — React + Vite
+## Frontend — React 19 + TypeScript + Tailwind v4
 
 **Padrões responsivos, consumo de API e os dois lados (admin/cliente) em detalhe: [`docs/frontend/responsividade.md`](../docs/frontend/responsividade.md).**
 
-- Build/dev: **Vite**. Testes: **Vitest** + Testing Library.
+- Build/dev: **Vite**. **React 19 + TypeScript strict + Tailwind v4** (tokens no `@theme` de `src/index.css`, sem `tailwind.config.js`). Componentes do design system via **shadcn/ui** em `src/components/ui/` (entra na fase 2). Detalhe e gotchas: [`frontend/CLAUDE.md`](../frontend/CLAUDE.md).
+- **Sem testes de front** (L27) — sem Vitest, sem Testing Library. Gate do front = `typecheck` + `lint` + build. Tela se verifica à mão no navegador, mobile E desktop.
 - **Responsivo mobile-first** (ver P1). Comece mobile, suba breakpoints.
 - Chamadas à API por caminho relativo `/api/...` (o proxy do Vite resolve). Nunca URL absoluta do backend.
 - Dois lados: **admin** (gerenciamento + informação) e **cliente** (informação). Pense nas rotas/guards desde cedo.
@@ -139,9 +145,10 @@ Pulou qualquer caixa = trabalho não fechado.
 | Skill | Quando |
 |-------|--------|
 | `/brainstorming` | Antes de QUALQUER trabalho criativo — desenhar feature, modelar arquitetura, escopar bugfix. Constrói uma spec viva e grila cada decisão até zero ambiguidade. |
-| `/tdd` | Antes de escrever qualquer código de implementação (feature ou bugfix). RED → GREEN → REFACTOR. |
+| `/tdd` | Antes de escrever qualquer código de implementação no **backend** (feature ou bugfix). RED → GREEN → REFACTOR. Front não tem teste (L27). |
 | `/systematic-debugging` | Ao encontrar qualquer bug, falha de teste ou comportamento inesperado, antes de propor fix. |
 | `/ponytail` | Ao escrever código de implementação — antes de criar função/arquivo/dep/abstração e durante o GREEN do `/tdd`. Força a solução mais enxuta que resolve, sem furar segurança / perda-de-dados / a11y. O melhor código é o que você não escreveu. |
+| `/token-efficiency` | Ao avaliar desperdício de tokens num fluxo, ou quando uma tarefa/subagente recebe a skill explicitamente — escolher contexto e saída de comando sem perder evidência. Não dispara em trabalho comum. |
 
 ## NEVER
 
@@ -159,11 +166,19 @@ Pulou qualquer caixa = trabalho não fechado.
 - Conventional commits com boas descrições. Commits separados quando fizer sentido.
 - Nunca referencie Claude Code / IA em commits ou PRs.
 
+## Lint e padrões
+
+Regra escrita sem ferramenta = regra ignorada. Aqui o lint impõe:
+
+- **Front (ESLint 9 + Prettier)** — sem comentário (L7), **sem cor crua** (hex/`rgb(`/`bg-red-500` — cor só no `src/index.css`), **sem controle HTML cru** (`<button>/<input>/<select>/<textarea>/<dialog>` só dentro de `components/ui/`), **sem `style={{}}`** nem valor arbitrário Tailwind (`rounded-[3rem]`), **fronteiras de import** (página não importa `@radix-ui/*` nem outra página, `fetch` só em `lib/api`). Tabela completa com exceções: [`frontend/CLAUDE.md`](../frontend/CLAUDE.md).
+- **Back** — `ruff` (lint + format) + `scripts/check_comments.py` (zero comentário em `.py`).
+- **CI** — `.github/workflows/ci.yml` roda `./fsc check` em todo PR e push na `main`. Vermelho não entra.
+
 ## Testes
 
 ```bash
-docker compose exec backend pytest         # backend (FastAPI) — pytest
-docker compose exec frontend npm run test  # frontend (React) — Vitest
+./fsc test    # backend — pytest (args repassados: ./fsc test -k health)
+./fsc check   # gate completo: lint + typecheck + format check + test + build do front
 ```
 
-Rode os testes pelo container (ver P0 *Docker Compose only*) — o ambiente de verdade é o do container, não o host.
+Só o backend tem teste (L27). Rode tudo pelo `./fsc` (ver P0 *Docker Compose only*) — o ambiente de verdade é o do container, não o host. Antes de abrir PR: `./fsc check` verde.
