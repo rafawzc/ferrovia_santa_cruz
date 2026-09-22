@@ -15,7 +15,7 @@ const UsuarioEditar = lazy(() => import('@/pages/admin/UsuarioEditar.jsx'))
 const CargaLista = lazy(() => import('@/pages/admin/CargaLista.jsx'))
 const Linhas = lazy(() => import('@/pages/admin/Linhas.jsx'))
 const Alertas = lazy(() => import('@/pages/admin/Alertas.jsx'))
-const Perfil = lazy(() => import('@/pages/Perfil.jsx'))
+const Perfil = lazy(() => import('@/pages/Perfil'))
 const Vitrine = lazy(() => import('@/pages/Vitrine'))
 
 const EQUIPE: Papel[] = ['operacional', 'gestao']
