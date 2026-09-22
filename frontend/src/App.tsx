@@ -13,7 +13,7 @@ const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista.jsx'))
 const UsuarioDetalhe = lazy(() => import('@/pages/admin/UsuarioDetalhe.jsx'))
 const UsuarioEditar = lazy(() => import('@/pages/admin/UsuarioEditar.jsx'))
 const CargaLista = lazy(() => import('@/pages/admin/CargaLista.jsx'))
-const Linhas = lazy(() => import('@/pages/admin/Linhas.jsx'))
+const Rotas = lazy(() => import('@/pages/admin/Rotas'))
 const Alertas = lazy(() => import('@/pages/admin/Alertas.jsx'))
 const Perfil = lazy(() => import('@/pages/Perfil.jsx'))
 const Vitrine = lazy(() => import('@/pages/Vitrine'))
@@ -77,7 +77,7 @@ export default function App() {
           <Route element={<ProtectedLayout />}>
             <Route element={<Papeis papeis={EQUIPE} />}>
               <Route path="/admin" element={<Dashboard />} />
-              <Route path="/admin/rotas" element={<Linhas />} />
+              <Route path="/admin/rotas" element={<Rotas />} />
               <Route path="/admin/carga" element={<CargaLista />} />
               <Route path="/admin/alertas" element={<Alertas />} />
             </Route>
