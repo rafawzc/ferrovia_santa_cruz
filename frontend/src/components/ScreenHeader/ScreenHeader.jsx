@@ -14,12 +14,12 @@ export default function ScreenHeader({ title, showBack = true, onBack }) {
       {showBack && (
         <button
           onClick={handleBack}
-          className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
+          className="cursor-pointer text-foreground transition-opacity hover:opacity-70"
         >
           <ArrowLeft size={28} />
         </button>
       )}
-      <h1 className="text-xl font-bold text-texto1 lg:text-2xl">{title}</h1>
+      <h1 className="text-xl font-bold text-foreground lg:text-2xl">{title}</h1>
     </div>
   )
 }

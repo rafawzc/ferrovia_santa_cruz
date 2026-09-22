@@ -13,10 +13,10 @@ export default function Button({
     'w-full flex items-center justify-center gap-2 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variants = {
-    primary: 'bg-componente1 text-texto1 py-3.5 px-6 hover:bg-componente1/90 active:scale-[0.98]',
-    secondary: 'bg-componente4 text-texto1 py-3 px-6 hover:bg-componente3 active:scale-[0.98]',
+    primary: 'bg-primary text-foreground py-3.5 px-6 hover:bg-primary/90 active:scale-[0.98]',
+    secondary: 'bg-accent text-foreground py-3 px-6 hover:bg-secondary active:scale-[0.98]',
     outline:
-      'bg-transparent border-2 border-componente3 text-texto1 py-3 px-6 hover:bg-componente3/10 active:scale-[0.98]',
+      'bg-transparent border-2 border-secondary text-foreground py-3 px-6 hover:bg-secondary/10 active:scale-[0.98]',
   }
 
   return (

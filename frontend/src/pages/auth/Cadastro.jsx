@@ -52,13 +52,13 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg-base lg:flex-row">
-      <div className="flex flex-col bg-bg-base lg:w-[45%]">
-        <div className="flex justify-center bg-bg-base px-8 pt-10 pb-14 lg:justify-start lg:pb-20">
+    <div className="flex min-h-screen flex-col bg-muted lg:flex-row">
+      <div className="flex flex-col bg-muted lg:w-[45%]">
+        <div className="flex justify-center bg-muted px-8 pt-10 pb-14 lg:justify-start lg:pb-20">
           <img src={logo} alt="Ferrovia Santa Cruz" className="w-52 lg:w-56" />
         </div>
-        <div className="-mt-6 flex-1 rounded-tl-[3rem] rounded-tr-[3rem] bg-bg-card px-8 pt-10 pb-8 lg:-mt-0 lg:rounded-tl-none lg:rounded-tr-[3rem] lg:rounded-br-[3rem] lg:rounded-bl-[3rem] lg:px-14 lg:pt-12">
-          <h1 className="mb-8 text-2xl font-bold text-texto1 lg:text-3xl">Crie sua Conta</h1>
+        <div className="-mt-6 flex-1 rounded-tl-[3rem] rounded-tr-[3rem] bg-card px-8 pt-10 pb-8 lg:-mt-0 lg:rounded-tl-none lg:rounded-tr-[3rem] lg:rounded-br-[3rem] lg:rounded-bl-[3rem] lg:px-14 lg:pt-12">
+          <h1 className="mb-8 text-2xl font-bold text-foreground lg:text-3xl">Crie sua Conta</h1>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <FormField
               id="nome"
@@ -115,15 +115,15 @@ export default function Cadastro() {
               <Button type="submit">Criar</Button>
             </div>
           </form>
-          <p className="mt-6 text-center text-sm text-texto1/70">
+          <p className="mt-6 text-center text-sm text-foreground/70">
             Já tem uma conta?{' '}
-            <Link to="/login" className="font-semibold text-componente1 hover:underline">
+            <Link to="/login" className="font-semibold text-primary hover:underline">
               Entrar
             </Link>
           </p>
         </div>
       </div>
-      <div className="relative hidden overflow-hidden bg-componente1 lg:block lg:w-[55%]">
+      <div className="relative hidden overflow-hidden bg-primary lg:block lg:w-[55%]">
         <img
           src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80"
           alt="Trem em movimento"

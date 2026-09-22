@@ -91,10 +91,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-page pb-28">
+    <div className="min-h-screen bg-background pb-28">
       <div className="px-6 pt-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-texto1">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <img src={logo} alt="Ferrovia Santa Cruz" className="h-14 w-14" />
         </div>
 
@@ -121,43 +121,47 @@ export default function Dashboard() {
         </div>
 
         <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl bg-componente4 p-5">
-            <h2 className="mb-4 text-lg font-bold text-texto2">Status das Linhas</h2>
+          <div className="rounded-3xl bg-accent p-5">
+            <h2 className="mb-4 text-lg font-bold text-primary-foreground">Status das Linhas</h2>
             <div className="flex flex-col gap-3">
               {lines.map((line) => (
                 <div
                   key={line.id}
-                  className="flex items-center justify-between rounded-2xl bg-componente1 p-4"
+                  className="flex items-center justify-between rounded-2xl bg-primary p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <Train size={20} className="text-texto2" />
+                    <Train size={20} className="text-primary-foreground" />
                     <div>
-                      <p className="text-sm font-semibold text-texto2">{line.nome}</p>
-                      <p className="text-xs text-texto1/70">{line.velocidade}</p>
+                      <p className="text-sm font-semibold text-primary-foreground">{line.nome}</p>
+                      <p className="text-xs text-foreground/70">{line.velocidade}</p>
                     </div>
                   </div>
                   <div
-                    className={`h-3 w-3 rounded-full ${line.status === 'ok' ? 'bg-success' : 'bg-error'}`}
+                    className={`h-3 w-3 rounded-full ${line.status === 'ok' ? 'bg-success' : 'bg-destructive'}`}
                   />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-3xl bg-componente4 p-5">
-            <h2 className="mb-4 text-lg font-bold text-texto2">Sensores</h2>
+          <div className="rounded-3xl bg-accent p-5">
+            <h2 className="mb-4 text-lg font-bold text-primary-foreground">Sensores</h2>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
               {sensors.map((sensor) => (
                 <div
                   key={sensor.id}
-                  className="flex flex-col items-center gap-2 rounded-xl bg-componente1 p-3"
+                  className="flex flex-col items-center gap-2 rounded-xl bg-primary p-3"
                 >
                   <Radio
                     size={20}
-                    className={sensor.status === 'ok' ? 'text-success' : 'text-error'}
+                    className={sensor.status === 'ok' ? 'text-success' : 'text-destructive'}
                   />
-                  <p className="text-center text-xs font-medium text-texto2">{sensor.nome}</p>
-                  <p className="text-center text-[10px] text-texto2/70">{sensor.linha}</p>
+                  <p className="text-center text-xs font-medium text-primary-foreground">
+                    {sensor.nome}
+                  </p>
+                  <p className="text-center text-[10px] text-primary-foreground/70">
+                    {sensor.linha}
+                  </p>
                 </div>
               ))}
             </div>
@@ -166,10 +170,10 @@ export default function Dashboard() {
 
         <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           {pendingMaintenances > 0 && (
-            <div className="rounded-3xl bg-componente4 p-5">
+            <div className="rounded-3xl bg-accent p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-texto2">Manutenções Pendentes</h2>
-                <AlertTriangle size={20} className="text-error" />
+                <h2 className="text-lg font-bold text-primary-foreground">Manutenções Pendentes</h2>
+                <AlertTriangle size={20} className="text-destructive" />
               </div>
               <div className="flex flex-col gap-3">
                 {maintenances
@@ -177,14 +181,16 @@ export default function Dashboard() {
                   .map((maintenance) => (
                     <div
                       key={maintenance.id}
-                      className="flex cursor-pointer items-center justify-between rounded-2xl bg-componente1 p-4 transition-colors hover:bg-componente1/90"
+                      className="flex cursor-pointer items-center justify-between rounded-2xl bg-primary p-4 transition-colors hover:bg-primary/90"
                       onClick={() => setSelectedMaintenance(maintenance)}
                     >
                       <div>
-                        <p className="text-sm font-semibold text-texto2">{maintenance.linha}</p>
-                        <p className="text-xs text-texto2/70">{maintenance.motivo}</p>
+                        <p className="text-sm font-semibold text-primary-foreground">
+                          {maintenance.linha}
+                        </p>
+                        <p className="text-xs text-primary-foreground/70">{maintenance.motivo}</p>
                       </div>
-                      <Eye size={18} className="text-texto2" />
+                      <Eye size={18} className="text-primary-foreground" />
                     </div>
                   ))}
               </div>
@@ -192,19 +198,21 @@ export default function Dashboard() {
           )}
 
           {finalizedMaintenances.length > 0 && (
-            <div className="rounded-3xl bg-componente4 p-5">
+            <div className="rounded-3xl bg-accent p-5">
               <button
                 onClick={() => setShowFinalized(!showFinalized)}
                 className="mb-4 flex w-full items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-texto2">Manutenções Finalizadas</h2>
+                  <h2 className="text-lg font-bold text-primary-foreground">
+                    Manutenções Finalizadas
+                  </h2>
                   <CheckCircle size={18} className="text-success" />
                 </div>
                 {showFinalized ? (
-                  <ChevronUp size={20} className="text-texto1" />
+                  <ChevronUp size={20} className="text-foreground" />
                 ) : (
-                  <ChevronDown size={20} className="text-texto1" />
+                  <ChevronDown size={20} className="text-foreground" />
                 )}
               </button>
               {showFinalized && (
@@ -212,12 +220,14 @@ export default function Dashboard() {
                   {finalizedMaintenances.map((maintenance) => (
                     <div
                       key={maintenance.id}
-                      className="flex items-center justify-between rounded-2xl bg-componente1/70 p-4"
+                      className="flex items-center justify-between rounded-2xl bg-primary/70 p-4"
                     >
                       <div>
-                        <p className="text-sm font-medium text-texto2">{maintenance.linha}</p>
-                        <p className="text-xs text-texto2/70">{maintenance.motivo}</p>
-                        <p className="mt-1 text-[10px] text-texto2/60">
+                        <p className="text-sm font-medium text-primary-foreground">
+                          {maintenance.linha}
+                        </p>
+                        <p className="text-xs text-primary-foreground/70">{maintenance.motivo}</p>
+                        <p className="mt-1 text-[10px] text-primary-foreground/60">
                           Finalizada há {Math.round((Date.now() - maintenance.finalizedAt) / 60000)}{' '}
                           min
                         </p>

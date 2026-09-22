@@ -28,12 +28,12 @@ export default function Perfil() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-muted pb-28">
       <div className="mx-auto max-w-2xl px-6 pt-8">
         <ScreenHeader title="" showBack={true} />
 
         <div className="mb-6 flex justify-center">
-          <div className="h-64 w-64 overflow-hidden rounded-2xl bg-componente3">
+          <div className="h-64 w-64 overflow-hidden rounded-2xl bg-secondary">
             <img
               src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop"
               alt="Foto de perfil"
@@ -42,7 +42,9 @@ export default function Perfil() {
           </div>
         </div>
 
-        <h2 className="mb-8 text-center text-xl font-bold text-texto1">Informações do Cliente</h2>
+        <h2 className="mb-8 text-center text-xl font-bold text-foreground">
+          Informações do Cliente
+        </h2>
 
         <form onSubmit={handleSave} className="flex flex-col gap-5">
           <FormField id="nome" label="Nome" value={formData.nome} onChange={handleChange('nome')} />
@@ -74,7 +76,7 @@ export default function Perfil() {
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-red-400 px-6 py-3 text-sm font-semibold text-red-500 transition-all duration-200 hover:bg-red-50 active:scale-[0.98]"
+            className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-destructive px-6 py-3 text-sm font-semibold text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
           >
             <LogOut size={18} />
             Sair da Conta

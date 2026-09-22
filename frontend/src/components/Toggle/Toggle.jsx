@@ -9,10 +9,10 @@ export default function Toggle({ label, checked, onChange, id }) {
           onChange={onChange}
           className="peer sr-only"
         />
-        <div className="h-6 w-10 rounded-full border border-border bg-texto1/20 transition-colors duration-200 peer-checked:border-transparent peer-checked:bg-componente1" />
-        <div className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-texto2 shadow-xs transition-transform duration-200 peer-checked:translate-x-4" />
+        <div className="h-6 w-10 rounded-full border border-border bg-foreground/20 transition-colors duration-200 peer-checked:border-transparent peer-checked:bg-primary" />
+        <div className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-primary-foreground shadow-xs transition-transform duration-200 peer-checked:translate-x-4" />
       </div>
-      <span className="text-xs text-texto1">{label}</span>
+      <span className="text-xs text-foreground">{label}</span>
     </label>
   )
 }
