@@ -3,17 +3,17 @@ from typing import Annotated
 from fastapi import Cookie, Depends, HTTPException
 
 from app.core.security import ler_token
-from app.repositories.usuarios import UsuariosMySQL
+from app.deps import Usuarios
 
 COOKIE = "sessao"
 
 
 def usuario_atual(
-    repo: Annotated[UsuariosMySQL, Depends()],
+    servico: Usuarios,
     sessao: Annotated[str | None, Cookie()] = None,
 ) -> dict:
     usuario_id = ler_token(sessao) if sessao else None
-    usuario = repo.por_id(usuario_id) if usuario_id else None
+    usuario = servico.por_id(usuario_id) if usuario_id else None
     if usuario is None or not usuario["ativo"]:
         raise HTTPException(401, "Não autenticado")
     return usuario

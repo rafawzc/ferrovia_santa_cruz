@@ -1,19 +1,16 @@
 from datetime import datetime
-from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.core.auth import exige_papel
-from app.repositories.cargas import CargasMySQL
+from app.deps import Cargas
 
 router = APIRouter(
     prefix="/api/cargas",
     tags=["cargas"],
     dependencies=[Depends(exige_papel("operacional", "gestao"))],
 )
-
-Repo = Annotated[CargasMySQL, Depends()]
 
 
 class CargaNova(BaseModel):
@@ -31,10 +28,10 @@ class CargaSaida(CargaNova):
 
 
 @router.get("", response_model=list[CargaSaida])
-def listar(repo: Repo):
-    return repo.listar()
+def listar(servico: Cargas):
+    return servico.listar()
 
 
 @router.post("", response_model=CargaSaida, status_code=201)
-def criar(corpo: CargaNova, repo: Repo):
-    return repo.criar(corpo.model_dump())
+def criar(corpo: CargaNova, servico: Cargas):
+    return servico.criar(corpo.model_dump())

@@ -5,8 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.core.auth import COOKIE, usuario_atual
 from app.core.security import SESSAO, criar_token
-from app.repositories.usuarios import UsuariosMySQL
-from app.services import usuarios
+from app.deps import Usuarios
 from app.services.usuarios import CredenciaisInvalidas, UsuarioDesativado
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -14,7 +13,6 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 Email = Annotated[str, Field(max_length=160, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
 Senha = Annotated[str, Field(min_length=8, max_length=128)]
 Nome = Annotated[str, Field(min_length=1, max_length=120)]
-Repo = Annotated[UsuariosMySQL, Depends()]
 
 
 class UsuarioSaida(BaseModel):
@@ -44,9 +42,9 @@ class RecuperarSenha(BaseModel):
 
 
 @router.post("/login", response_model=UsuarioSaida)
-def login(corpo: Login, response: Response, repo: Repo):
+def login(corpo: Login, response: Response, servico: Usuarios):
     try:
-        usuario = usuarios.autenticar(repo, corpo.email, corpo.senha)
+        usuario = servico.autenticar(corpo.email, corpo.senha)
     except CredenciaisInvalidas:
         raise HTTPException(401, "Credenciais inválidas") from None
     except UsuarioDesativado:
@@ -73,8 +71,8 @@ def me(usuario: Annotated[dict, Depends(usuario_atual)]):
 
 
 @router.post("/cadastro", response_model=UsuarioSaida, status_code=201)
-def cadastro(corpo: Cadastro, repo: Repo):
-    return usuarios.cadastrar(repo, corpo.nome, corpo.email, corpo.senha)
+def cadastro(corpo: Cadastro, servico: Usuarios):
+    return servico.cadastrar(corpo.nome, corpo.email, corpo.senha)
 
 
 @router.post("/recuperar-senha", status_code=202)

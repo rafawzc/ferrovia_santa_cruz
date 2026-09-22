@@ -97,10 +97,10 @@ Senha do MySQL e afins vêm de variável de ambiente / `.env` gitignored. Nunca 
 
 ## Onde o SQL mora — camada `repositories/`
 
-O backend é em camadas (L21 do plano da fundação): `routers/` (só HTTP) → `services/` (regra, Python puro) → `repositories/` (SQL). **SQL só existe em `repositories/`**, e o repo é fino: só a query, nenhuma regra. Recurso sem regra (linhas, cargas, alertas, dashboard) vai do router direto pro repo; com regra (auth, usuários) passa por `services/`, que declara o repo como `typing.Protocol`. Detalhe em [`../../backend/CLAUDE.md`](../../backend/CLAUDE.md).
+O backend é em camadas (L21 do plano da fundação): `routers/` (só HTTP) → `services/` (regra, Python puro) → `repositories/` (SQL). **SQL só existe em `repositories/`**, e o repo é fino: só a query, nenhuma regra. Todo recurso passa pelas três: o router depende só do service; o service declara o repo como `typing.Protocol` (sem regra = só repassa); qual classe MySQL atende cada `Protocol` é decidido num lugar só, `backend/app/deps.py`. Detalhe em [`../../backend/CLAUDE.md`](../../backend/CLAUDE.md).
 
 ## Testes — banco mockado
 
-Decisão travada (L16): **sem banco de teste**. Testes usam pytest + `TestClient` e trocam o repositório por um fake via `app.dependency_overrides` (fakes em `backend/tests/fakes.py`, com a mesma interface dos repos reais — inclusive levantando o mesmo `IntegrityError`). Rodar: `./fsc test`.
+Decisão travada (L16): **sem banco de teste**. Testes usam pytest + `TestClient` e trocam o repositório por um fake via `app.dependency_overrides[deps.<recurso>_repo]` (fakes em `backend/tests/fakes.py`, com a mesma interface dos repos reais — inclusive levantando o mesmo `IntegrityError`). Rodar: `./fsc test`.
 
 Preço disso: o SQL nunca executa em teste — coluna errada ou erro de sintaxe só aparece rodando de verdade. Compensação: repo fino (quase nada pra errar além da query) e um **smoke manual contra o banco de dev** (`./fsc up` + chamar o endpoint, ou conferir a query no `./fsc db`) antes de fechar qualquer feature que toque SQL.
