@@ -79,3 +79,70 @@ class UsuariosFake:
 
     def desativar(self, id_):
         self.dados[id_]["ativo"] = False
+
+
+AGORA = "2026-09-22T10:00:00"
+LINHAS = [
+    {"id": 1, "numero": "1778", "status": "manutencao", "ativo": True},
+    {"id": 2, "numero": "2645", "status": "atraso", "ativo": True},
+    {"id": 3, "numero": "9845", "status": "fechado", "ativo": False},
+]
+TRENS = {1, 2, 3}
+
+
+class LinhasFake:
+    def listar(self):
+        return LINHAS
+
+
+class CargasFake:
+    def __init__(self):
+        self.dados = [
+            {
+                "id": 1,
+                "tipo": "Minerio de ferro",
+                "peso_t": 12.5,
+                "local_partida": "Genebra",
+                "destino": "Zermatt",
+                "vagao": "A",
+                "trem_id": 1,
+                "criado_em": AGORA,
+            }
+        ]
+
+    def listar(self):
+        return self.dados
+
+    def criar(self, dados):
+        if dados["trem_id"] is not None and dados["trem_id"] not in TRENS:
+            raise sem_referencia()
+        carga = {**dados, "id": len(self.dados) + 1, "criado_em": AGORA}
+        self.dados.append(carga)
+        return carga
+
+
+class AlertasFake:
+    def __init__(self):
+        self.dados = [
+            {
+                "id": 1,
+                "linha_id": 1,
+                "linha_numero": "1778",
+                "tempo_espera": "15 a 30 min",
+                "motivo": "manutencao no trilho",
+                "status": "Parado",
+                "criado_em": AGORA,
+            }
+        ]
+
+    def listar(self):
+        return self.dados
+
+    def criar(self, dados):
+        linha = next((li for li in LINHAS if li["id"] == dados["linha_id"]), None)
+        if linha is None:
+            raise sem_referencia()
+        alerta = {**dados, "id": len(self.dados) + 1, "linha_numero": linha["numero"]}
+        alerta["criado_em"] = AGORA
+        self.dados.insert(0, alerta)
+        return alerta
