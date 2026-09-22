@@ -169,6 +169,8 @@
 | RNF21 | Console limpo: sem erros nem warnings do React (inclui `key` em listas). | Essencial | PLANO §6 |
 | RNF22 | Versionamento com conventional commits, revisão por ≥1 integrante e contribuição dos quatro ao longo do tempo (sem commit único no fim). | Essencial | PLANO §6 |
 
+> **Superado em parte em 2026-09-22** ([`../decisoes/frontend-e-qualidade.md`](../decisoes/frontend-e-qualidade.md)): no **RNF19**, "CSS por componente (CSS Modules)" virou Tailwind v4 com tokens no `@theme` e componentes shadcn em `components/ui/` (a componentização, o JSX semântico e o "sem estilo inline" seguem, agora impostos pelo lint). No **RNF20**, o Vitest caiu: não há teste de front; pytest segue no backend (com banco mockado) e as telas são verificadas à mão em mobile e desktop.
+
 ---
 
 ## 3. Lacunas / a definir
