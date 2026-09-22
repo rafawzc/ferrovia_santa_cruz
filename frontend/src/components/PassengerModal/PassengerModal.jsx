@@ -82,15 +82,15 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                   disabled={ocupadas.includes(seatIndex)}
                   className={`h-5 w-5 rounded-full transition-all duration-200 ${
                     ocupadas.includes(seatIndex)
-                      ? 'cursor-not-allowed bg-error'
+                      ? 'cursor-not-allowed bg-destructive'
                       : selectedSeats.includes(seatIndex)
-                        ? 'scale-110 bg-error ring-2 ring-texto2'
+                        ? 'scale-110 bg-destructive ring-2 ring-primary-foreground'
                         : 'cursor-pointer bg-success hover:scale-110'
                   }`}
                 />
               ))}
             </div>
-            {rowIndex === 1 && <div className="my-1 h-px w-full bg-texto2/30" />}
+            {rowIndex === 1 && <div className="my-1 h-px w-full bg-primary-foreground/30" />}
           </div>
         ))}
       </div>
@@ -99,12 +99,12 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-overlay">
-      <div className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-componente1 p-6 shadow-xl">
+      <div className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-primary p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-texto1">Cadastrar Passageiro</h2>
+          <h2 className="text-lg font-bold text-foreground">Cadastrar Passageiro</h2>
           <button
             onClick={onClose}
-            className="cursor-pointer text-texto1 transition-opacity hover:opacity-70"
+            className="cursor-pointer text-foreground transition-opacity hover:opacity-70"
           >
             <X size={24} />
           </button>
@@ -119,8 +119,8 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                 setSelectedWagon('')
                 setSelectedSeats([])
               }}
-              className={`flex-1 rounded-full bg-input-bg px-4 py-2 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                !selectedTrain ? 'text-texto1/60' : ''
+              className={`flex-1 rounded-full bg-input px-4 py-2 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                !selectedTrain ? 'text-foreground/60' : ''
               }`}
             >
               <option value="" disabled>
@@ -140,8 +140,8 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
                   setSelectedWagon(e.target.value)
                   setSelectedSeats([])
                 }}
-                className={`w-24 rounded-full bg-input-bg px-4 py-2 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-                  !selectedWagon ? 'text-texto1/60' : ''
+                className={`w-24 rounded-full bg-input px-4 py-2 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+                  !selectedWagon ? 'text-foreground/60' : ''
                 }`}
               >
                 <option value="" disabled>
@@ -159,7 +159,7 @@ export default function PassengerModal({ onClose, onAdd, poltronasOcupadas }) {
           {renderSeats()}
 
           {selectedSeats.length > 0 && (
-            <p className="text-center text-sm text-texto1">
+            <p className="text-center text-sm text-foreground">
               {selectedSeats.length} assento(s) selecionado(s)
             </p>
           )}

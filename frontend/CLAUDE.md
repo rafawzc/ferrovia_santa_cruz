@@ -14,12 +14,16 @@ Gate do front: `./fsc lint fe`, `./fsc typecheck`, `./fsc npm run format:check`,
 
 ## Tailwind v4: config mora no CSS
 
-Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwindcss/vite` (em `vite.config.ts`) e os tokens estão no `@theme` de `src/index.css`. Token novo = variável `--color-*`/`--font-*` no `@theme`, não arquivo JS. Tokens (`texto*`, `componente*`, `bg-*`…) são `rgb(var(--canal))` no `@theme`; `.white`/`.black` no `<html>` (posto pelo `contexts/ThemeContext.jsx`) trocam os canais. Detalhe: `docs/frontend/tema.md` e `docs/frontend/tema-escuro.md` (regra semântica `componente1`→`texto2`).
+Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwindcss/vite` (em `vite.config.ts`) e os tokens estão em `src/index.css`: vocabulário shadcn (`background`, `primary`, `muted`…) + `overlay` + status (`success warning danger delay`), valor em hex no `:root` (claro) e `.black` (escuro), exposto pro Tailwind no `@theme inline` (`--color-x: var(--x)`). O `contexts/ThemeContext.tsx` põe `white`/`black` no `<html>`. Token novo = valor no `:root` (+ `.black` se muda) + linha no `@theme inline`. Detalhe e mapa dos nomes antigos: `docs/frontend/tema.md`.
 
 - Estilo global próprio vai dentro de `@layer base`. CSS **fora de layer** ganha de qualquer utilitário (as utilities do v4 vivem em `@layer utilities`), então um `* { padding: 0 }` solto zera todo `p-*`.
-- Não existe variante `dark:`. Hoje nenhuma tela usa `dark:` (o tema troca pelas variáveis). Se precisar, declarar `@custom-variant dark (&:where(.black, .black *));` no `index.css`.
-- Nunca `--color-x: rgb(var(--color-x))` no `@theme`: autorreferência invalida a cor. Nome do token e do canal têm que diferir.
+- `dark:` existe (`@custom-variant dark` casando `.black`), porque os primitivos shadcn usam. Em código próprio prefira token.
+- O `@theme inline` aponta pra variável: se o nome não existir no `:root`, a cor some sem erro.
 - Renomes do v3→v4 já aplicados nas telas: `shadow-sm`→`shadow-xs`, `rounded`→`rounded-sm`, `outline-none`→`outline-hidden`, `aspect-[4/3]`→`aspect-4/3`. Código novo vindo da `main` com classe v3 precisa do mesmo renome.
+
+## Design system
+
+Tudo que desenha está em `src/components/ui/` (ler o `CLAUDE.md` de lá). Vitrine em `/ui` (`src/pages/Vitrine.tsx`). `components.json` configura o CLI do shadcn (`new-york`, aliases `@/components/ui` e `@/lib/utils`); `cn()` fica em `src/lib/utils.ts` (clsx + tailwind-merge). Os `src/components/<Nome>/*.jsx` são legado até a fase 4.
 
 ## TypeScript
 
@@ -37,14 +41,14 @@ ESLint 9 flat (`eslint.config.js`) — 9 e não 10 porque o `eslint-plugin-jsx-a
 
 Escopo: só `**/*.{ts,tsx}` + `eslint.config.js` + `eslint-rules/`. **Os `.jsx` legados de `src/` estão ignorados** até serem reescritos em TSX na fase 4 — tela reescrita passa a ser linted automaticamente.
 
-| Regra                             | Proíbe                                                                                                         | Exceção                                                                 |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `local/no-comments` (L7)          | qualquer comentário; tem autofix que apaga                                                                     | `eslint-disable*`/`eslint-enable`, `@ts-expect-error`, `/// <reference` |
-| `local/no-raw-color` (L13a)       | hex, `rgb/hsl/oklch/oklab(`, classe de paleta (`bg-red-500`, `text-white/50`) em qualquer string               | nenhuma (vale em `ui/` também); cor mora só no `src/index.css`          |
-| `local/no-arbitrary-value` (L13d) | valor arbitrário Tailwind (`rounded-[3rem]`, `[&_svg]:…`)                                                      | `src/components/ui/**` (shadcn usa `has-[>svg]:`), desligado no config  |
-| `no-restricted-syntax` (L13b/d)   | `<button/input/select/textarea/dialog>` cru; atributo `style`                                                  | controles crus liberados em `src/components/ui/**`; `style` sem exceção |
-| `no-restricted-globals` (L13c)    | `fetch`                                                                                                        | `src/lib/api/**`                                                        |
-| `no-restricted-imports` (L13c)    | páginas importando `@radix-ui/*`, `@/pages/*` ou qualquer import relativo (use `@/`); `ui/` importando páginas | —                                                                       |
+| Regra                             | Proíbe                                                                                                                                           | Exceção                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `local/no-comments` (L7)          | qualquer comentário; tem autofix que apaga                                                                                                       | `eslint-disable*`/`eslint-enable`, `@ts-expect-error`, `/// <reference` |
+| `local/no-raw-color` (L13a)       | hex, `rgb/hsl/oklch/oklab(`, classe de paleta (`bg-red-500`, `text-white/50`) em qualquer string                                                 | nenhuma (vale em `ui/` também); cor mora só no `src/index.css`          |
+| `local/no-arbitrary-value` (L13d) | valor arbitrário Tailwind (`rounded-[3rem]`, `[&_svg]:…`)                                                                                        | `src/components/ui/**` (shadcn usa `has-[>svg]:`), desligado no config  |
+| `no-restricted-syntax` (L13b/d)   | `<button/input/select/textarea/dialog>` cru; atributo `style`                                                                                    | controles crus liberados em `src/components/ui/**`; `style` sem exceção |
+| `no-restricted-globals` (L13c)    | `fetch`                                                                                                                                          | `src/lib/api/**`                                                        |
+| `no-restricted-imports` (L13c)    | páginas importando `radix-ui`/`@radix-ui/*`, `@/pages/*` ou qualquer import relativo (use `@/`); `ui/` importando páginas, `cn` ou `next-themes` | —                                                                       |
 
 As regras locais são um plugin ESM em `eslint-rules/index.js`. As de string olham `Literal` e quasis de template e quebram por espaço — não sabem se a string é className, então um texto tipo `"[opcional]"` também cai no `no-arbitrary-value`.
 

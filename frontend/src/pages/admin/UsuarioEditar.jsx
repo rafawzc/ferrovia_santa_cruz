@@ -36,17 +36,17 @@ export default function UsuarioEditar() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base pb-28">
+    <div className="min-h-screen bg-muted pb-28">
       <div className="mx-auto max-w-2xl px-6 pt-8">
         <ScreenHeader title="" showBack={true} />
 
         <div className="mb-6 flex justify-center">
-          <div className="h-64 w-64 overflow-hidden rounded-2xl bg-componente3">
+          <div className="h-64 w-64 overflow-hidden rounded-2xl bg-secondary">
             <img src={func.foto} alt={func.nome} className="h-full w-full object-cover" />
           </div>
         </div>
 
-        <h2 className="mb-8 text-center text-xl font-bold text-texto1">
+        <h2 className="mb-8 text-center text-xl font-bold text-foreground">
           Informações do funcionário
         </h2>
 

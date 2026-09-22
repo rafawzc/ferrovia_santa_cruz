@@ -22,7 +22,7 @@ export default function FormField({
       {!hideLabel && (
         <label
           htmlFor={id}
-          className={`text-sm font-medium ${labelDark ? 'text-texto2' : 'text-texto1'}`}
+          className={`text-sm font-medium ${labelDark ? 'text-primary-foreground' : 'text-foreground'}`}
         >
           {label}
         </label>
@@ -34,23 +34,23 @@ export default function FormField({
           placeholder={placeholder || label}
           value={value}
           onChange={onChange}
-          className={`w-full rounded-full bg-input-bg px-5 py-3 text-sm text-texto1 placeholder-texto1/60 transition-all duration-200 focus:ring-2 focus:ring-componente1/30 ${
-            error ? 'ring-2 ring-error' : ''
+          className={`w-full rounded-full bg-input px-5 py-3 text-sm text-foreground placeholder-foreground/60 transition-all duration-200 focus:ring-2 focus:ring-primary/30 ${
+            error ? 'ring-2 ring-destructive' : ''
           }`}
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute top-1/2 right-4 -translate-y-1/2 text-texto1/60 transition-colors hover:text-texto1"
+            className="absolute top-1/2 right-4 -translate-y-1/2 text-foreground/60 transition-colors hover:text-foreground"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>
-      {error && <span className="text-xs text-error">{error}</span>}
-      {helperText && !error && <span className="text-xs text-texto1/60">{helperText}</span>}
+      {error && <span className="text-xs text-destructive">{error}</span>}
+      {helperText && !error && <span className="text-xs text-foreground/60">{helperText}</span>}
     </div>
   )
 }
