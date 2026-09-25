@@ -1,6 +1,7 @@
 from mysql.connector.errors import IntegrityError
 
 from app.core.security import hash_senha
+from app.db import BancoIndisponivel
 
 CARGOS = {1: ("comum", "cliente"), 2: ("admin", "gestao"), 5: ("maquinista", "operacional")}
 SENHA = "ferrovia123"
@@ -13,6 +14,10 @@ def duplicado():
 
 def sem_referencia():
     return IntegrityError(msg="Cannot add or update a child row", errno=1452)
+
+
+def indisponivel():
+    return BancoIndisponivel()
 
 
 class UsuariosFake:

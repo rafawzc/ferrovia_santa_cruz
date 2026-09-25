@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from mysql.connector import errorcode
 from mysql.connector.errors import IntegrityError
 
+from app.db import BancoIndisponivel
 from app.routers import alertas, auth, cargas, dashboard, linhas, usuarios
 
 app = FastAPI(title="Ferrovia Santa Cruz")
@@ -19,6 +20,11 @@ CONFLITOS = {
 def conflito(request, erro: IntegrityError):
     detalhe = CONFLITOS.get(erro.errno, "Conflito de integridade")
     return JSONResponse({"detail": detalhe}, status_code=409)
+
+
+@app.exception_handler(BancoIndisponivel)
+def indisponivel(request, erro: BancoIndisponivel):
+    return JSONResponse({"detail": "Banco de dados indisponível"}, status_code=503)
 
 
 @app.get("/api/health")
