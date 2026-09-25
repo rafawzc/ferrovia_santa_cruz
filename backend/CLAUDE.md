@@ -7,8 +7,9 @@ Leia antes: `docs/backend/acesso-a-dados.md` (regras de SQL) e o plano `docs/tas
 Contrato HTTP de cada endpoint: [`../docs/backend/api.md`](../docs/backend/api.md). Aqui é o *como está montado*.
 
 ```
-app/main.py            FastAPI(), registra os routers num laço, handler IntegrityError → 409, /api/health
-app/db.py              pool único (lazy, @cache) + cursor() context manager: commit no fim, sempre devolve a conexão
+app/main.py            FastAPI(), registra os routers num laço, handlers IntegrityError → 409 e BancoIndisponivel → 503, /api/health
+app/db.py              pool único (lazy, @cache) + cursor() context manager: commit no fim, sempre devolve a conexão.
+                       Falha ao PEGAR a conexão vira BancoIndisponivel (a exceção mora aqui, não em core/)
 app/core/security.py   argon2 (pwdlib) + JWT HS256 (PyJWT). Lê JWT_SECRET do env na hora de usar.
 app/core/auth.py       usuario_atual (lê cookie 'sessao', recarrega o usuário via UsuariosService) + exige_papel(*papeis)
 app/deps.py            ÚNICO lugar que liga Protocol → classe MySQL: <recurso>_repo() + alias Annotated do service
@@ -26,6 +27,7 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 - **Service** = `services/<recurso>.py` com `class <Recurso>Repo(Protocol)` + `class <Recurso>Service` que recebe o repo no `__init__`. Sem regra → métodos que só repassam (`linhas`, `cargas`, `alertas`, `dashboard`) — esperado, não é bloat. Com regra → `usuarios` (hash, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE).
 - **Fiação só em `app/deps.py`:** `<recurso>_repo()` devolve o `<Recurso>MySQL`; `_<recurso>(repo=Depends(<recurso>_repo))` monta o service; `<Recurso> = Annotated[<Recurso>Service, Depends(_<recurso>)]` é o que o router usa (`servico: Linhas`).
 - **Teste troca o repo, não o service:** `app.dependency_overrides[deps.<recurso>_repo] = lambda: fake`. O service real roda em teste — a regra é coberta.
+- **Banco fora do ar não é tratado no repo nem no service**: o `cursor()` embrulha só o `_pool().get_connection()` num `except Error` e levanta `BancoIndisponivel`; o handler do `main.py` responde 503 `"Banco de dados indisponível"`. O `try` cobre **apenas a obtenção da conexão** de propósito — erro durante o `execute` (`ProgrammingError`, `IntegrityError`) continua subindo com o tipo original, senão SQL quebrado viraria "banco indisponível" e a gente debugaria no lugar errado. O driver levanta dois tipos pra mesma situação (`DatabaseError` 2005 com o pool frio, `InterfaceError` com o pool quente e o banco morto depois) — por isso o `except` é no `Error` base, não numa lista de subclasses. Fake: `fakes.indisponivel()`.
 - **Erro de integridade não é tratado no repo nem no service**: o `mysql.connector.errors.IntegrityError` sobe e o handler do `main.py` responde 409 (`1062` → "Registro duplicado", `1452` → "Referência inexistente"). Os fakes levantam o mesmo `IntegrityError` com o mesmo `errno` (`fakes.duplicado()`, `fakes.sem_referencia()`).
 - **Guard por papel** no `APIRouter(dependencies=[Depends(exige_papel(...))])`, não em cada rota. Sem cookie → 401 (`usuario_atual`), papel errado → 403.
 - O papel **não** vem do JWT: `usuario_atual` relê o usuário pelo `sub` a cada request. Desativar/trocar cargo vale na hora.
