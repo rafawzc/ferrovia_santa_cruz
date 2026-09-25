@@ -35,7 +35,10 @@ Sempre `{"detail": ...}`.
 | `404` | id não existe | ex: `"Usuário não encontrado"` |
 | `409` | valor único repetido (ex: e-mail) | `"Registro duplicado"` |
 | `409` | FK aponta pra nada (ex: `cargo_id`, `trem_id`, `linha_id` inexistente) | `"Referência inexistente"` |
+| `503` | não foi possível abrir conexão com o MySQL (banco fora do ar, host errado, pool esgotado) | `"Banco de dados indisponível"` |
 | `422` | corpo inválido (Pydantic) | **lista**: `[{"type", "loc", "msg", "input", "ctx"}]` — `loc` = `["body", "<campo>"]`, `msg` em inglês (padrão do Pydantic). O front traduz por `type`/`loc`. |
+
+O `503` vale pra **qualquer** rota que toque o banco: quem falha é o `cursor()` ao pegar a conexão, antes de qualquer SQL. Assim que o MySQL volta, o pool reconecta sozinho (~5s) — não precisa reiniciar o backend.
 
 Tipos de `422` que podem aparecer: `missing`, `string_too_short`, `string_too_long`, `string_pattern_mismatch` (e-mail), `greater_than` / `less_than` (peso), `int_parsing`, `bool_parsing`, `extra_forbidden` (campo não permitido no `PATCH /api/auth/me`).
 
