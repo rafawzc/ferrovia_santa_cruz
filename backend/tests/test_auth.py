@@ -1,4 +1,4 @@
-from tests.fakes import GESTAO, INATIVO, SENHA
+from tests.fakes import ID_GESTAO, ID_INATIVO, SENHA
 
 
 def login(client, email="ana@ferrovia.com", senha=SENHA):
@@ -10,7 +10,7 @@ def test_login_seta_cookie_httponly_e_devolve_o_usuario(client):
 
     assert resposta.status_code == 200
     assert resposta.json() == {
-        "id": GESTAO,
+        "id": ID_GESTAO,
         "nome": "Ana Gestora",
         "email": "ana@ferrovia.com",
         "telefone": None,
@@ -52,7 +52,7 @@ def test_me_usa_o_cookie_do_login(client):
     resposta = client.get("/api/auth/me")
 
     assert resposta.status_code == 200
-    assert resposta.json()["id"] == GESTAO
+    assert resposta.json()["id"] == ID_GESTAO
 
 
 def test_me_sem_cookie_ou_com_cookie_invalido_e_401(client):
@@ -64,7 +64,7 @@ def test_me_sem_cookie_ou_com_cookie_invalido_e_401(client):
 
 
 def test_me_de_usuario_desativado_depois_do_login_e_401(como):
-    assert como(INATIVO).get("/api/auth/me").status_code == 401
+    assert como(ID_INATIVO).get("/api/auth/me").status_code == 401
 
 
 def test_logout_apaga_o_cookie(client):

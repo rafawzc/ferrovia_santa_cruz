@@ -12,12 +12,26 @@ O `-u` com o UID do host é obrigatório: `frontend/` é bind mount e `node_modu
 
 Gate do front: `./fsc lint fe`, `./fsc typecheck`, `./fsc npm run format:check`, `./fsc npm run build`. Não tem teste de front (L27). Formatar: `./fsc npm run format` (ou `./fsc fmt`, que formata front + back).
 
+## Nomes em português
+
+Todo identificador que **nós** escrevemos é em português: componente, arquivo, hook, variável, tipo, prop, campo de contexto (`Aplicacao`, `principal.tsx`, `CascaDePagina`, `useAutenticacao`, `clienteDeConsultas`, `requisitar`, `esquema`, `formulario`). Arquivo de `components/ui/` continua em kebab-case, só que em português (`casca-de-pagina.tsx`).
+
+Fica em inglês o que é **contrato de terceiro** — mudar quebraria:
+
+- API de lib: `useState`, `useQuery`, `data`, `error`, `isPending`, `mutate`, `onSuccess`, `onError`, `queryKey`, `handleSubmit`, `setError`, `children`, `className`.
+- Prop de DOM/JSX: `name`, `value`, `onChange`, `onClick`, `type`, `id`, `placeholder`, `disabled`, `variant`, `size`.
+- Primitivos shadcn vendored (`Button`, `Card`, `Dialog`, `Field*`…) e o helper `cn` de `lib/utils.ts`.
+- String de URL (`/auth/login`), chave de payload da API (`senha_atual`, `cargo_id`) e nome de campo de formulário que vira essa chave.
+- Sufixo `Props` em tipo de componente (`CampoTextoProps`) e `status` (termo do domínio e do HTTP).
+
+**Prop nossa de callback usa prefixo `ao`, não `on`**: `aoFechar`, `aoSalvar`, `aoAbrir`, `aoErrar`. O `on` só sobrevive quando é prop do DOM repassada (`onClick` do `CartaoDeUsuario`).
+
 ## Tailwind v4: config mora no CSS
 
-Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwindcss/vite` (em `vite.config.ts`) e os tokens estão em `src/index.css`: vocabulário shadcn (`background`, `primary`, `muted`…) + `overlay` + status (`success warning danger delay`), valor em hex no `:root` (claro) e `.black` (escuro), exposto pro Tailwind no `@theme inline` (`--color-x: var(--x)`). O `contexts/ThemeContext.tsx` põe `white`/`black` no `<html>`. Token novo = valor no `:root` (+ `.black` se muda) + linha no `@theme inline`. Detalhe e mapa dos nomes antigos: `docs/frontend/tema.md`.
+Não existe `tailwind.config.js` nem `postcss.config.js`. O plugin é `@tailwindcss/vite` (em `vite.config.ts`) e os tokens estão em `src/index.css`: vocabulário shadcn (`background`, `primary`, `muted`…) + `overlay` + status (`success warning danger delay`), valor em hex no `:root` (claro) e `.escuro` (escuro), exposto pro Tailwind no `@theme inline` (`--color-x: var(--x)`). O `contexts/Tema.tsx` põe `claro`/`escuro` no `<html>`. Token novo = valor no `:root` (+ `.escuro` se muda) + linha no `@theme inline`. Detalhe e mapa dos nomes antigos: `docs/frontend/tema.md`.
 
 - Estilo global próprio vai dentro de `@layer base`. CSS **fora de layer** ganha de qualquer utilitário (as utilities do v4 vivem em `@layer utilities`), então um `* { padding: 0 }` solto zera todo `p-*`.
-- `dark:` existe (`@custom-variant dark` casando `.black`), porque os primitivos shadcn usam. Em código próprio prefira token.
+- `dark:` existe (`@custom-variant dark` casando `.escuro`), porque os primitivos shadcn usam. Em código próprio prefira token.
 - O `@theme inline` aponta pra variável: se o nome não existir no `:root`, a cor some sem erro.
 - Renomes do v3→v4 já aplicados nas telas: `shadow-sm`→`shadow-xs`, `rounded`→`rounded-sm`, `outline-none`→`outline-hidden`, `aspect-[4/3]`→`aspect-4/3`. Código novo vindo da `main` com classe v3 precisa do mesmo renome.
 
@@ -31,18 +45,18 @@ Fluxo de uma tela: **página → hook de `src/hooks/<recurso>.ts` → `api.<recu
 
 ```tsx
 import { toast } from 'sonner'
-import { LoadError, mensagemDeErro } from '@/components/ui/load-error'
+import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
 import { useCriarCarga } from '@/hooks/cargas'
 import { useLinhas } from '@/hooks/linhas'
-import { marcarErrosDeCampo } from '@/lib/api'
+import { tratouErrosDeCampo } from '@/lib/api'
 
 const { data: linhas, isPending, error } = useLinhas()
 const criar = useCriarCarga()
-if (error) return <LoadError error={error} />
-criar.mutate(dados, {
+if (error) return <ErroDeCarregamento error={error} />
+criar.mutate(carga, {
   onSuccess: () => toast.success('Carga cadastrada'),
   onError: (e) => {
-    if (marcarErrosDeCampo(e, form)) return
+    if (tratouErrosDeCampo(e, formulario)) return
     toast.error(mensagemDeErro(e))
   },
 })
@@ -50,17 +64,17 @@ criar.mutate(dados, {
 
 - **Hooks** (`src/hooks/`): um módulo por recurso, sem fábrica genérica. Chave = nome do recurso (`['cargas']`, `['usuarios', id]`); mutação invalida a chave do recurso. `usuarios.ts` também invalida `['me']` (a gestão pode editar a si mesma).
 - **Erro**: tudo que a API recusa vira `ApiError` (`status`, `body.detail`; `message` = `detail` quando é string). Falha de rede chega como `TypeError`, não `ApiError`. Helpers únicos, não reescreva na página:
-  - `422` (lista `loc`/`type`) → `if (marcarErrosDeCampo(erro, form)) return` (`@/lib/api`): marca "Valor inválido" em cada campo do `loc` que existe no form.
-  - Estado de erro de query → `<LoadError error={error} />`; texto de toast → `mensagemDeErro(erro)` (os dois de `@/components/ui/load-error`).
+  - `422` (lista `loc`/`type`) → `if (tratouErrosDeCampo(erro, formulario)) return` (`@/lib/api`): marca "Valor inválido" em cada campo do `loc` que existe no form.
+  - Estado de erro de query → `<ErroDeCarregamento error={error} />`; texto de toast → `mensagemDeErro(erro)` (os dois de `@/components/ui/erro-de-carregamento`).
   - `criado_em` vem sem fuso e em UTC → `dataHora(iso)` de `@/lib/utils` (soma `Z` antes do `new Date`).
 - **Retry**: queries só repetem erro que não é `ApiError` (rede); 4xx/5xx da API falham na hora.
-- **401 global**: `src/lib/query-client.ts` escuta erro de qualquer query/mutação; `401` zera `['me']` → o guard manda pro `/login`. Tela não trata 401.
-- **Sessão**: `contexts/AuthContext.tsx` → `useAuth()` dá `usuario` (`Usuario | null`), `carregando`, e as mutações `login`/`logout` (objetos do TanStack: `login.mutate(creds)`, `login.isPending`, `login.error`). `me` com `401` vira `null`, não erro. Login grava `['me']` direto; logout zera `['me']` e remove o resto do cache.
-- **Pós-login**: a tela de login só chama `login.mutate`. Quem navega é o `PublicLayout`: com usuário, manda pra `state.de` (URL que o guard guardou) ou pro início do papel (`cliente` → `/perfil`, resto → `/admin`).
-- **Rotas** (`src/App.tsx`, layout routes do react-router 7): `PublicLayout` (login/cadastro/recuperar), `ProtectedLayout` (exige sessão, envolve `PageShell` + `Suspense`), `Papeis` (papel errado → início do papel). Tabela completa em `docs/frontend/dados-e-rotas.md`. Rota nova: `lazy(() => import(...))` + `<Route>` dentro do grupo de papel certo + item no `NAV` do `page-shell.tsx` (com `papeis`).
-- **Raiz** (`main.tsx`): `QueryClientProvider` → `ThemeProvider` → `AuthProvider` → `TooltipProvider` → `App` + `Toaster`. Tela não monta `Toaster` nem `TooltipProvider`.
+- **401 global**: `src/lib/cliente-de-consultas.ts` escuta erro de qualquer query/mutação; `401` zera `['me']` → o guard manda pro `/login`. Tela não trata 401.
+- **Sessão**: `contexts/Autenticacao.tsx` → `useAutenticacao()` dá `usuario` (`Usuario | null`), `carregando`, e as mutações `entrar`/`sair` (objetos do TanStack: `entrar.mutate(credenciais)`, `entrar.isPending`, `entrar.error`). `me` com `401` vira `null`, não erro. `entrar` grava `['me']` direto; `sair` zera `['me']` e remove o resto do cache.
+- **Pós-login**: a tela de login só chama `entrar.mutate`. Quem navega é o `LayoutPublico`: com usuário, manda pra `state.de` (URL que o guard guardou) ou pro início do papel (`cliente` → `/perfil`, resto → `/admin`).
+- **Rotas** (`src/Aplicacao.tsx`, layout routes do react-router 7): `LayoutPublico` (login/cadastro/recuperar), `LayoutProtegido` (exige sessão, envolve `CascaDePagina` + `Suspense`), `Papeis` (papel errado → início do papel). Tabela completa em `docs/frontend/dados-e-rotas.md`. Rota nova: `lazy(() => import(...))` + `<Route>` dentro do grupo de papel certo + item no `NAV` do `casca-de-pagina.tsx` (com `papeis`).
+- **Raiz** (`principal.tsx`): `QueryClientProvider` → `ProvedorDeTema` → `ProvedorDeAutenticacao` → `TooltipProvider` → `Aplicacao` + `Toaster`. Tela não monta `Toaster` nem `TooltipProvider`.
 - **Formulário de cadastro/edição** abre em `Dialog` sobre a lista (carga, usuários), não em rota própria.
-- **Tela logada não monta `PageShell`**: o `ProtectedLayout` já envolve.
+- **Tela logada não monta `CascaDePagina`**: o `LayoutProtegido` já envolve.
 
 ## TypeScript
 

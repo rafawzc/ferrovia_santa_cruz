@@ -100,7 +100,7 @@ Sem corpo. `204`, apaga o cookie. Funciona mesmo sem sessão.
 
 ### `GET /api/auth/me`
 
-`200` → `Usuario` do cookie. `401` sem sessão. É o que o `AuthContext` chama no boot pra saber se tem alguém logado.
+`200` → `Usuario` do cookie. `401` sem sessão. É o que o contexto de autenticação (`contexts/Autenticacao.tsx`) chama no boot pra saber se tem alguém logado.
 
 ### `PATCH /api/auth/me`
 

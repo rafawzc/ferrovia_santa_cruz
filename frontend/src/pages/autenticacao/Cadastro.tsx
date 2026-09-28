@@ -4,16 +4,16 @@ import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { AuthLayout } from '@/components/ui/auth-layout'
 import { Button } from '@/components/ui/button'
+import { CampoDeSenha } from '@/components/ui/campo-de-senha'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
+import { LayoutDeAutenticacao } from '@/components/ui/layout-de-autenticacao'
 import { Switch } from '@/components/ui/switch'
 import { useCadastro } from '@/hooks/auth'
-import { ApiError, marcarErrosDeCampo } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo } from '@/lib/api'
 
-const schema = z
+const esquema = z
   .object({
     nome: z.string().trim().min(1, 'Informe o nome').max(120, 'Máximo de 120 caracteres'),
     email: z.email('Email inválido').max(160, 'Máximo de 160 caracteres'),
@@ -26,17 +26,17 @@ const schema = z
     message: 'As senhas não coincidem',
   })
 
-type FormValues = z.infer<typeof schema>
+type ValoresDoFormulario = z.infer<typeof esquema>
 
 export default function Cadastro() {
   const navigate = useNavigate()
   const cadastro = useCadastro()
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const formulario = useForm<ValoresDoFormulario>({
+    resolver: zodResolver(esquema),
     defaultValues: { nome: '', email: '', senha: '', confirmarSenha: '', termos: false },
   })
 
-  function enviar({ nome, email, senha }: FormValues) {
+  function enviar({ nome, email, senha }: ValoresDoFormulario) {
     cadastro.mutate(
       { nome, email, senha },
       {
@@ -45,11 +45,12 @@ export default function Cadastro() {
           void navigate('/login')
         },
         onError: (erro) => {
-          if (erro instanceof ApiError && erro.status === 409) {
-            form.setError('email', { message: 'Este e-mail já está cadastrado' })
+          const emailJaCadastrado = erro instanceof ApiError && erro.status === 409
+          if (emailJaCadastrado) {
+            formulario.setError('email', { message: 'Este e-mail já está cadastrado' })
             return
           }
-          if (marcarErrosDeCampo(erro, form)) return
+          if (tratouErrosDeCampo(erro, formulario)) return
           toast.error('Não foi possível criar a conta. Tente de novo.')
         },
       },
@@ -57,17 +58,17 @@ export default function Cadastro() {
   }
 
   return (
-    <AuthLayout title="Crie sua Conta">
+    <LayoutDeAutenticacao title="Crie sua Conta">
       <form
         noValidate
         onSubmit={(e) => {
-          void form.handleSubmit(enviar)(e)
+          void formulario.handleSubmit(enviar)(e)
         }}
       >
         <FieldGroup>
           <Controller
             name="nome"
-            control={form.control}
+            control={formulario.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="cadastro-nome">Nome</FieldLabel>
@@ -84,7 +85,7 @@ export default function Cadastro() {
           />
           <Controller
             name="email"
-            control={form.control}
+            control={formulario.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="cadastro-email">Email</FieldLabel>
@@ -102,11 +103,11 @@ export default function Cadastro() {
           />
           <Controller
             name="senha"
-            control={form.control}
+            control={formulario.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="cadastro-senha">Senha</FieldLabel>
-                <PasswordInput
+                <CampoDeSenha
                   {...field}
                   id="cadastro-senha"
                   autoComplete="new-password"
@@ -122,11 +123,11 @@ export default function Cadastro() {
           />
           <Controller
             name="confirmarSenha"
-            control={form.control}
+            control={formulario.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="cadastro-confirmar">Confirmar Senha</FieldLabel>
-                <PasswordInput
+                <CampoDeSenha
                   {...field}
                   id="cadastro-confirmar"
                   autoComplete="new-password"
@@ -138,7 +139,7 @@ export default function Cadastro() {
           />
           <Controller
             name="termos"
-            control={form.control}
+            control={formulario.control}
             render={({ field, fieldState }) => (
               <Field orientation="horizontal" data-invalid={fieldState.invalid}>
                 <Switch
@@ -166,6 +167,6 @@ export default function Cadastro() {
           Entrar
         </Link>
       </p>
-    </AuthLayout>
+    </LayoutDeAutenticacao>
   )
 }

@@ -5,35 +5,35 @@
 ## Como funciona (deadly simple)
 
 ```
-ThemeContext  →  <html class="white">  →  :root   define --primary: #6d412a   →  bg-primary = #6d412a
-              →  <html class="black">  →  .black  redefine --primary: #885030 →  bg-primary = #885030
+Tema (contexto)  →  <html class="claro">   →  :root    define --primary: #6d412a   →  bg-primary = #6d412a
+                 →  <html class="escuro">  →  .escuro  redefine --primary: #885030 →  bg-primary = #885030
 ```
 
-- `src/contexts/ThemeContext.tsx` guarda o tema no `localStorage` (`theme` = `light`/`dark`) e põe `white` ou `black` no `<html>`. `useTheme()` devolve `{ isDark, toggleTheme }`. O botão novo é `ThemeToggle` de `@/components/ui/theme-toggle`.
-- `index.html` já nasce com `class="white"`. Sem anti-FOUC: quem salvou `dark` vê um instante do claro até o React montar.
+- `src/contexts/Tema.tsx` guarda o tema no `localStorage` (`tema` = `claro`/`escuro`) e põe `claro` ou `escuro` no `<html>`. `useTema()` devolve `{ escuro, alternarTema }`. O botão é `AlternadorDeTema` de `@/components/ui/alternador-de-tema`.
+- `index.html` já nasce com `class="claro"`. Sem anti-FOUC: quem salvou `escuro` vê um instante do claro até o React montar.
 
 ## Onde os tokens moram
 
 Tudo em `frontend/src/index.css`:
 
 ```css
-@custom-variant dark (&:where(.black, .black *));
+@custom-variant dark (&:where(.escuro, .escuro *));
 
 @theme inline {
   --color-primary: var(--primary);
 }
 
-:root  { --primary: #6d412a; }
-.black { --primary: #885030; }
+:root   { --primary: #6d412a; }
+.escuro { --primary: #885030; }
 ```
 
-- **`:root`** tem o tema claro (vale mesmo sem classe); **`.black`** sobrescreve só o que muda no escuro. Status (`success`/`warning`/`danger`/`delay`) e `destructive` são iguais nos dois temas, por isso só aparecem no `:root`.
+- **`:root`** tem o tema claro (vale mesmo sem classe); **`.escuro`** sobrescreve só o que muda no escuro. Status (`success`/`warning`/`danger`/`delay`) e `destructive` são iguais nos dois temas, por isso só aparecem no `:root`.
 - **`@theme inline`** faz o Tailwind gerar `bg-primary`, `text-muted-foreground`… apontando direto pra variável. Cor definida direto em hex (com alpha em hex8 quando precisa, ex. `--input: #ffffff99`). **Não existe mais o truque de canais RGB.**
 - **Opacidade** (`bg-primary/20`) funciona: o v4 aplica alpha com `color-mix()` na cor final.
-- **`dark:`** existe e casa com `.black` (os primitivos do shadcn usam). Em código novo prefira token que já muda de valor sozinho; `dark:` é só pra exceção.
+- **`dark:`** existe e casa com `.escuro` (os primitivos do shadcn usam). Em código novo prefira token que já muda de valor sozinho; `dark:` é só pra exceção.
 - **Radius:** `--radius: 1rem`. `rounded-lg` = 16px, `rounded-xl` = 20px, `rounded-md` = 14px, `rounded-sm` = 12px.
 - **Fonte:** `--font-poppins` (`font-poppins`); o `body` já usa Poppins.
-- **Token novo:** valor em `:root` (e em `.black` se muda no escuro) + `--color-<nome>: var(--<nome>);` no `@theme inline`.
+- **Token novo:** valor em `:root` (e em `.escuro` se muda no escuro) + `--color-<nome>: var(--<nome>);` no `@theme inline`.
 
 ## Tokens
 

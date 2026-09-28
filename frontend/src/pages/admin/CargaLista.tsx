@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
 import {
   Dialog,
   DialogContent,
@@ -13,9 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { ScreenHeader } from '@/components/ui/screen-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -25,14 +26,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { LoadError, mensagemDeErro } from '@/components/ui/load-error'
 import { useCargas, useCriarCarga } from '@/hooks/cargas'
-import { ApiError, marcarErrosDeCampo } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo } from '@/lib/api'
 import { dataHora } from '@/lib/utils'
 
 const numero = (s: string) => Number(s.replace(',', '.'))
 
-const schema = z.object({
+const esquema = z.object({
   tipo: z.string().trim().min(1, 'Informe o tipo').max(80, 'Até 80 caracteres'),
   peso_t: z
     .string()
@@ -44,21 +44,22 @@ const schema = z.object({
   trem_id: z.string().trim().regex(/^\d*$/, 'Só números'),
 })
 
-type Valores = z.infer<typeof schema>
+type ValoresDoFormulario = z.infer<typeof esquema>
 
-const CAMPOS: { nome: keyof Valores; rotulo: string; modo?: 'decimal' | 'numeric' }[] = [
-  { nome: 'tipo', rotulo: 'Tipo de carga' },
-  { nome: 'peso_t', rotulo: 'Peso (t)', modo: 'decimal' },
-  { nome: 'local_partida', rotulo: 'Local de partida' },
-  { nome: 'destino', rotulo: 'Destino' },
-  { nome: 'vagao', rotulo: 'Vagão (opcional)' },
-  { nome: 'trem_id', rotulo: 'Nº do trem (opcional)', modo: 'numeric' },
-]
+const CAMPOS: { nome: keyof ValoresDoFormulario; rotulo: string; modo?: 'decimal' | 'numeric' }[] =
+  [
+    { nome: 'tipo', rotulo: 'Tipo de carga' },
+    { nome: 'peso_t', rotulo: 'Peso (t)', modo: 'decimal' },
+    { nome: 'local_partida', rotulo: 'Local de partida' },
+    { nome: 'destino', rotulo: 'Destino' },
+    { nome: 'vagao', rotulo: 'Vagão (opcional)' },
+    { nome: 'trem_id', rotulo: 'Nº do trem (opcional)', modo: 'numeric' },
+  ]
 
-function FormCarga({ onSalvo }: { onSalvo: () => void }) {
+function FormularioDeCarga({ aoSalvar }: { aoSalvar: () => void }) {
   const criar = useCriarCarga()
-  const form = useForm<Valores>({
-    resolver: zodResolver(schema),
+  const formulario = useForm<ValoresDoFormulario>({
+    resolver: zodResolver(esquema),
     defaultValues: {
       tipo: '',
       peso_t: '',
@@ -69,7 +70,7 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
     },
   })
 
-  const enviar = form.handleSubmit((v) => {
+  const enviar = formulario.handleSubmit((v) => {
     criar.mutate(
       {
         tipo: v.tipo,
@@ -82,14 +83,16 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
       {
         onSuccess: () => {
           toast.success('Carga cadastrada')
-          onSalvo()
+          aoSalvar()
         },
         onError: (e) => {
-          if (e instanceof ApiError && e.status === 409) {
-            form.setError('trem_id', { message: 'Trem não encontrado' })
-          } else if (!marcarErrosDeCampo(e, form)) {
-            toast.error(mensagemDeErro(e))
+          const tremNaoEncontrado = e instanceof ApiError && e.status === 409
+          if (tremNaoEncontrado) {
+            formulario.setError('trem_id', { message: 'Trem não encontrado' })
+            return
           }
+          if (tratouErrosDeCampo(e, formulario)) return
+          toast.error(mensagemDeErro(e))
         },
       },
     )
@@ -104,7 +107,7 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
     >
       <FieldGroup>
         {CAMPOS.map(({ nome, rotulo, modo }) => {
-          const erro = form.formState.errors[nome]
+          const erro = formulario.formState.errors[nome]
           return (
             <Field key={nome} data-invalid={!!erro}>
               <FieldLabel htmlFor={`carga-${nome}`}>{rotulo}</FieldLabel>
@@ -112,7 +115,7 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
                 id={`carga-${nome}`}
                 inputMode={modo}
                 aria-invalid={!!erro}
-                {...form.register(nome)}
+                {...formulario.register(nome)}
               />
               {erro && <FieldError errors={[erro]} />}
             </Field>
@@ -126,13 +129,63 @@ function FormCarga({ onSalvo }: { onSalvo: () => void }) {
   )
 }
 
-export default function CargaLista() {
+function Tabela() {
   const { data: cargas, isPending, error } = useCargas()
+
+  if (isPending) {
+    return (
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: 6 }, (_, i) => (
+          <Skeleton key={i} className="h-10 w-full" />
+        ))}
+      </div>
+    )
+  }
+  if (error) return <ErroDeCarregamento error={error} />
+  if (cargas.length === 0) {
+    return <p className="text-muted-foreground">Nenhuma carga cadastrada ainda.</p>
+  }
+
+  return (
+    <div className="rounded-xl bg-card p-2 lg:p-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Carga</TableHead>
+            <TableHead className="text-right">Peso</TableHead>
+            <TableHead className="hidden md:table-cell">Partida</TableHead>
+            <TableHead>Destino</TableHead>
+            <TableHead className="hidden md:table-cell">Vagão</TableHead>
+            <TableHead className="hidden md:table-cell">Trem</TableHead>
+            <TableHead className="hidden lg:table-cell">Cadastro</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {cargas.map((c) => (
+            <TableRow key={c.id}>
+              <TableCell className="font-medium whitespace-normal">{c.tipo}</TableCell>
+              <TableCell className="text-right font-semibold">
+                {c.peso_t.toLocaleString('pt-BR')} t
+              </TableCell>
+              <TableCell className="hidden md:table-cell">{c.local_partida}</TableCell>
+              <TableCell className="whitespace-normal">{c.destino}</TableCell>
+              <TableCell className="hidden md:table-cell">{c.vagao ?? '—'}</TableCell>
+              <TableCell className="hidden md:table-cell">{c.trem_id ?? '—'}</TableCell>
+              <TableCell className="hidden lg:table-cell">{dataHora(c.criado_em)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+export default function CargaLista() {
   const [aberto, setAberto] = useState(false)
 
   return (
     <>
-      <ScreenHeader
+      <CabecalhoDeTela
         title="Monitoramento de Carga"
         actions={
           <Dialog open={aberto} onOpenChange={setAberto}>
@@ -147,8 +200,8 @@ export default function CargaLista() {
                 <DialogTitle>Cadastro de carga</DialogTitle>
                 <DialogDescription>Registra a carga no histórico.</DialogDescription>
               </DialogHeader>
-              <FormCarga
-                onSalvo={() => {
+              <FormularioDeCarga
+                aoSalvar={() => {
                   setAberto(false)
                 }}
               />
@@ -157,48 +210,7 @@ export default function CargaLista() {
         }
       />
 
-      {isPending ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
-          ))}
-        </div>
-      ) : error ? (
-        <LoadError error={error} />
-      ) : cargas.length === 0 ? (
-        <p className="text-muted-foreground">Nenhuma carga cadastrada ainda.</p>
-      ) : (
-        <div className="rounded-xl bg-card p-2 lg:p-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Carga</TableHead>
-                <TableHead className="text-right">Peso</TableHead>
-                <TableHead className="hidden md:table-cell">Partida</TableHead>
-                <TableHead>Destino</TableHead>
-                <TableHead className="hidden md:table-cell">Vagão</TableHead>
-                <TableHead className="hidden md:table-cell">Trem</TableHead>
-                <TableHead className="hidden lg:table-cell">Cadastro</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {cargas.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium whitespace-normal">{c.tipo}</TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {c.peso_t.toLocaleString('pt-BR')} t
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{c.local_partida}</TableCell>
-                  <TableCell className="whitespace-normal">{c.destino}</TableCell>
-                  <TableCell className="hidden md:table-cell">{c.vagao ?? '—'}</TableCell>
-                  <TableCell className="hidden md:table-cell">{c.trem_id ?? '—'}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{dataHora(c.criado_em)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <Tabela />
     </>
   )
 }

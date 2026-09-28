@@ -13,8 +13,8 @@ def hash_senha(senha: str) -> str:
     return _hasher.hash(senha)
 
 
-def verificar_senha(senha: str, hash_: str) -> bool:
-    return _hasher.verify(senha, hash_)
+def verificar_senha(senha: str, senha_hash: str) -> bool:
+    return _hasher.verify(senha, senha_hash)
 
 
 def criar_token(usuario_id: int, papel: str, validade: timedelta = SESSAO) -> str:

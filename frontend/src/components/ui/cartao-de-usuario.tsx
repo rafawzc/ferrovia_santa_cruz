@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
-interface UserCardProps {
+interface CartaoDeUsuarioProps {
   nome: string
   cargo: string
   ativo: boolean
@@ -9,7 +9,7 @@ interface UserCardProps {
   onClick?: () => void
 }
 
-export function UserCard({ nome, cargo, ativo, foto, onClick }: UserCardProps) {
+export function CartaoDeUsuario({ nome, cargo, ativo, foto, onClick }: CartaoDeUsuarioProps) {
   return (
     <button
       type="button"

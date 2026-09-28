@@ -3,7 +3,7 @@ from typing import Protocol
 
 class CargasRepo(Protocol):
     def listar(self) -> list[dict]: ...
-    def criar(self, dados: dict) -> dict: ...
+    def criar(self, carga: dict) -> dict: ...
 
 
 class CargasService:
@@ -13,5 +13,5 @@ class CargasService:
     def listar(self) -> list[dict]:
         return self.repo.listar()
 
-    def criar(self, dados: dict) -> dict:
-        return self.repo.criar(dados)
+    def criar(self, carga: dict) -> dict:
+        return self.repo.criar(carga)

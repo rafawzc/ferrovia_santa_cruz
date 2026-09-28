@@ -1,4 +1,4 @@
-import { request } from '@/lib/api/client'
+import { requisitar } from '@/lib/api/client'
 import type {
   Alerta,
   AlertaNovo,
@@ -15,42 +15,42 @@ import type {
   UsuarioNovo,
 } from '@/lib/api/types'
 
-export { ApiError, marcarErrosDeCampo } from '@/lib/api/client'
+export { ApiError, tratouErrosDeCampo } from '@/lib/api/client'
 export type { ErroBody, ErroValidacao } from '@/lib/api/client'
 export type * from '@/lib/api/types'
 
 export const api = {
-  auth: {
-    login: (dados: Credenciais) => request<Usuario>('POST', '/auth/login', dados),
-    logout: () => request<undefined>('POST', '/auth/logout'),
-    me: () => request<Usuario>('GET', '/auth/me'),
-    atualizarMe: (dados: PerfilEdicao) => request<Usuario>('PATCH', '/auth/me', dados),
-    cadastro: (dados: Cadastro) => request<Usuario>('POST', '/auth/cadastro', dados),
+  autenticacao: {
+    login: (credenciais: Credenciais) => requisitar<Usuario>('POST', '/auth/login', credenciais),
+    logout: () => requisitar<undefined>('POST', '/auth/logout'),
+    me: () => requisitar<Usuario>('GET', '/auth/me'),
+    atualizarMe: (perfil: PerfilEdicao) => requisitar<Usuario>('PATCH', '/auth/me', perfil),
+    cadastro: (cadastro: Cadastro) => requisitar<Usuario>('POST', '/auth/cadastro', cadastro),
     recuperarSenha: (email: string) =>
-      request<{ detail: string }>('POST', '/auth/recuperar-senha', { email }),
+      requisitar<{ detail: string }>('POST', '/auth/recuperar-senha', { email }),
   },
   usuarios: {
-    listar: () => request<Usuario[]>('GET', '/usuarios'),
-    criar: (dados: UsuarioNovo) => request<Usuario>('POST', '/usuarios', dados),
-    atualizar: (id: number, dados: UsuarioEdicao) =>
-      request<Usuario>('PATCH', `/usuarios/${String(id)}`, dados),
-    desativar: (id: number) => request<undefined>('DELETE', `/usuarios/${String(id)}`),
+    listar: () => requisitar<Usuario[]>('GET', '/usuarios'),
+    criar: (usuario: UsuarioNovo) => requisitar<Usuario>('POST', '/usuarios', usuario),
+    atualizar: (id: number, usuario: UsuarioEdicao) =>
+      requisitar<Usuario>('PATCH', `/usuarios/${String(id)}`, usuario),
+    desativar: (id: number) => requisitar<undefined>('DELETE', `/usuarios/${String(id)}`),
   },
   cargos: {
-    listar: () => request<Cargo[]>('GET', '/cargos'),
+    listar: () => requisitar<Cargo[]>('GET', '/cargos'),
   },
   linhas: {
-    listar: () => request<Linha[]>('GET', '/linhas'),
+    listar: () => requisitar<Linha[]>('GET', '/linhas'),
   },
   cargas: {
-    listar: () => request<Carga[]>('GET', '/cargas'),
-    criar: (dados: CargaNova) => request<Carga>('POST', '/cargas', dados),
+    listar: () => requisitar<Carga[]>('GET', '/cargas'),
+    criar: (carga: CargaNova) => requisitar<Carga>('POST', '/cargas', carga),
   },
   alertas: {
-    listar: () => request<Alerta[]>('GET', '/alertas'),
-    criar: (dados: AlertaNovo) => request<Alerta>('POST', '/alertas', dados),
+    listar: () => requisitar<Alerta[]>('GET', '/alertas'),
+    criar: (alerta: AlertaNovo) => requisitar<Alerta>('POST', '/alertas', alerta),
   },
   dashboard: {
-    obter: () => request<Dashboard>('GET', '/dashboard'),
+    obter: () => requisitar<Dashboard>('GET', '/dashboard'),
   },
 }

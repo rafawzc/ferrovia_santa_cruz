@@ -4,7 +4,7 @@ Página: `frontend/src/pages/Perfil.tsx`. Rota logada, **qualquer papel** (é o 
 
 ## O que mostra
 
-- Cabeçalho "Perfil" com o `ThemeToggle` no canto.
+- Cabeçalho "Perfil" com o `AlternadorDeTema` no canto.
 - Foto (`foto_url`) num `Avatar` grande; sem foto → iniciais do nome.
 - Formulário único (sem modo leitura separado, como no mockup): **Nome, Email, Telefone, Nova senha**. O campo **Senha atual** só aparece quando o usuário digita uma nova senha.
 - Botão **Salvar** (desligado enquanto nada mudou ou salvando) e **Sair da conta** (`Button variant="destructive"`).
@@ -13,11 +13,11 @@ Página: `frontend/src/pages/Perfil.tsx`. Rota logada, **qualquer papel** (é o 
 
 | O quê | De onde |
 |---|---|
-| Usuário logado | `useAuth().usuario` (cache `['me']`) |
+| Usuário logado | `useAutenticacao().usuario` (cache `['me']`) |
 | Salvar | `useAtualizarPerfil()` → `PATCH /api/auth/me` |
-| Sair | `useAuth().logout` → `POST /api/auth/logout`; o guard manda pro `/login` |
+| Sair | `useAutenticacao().sair` → `POST /api/auth/logout`; o guard manda pro `/login` |
 
-O `PATCH` recebe **só os campos alterados** (`dirtyFields` do react-hook-form). `senha_atual` vai junto só quando vem `senha`. Telefone apagado vai como `""`.
+O `PATCH` recebe **só os campos alterados** — o helper `dadosAlterados(valores, dirtyFields)` monta o payload a partir do `dirtyFields` do react-hook-form. `senha_atual` vai junto só quando vem `senha`. Telefone apagado vai como `""`.
 
 Depois do sucesso o hook grava a resposta direto em `['me']` (`setQueryData`), então o resto do app (dock, etc.) já vê o dado novo; a tela reseta o form com essa resposta (limpa as senhas) e mostra toast "Perfil atualizado".
 
@@ -27,7 +27,7 @@ Front (zod) espelha o contrato: nome 1–120, email válido até 160, telefone a
 
 | API | Onde aparece |
 |---|---|
-| `400` "Senha atual incorreta" | no campo Senha atual |
+| `400` "Senha atual incorreta" | no campo Senha atual (`aoErrar`) |
 | `409` | no campo Email: "Esse email já está em uso" |
 | `422` | "Valor inválido" no campo do `loc` |
 | outro / rede | toast de erro |

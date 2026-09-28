@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, type UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import {
@@ -17,6 +17,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CampoDeSenha } from '@/components/ui/campo-de-senha'
+import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { CartaoDeUsuario } from '@/components/ui/cartao-de-usuario'
 import {
   Dialog,
   DialogContent,
@@ -24,10 +27,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
-import { ScreenHeader } from '@/components/ui/screen-header'
 import {
   Select,
   SelectContent,
@@ -44,9 +46,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { UserCard } from '@/components/ui/user-card'
-import { LoadError, mensagemDeErro } from '@/components/ui/load-error'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAutenticacao } from '@/contexts/Autenticacao'
 import { useCargos } from '@/hooks/cargos'
 import {
   useAtualizarUsuario,
@@ -54,7 +54,7 @@ import {
   useDesativarUsuario,
   useUsuarios,
 } from '@/hooks/usuarios'
-import { ApiError, marcarErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
 
 const CARGOS: Record<string, string> = {
   comum: 'Cliente',
@@ -71,11 +71,11 @@ const CARGOS: Record<string, string> = {
 
 const rotuloCargo = (slug: string) => CARGOS[slug] ?? slug
 
-function erroTexto(e: Error, recurso: string) {
-  return `Não foi possível ${recurso}: ${mensagemDeErro(e)}`
+function erroTexto(erro: Error, acao: string) {
+  return `Não foi possível ${acao}: ${mensagemDeErro(erro)}`
 }
 
-const base = {
+const camposComuns = {
   nome: z.string().trim().min(1, 'Informe o nome').max(120, 'Até 120 caracteres'),
   email: z
     .string()
@@ -86,97 +86,186 @@ const base = {
   cargo_id: z.string().min(1, 'Selecione o cargo'),
 }
 
-const senha = z.string().max(128, 'Até 128 caracteres')
+const regraSenha = z.string().max(128, 'Até 128 caracteres')
 
-const schemaNovo = z.object({ ...base, senha: senha.min(8, 'Mínimo de 8 caracteres') })
-const schemaEdicao = z.object({
-  ...base,
-  senha: senha.refine((s) => s === '' || s.length >= 8, 'Mínimo de 8 caracteres'),
+const esquemaNovo = z.object({
+  ...camposComuns,
+  senha: regraSenha.min(8, 'Mínimo de 8 caracteres'),
+})
+const esquemaEdicao = z.object({
+  ...camposComuns,
+  senha: regraSenha.refine((valor) => valor === '' || valor.length >= 8, 'Mínimo de 8 caracteres'),
 })
 
-type Valores = z.infer<typeof schemaNovo>
+type ValoresDoFormulario = z.infer<typeof esquemaNovo>
 
-function FormUsuario({
+interface CampoTextoProps {
+  formulario: UseFormReturn<ValoresDoFormulario>
+  name: 'nome' | 'email' | 'telefone'
+  rotulo: string
+  type?: string
+}
+
+function CampoTexto({ formulario, name, rotulo, type = 'text' }: CampoTextoProps) {
+  const id = `usuario-${name}`
+  const erro = formulario.formState.errors[name]
+  return (
+    <Field data-invalid={!!erro}>
+      <FieldLabel htmlFor={id}>{rotulo}</FieldLabel>
+      <Input id={id} type={type} aria-invalid={!!erro} {...formulario.register(name)} />
+      {erro && <FieldError errors={[erro]} />}
+    </Field>
+  )
+}
+
+function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: () => void }) {
+  const { usuario: eu } = useAutenticacao()
+  const reativar = useAtualizarUsuario(usuario.id)
+  const desativar = useDesativarUsuario()
+
+  if (!usuario.ativo) {
+    return (
+      <Button
+        type="button"
+        variant="success"
+        disabled={reativar.isPending}
+        onClick={() => {
+          reativar.mutate(
+            { ativo: true },
+            {
+              onSuccess: () => {
+                toast.success('Usuário reativado')
+                aoFechar()
+              },
+              onError: (erro) => toast.error(erroTexto(erro, 'reativar')),
+            },
+          )
+        }}
+      >
+        Reativar usuário
+      </Button>
+    )
+  }
+
+  const ehVoceMesmo = usuario.id === eu?.id
+  if (ehVoceMesmo) return null
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button type="button" variant="destructive" disabled={desativar.isPending}>
+          Desativar usuário
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Desativar {usuario.nome}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            A pessoa perde o acesso na hora. O cadastro e o histórico continuam, e dá pra reativar
+            depois.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => {
+              desativar.mutate(usuario.id, {
+                onSuccess: () => {
+                  toast.success('Usuário desativado')
+                  aoFechar()
+                },
+                onError: (erro) => toast.error(erroTexto(erro, 'desativar')),
+              })
+            }}
+          >
+            Desativar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+function FormularioDeUsuario({
   usuario,
   cargos,
-  onFechar,
+  aoFechar,
 }: {
   usuario: Usuario | null
   cargos: Cargo[]
-  onFechar: () => void
+  aoFechar: () => void
 }) {
-  const { usuario: eu } = useAuth()
   const criar = useCriarUsuario()
   const atualizar = useAtualizarUsuario(usuario?.id ?? 0)
-  const desativar = useDesativarUsuario()
-  const form = useForm<Valores>({
-    resolver: zodResolver(usuario ? schemaEdicao : schemaNovo),
+  const formulario = useForm<ValoresDoFormulario>({
+    resolver: zodResolver(usuario ? esquemaEdicao : esquemaNovo),
     defaultValues: {
       nome: usuario?.nome ?? '',
       email: usuario?.email ?? '',
       telefone: usuario?.telefone ?? '',
-      cargo_id: String(cargos.find((c) => c.nome === usuario?.cargo)?.id ?? ''),
+      cargo_id: String(cargos.find((cargo) => cargo.nome === usuario?.cargo)?.id ?? ''),
       senha: '',
     },
   })
 
-  const aoErrar = (e: Error) => {
-    if (e instanceof ApiError && e.status === 409) {
-      if (e.message === 'Registro duplicado') {
-        form.setError('email', { message: 'E-mail já cadastrado' })
+  const aoErrar = (erro: Error) => {
+    if (erro instanceof ApiError && erro.status === 409) {
+      const emailDuplicado = erro.message === 'Registro duplicado'
+      if (emailDuplicado) {
+        formulario.setError('email', { message: 'E-mail já cadastrado' })
       } else {
-        form.setError('cargo_id', { message: 'Cargo não encontrado' })
+        formulario.setError('cargo_id', { message: 'Cargo não encontrado' })
       }
-    } else if (!marcarErrosDeCampo(e, form)) {
-      toast.error(erroTexto(e, 'salvar'))
+      return
     }
+    if (tratouErrosDeCampo(erro, formulario)) return
+    toast.error(erroTexto(erro, 'salvar'))
   }
 
-  const enviar = form.handleSubmit((v) => {
+  const enviar = formulario.handleSubmit((valores) => {
     const dados = {
-      nome: v.nome,
-      email: v.email,
-      cargo_id: Number(v.cargo_id),
-      telefone: v.telefone || undefined,
+      nome: valores.nome,
+      email: valores.email,
+      cargo_id: Number(valores.cargo_id),
+      telefone: valores.telefone || undefined,
     }
     const onSuccess = () => {
       toast.success(usuario ? 'Usuário atualizado' : 'Usuário cadastrado')
-      onFechar()
+      aoFechar()
     }
     if (usuario) {
-      atualizar.mutate({ ...dados, senha: v.senha || undefined }, { onSuccess, onError: aoErrar })
-    } else {
-      criar.mutate({ ...dados, senha: v.senha }, { onSuccess, onError: aoErrar })
+      atualizar.mutate(
+        { ...dados, senha: valores.senha || undefined },
+        { onSuccess, onError: aoErrar },
+      )
+      return
     }
+    criar.mutate({ ...dados, senha: valores.senha }, { onSuccess, onError: aoErrar })
   })
 
   const salvando = criar.isPending || atualizar.isPending
-
-  const texto = (nome: 'nome' | 'email' | 'telefone', rotulo: string, tipo = 'text') => {
-    const erro = form.formState.errors[nome]
-    return (
-      <Field data-invalid={!!erro}>
-        <FieldLabel htmlFor={`usuario-${nome}`}>{rotulo}</FieldLabel>
-        <Input id={`usuario-${nome}`} type={tipo} aria-invalid={!!erro} {...form.register(nome)} />
-        {erro && <FieldError errors={[erro]} />}
-      </Field>
-    )
-  }
+  const rotuloDeEnvio = usuario ? 'Salvar' : 'Cadastrar'
 
   return (
     <form
       noValidate
-      onSubmit={(e) => {
-        void enviar(e)
+      onSubmit={(evento) => {
+        void enviar(evento)
       }}
     >
       <FieldGroup>
-        {texto('nome', 'Nome')}
-        {texto('email', 'E-mail', 'email')}
-        {texto('telefone', 'Telefone (opcional)', 'tel')}
+        <CampoTexto formulario={formulario} name="nome" rotulo="Nome" />
+        <CampoTexto formulario={formulario} name="email" rotulo="E-mail" type="email" />
+        <CampoTexto
+          formulario={formulario}
+          name="telefone"
+          rotulo="Telefone (opcional)"
+          type="tel"
+        />
         <Controller
           name="cargo_id"
-          control={form.control}
+          control={formulario.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="usuario-cargo">Cargo</FieldLabel>
@@ -189,9 +278,9 @@ function FormUsuario({
                   <SelectValue placeholder="Selecione o cargo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {cargos.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {rotuloCargo(c.nome)}
+                  {cargos.map((cargo) => (
+                    <SelectItem key={cargo.id} value={String(cargo.id)}>
+                      {rotuloCargo(cargo.nome)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -202,13 +291,13 @@ function FormUsuario({
         />
         <Controller
           name="senha"
-          control={form.control}
+          control={formulario.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="usuario-senha">
                 {usuario ? 'Nova senha (deixe em branco pra manter)' : 'Senha'}
               </FieldLabel>
-              <PasswordInput
+              <CampoDeSenha
                 {...field}
                 id="usuario-senha"
                 autoComplete="new-password"
@@ -219,66 +308,10 @@ function FormUsuario({
           )}
         />
         <Button type="submit" disabled={salvando}>
-          {salvando ? 'Salvando…' : usuario ? 'Salvar' : 'Cadastrar'}
+          {salvando ? 'Salvando…' : rotuloDeEnvio}
         </Button>
 
-        {usuario && !usuario.ativo && (
-          <Button
-            type="button"
-            variant="success"
-            disabled={atualizar.isPending}
-            onClick={() => {
-              atualizar.mutate(
-                { ativo: true },
-                {
-                  onSuccess: () => {
-                    toast.success('Usuário reativado')
-                    onFechar()
-                  },
-                  onError: (e) => toast.error(erroTexto(e, 'reativar')),
-                },
-              )
-            }}
-          >
-            Reativar usuário
-          </Button>
-        )}
-
-        {usuario?.ativo && usuario.id !== eu?.id && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button type="button" variant="destructive" disabled={desativar.isPending}>
-                Desativar usuário
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Desativar {usuario.nome}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  A pessoa perde o acesso na hora. O cadastro e o histórico continuam, e dá pra
-                  reativar depois.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  variant="destructive"
-                  onClick={() => {
-                    desativar.mutate(usuario.id, {
-                      onSuccess: () => {
-                        toast.success('Usuário desativado')
-                        onFechar()
-                      },
-                      onError: (e) => toast.error(erroTexto(e, 'desativar')),
-                    })
-                  }}
-                >
-                  Desativar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        {usuario && <AcoesDeAtivacao usuario={usuario} aoFechar={aoFechar} />}
       </FieldGroup>
     </form>
   )
@@ -288,21 +321,125 @@ function StatusAtivo({ ativo }: { ativo: boolean }) {
   return <Badge variant={ativo ? 'success' : 'danger'}>{ativo ? 'Ativo' : 'Inativo'}</Badge>
 }
 
-export default function UsuariosLista() {
+interface ListaProps {
+  usuarios: Usuario[]
+  aoAbrir: (usuario: Usuario) => void
+}
+
+function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
+      {usuarios.map((usuario) => (
+        <li key={usuario.id}>
+          <CartaoDeUsuario
+            nome={usuario.nome}
+            cargo={rotuloCargo(usuario.cargo)}
+            ativo={usuario.ativo}
+            foto={usuario.foto_url ?? undefined}
+            onClick={() => {
+              aoAbrir(usuario)
+            }}
+          />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
+  return (
+    <div className="hidden rounded-xl bg-card p-4 lg:block">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nome</TableHead>
+            <TableHead>E-mail</TableHead>
+            <TableHead>Telefone</TableHead>
+            <TableHead>Cargo</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {usuarios.map((usuario) => (
+            <TableRow key={usuario.id}>
+              <TableCell>
+                <Button
+                  variant="link"
+                  className="h-auto p-0"
+                  onClick={() => {
+                    aoAbrir(usuario)
+                  }}
+                >
+                  {usuario.nome}
+                </Button>
+              </TableCell>
+              <TableCell>{usuario.email}</TableCell>
+              <TableCell>{usuario.telefone ?? '—'}</TableCell>
+              <TableCell>{rotuloCargo(usuario.cargo)}</TableCell>
+              <TableCell>
+                <StatusAtivo ativo={usuario.ativo} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+function ConteudoDeUsuarios({ aoAbrir }: { aoAbrir: (usuario: Usuario) => void }) {
   const { data: usuarios, isPending, error } = useUsuarios()
-  const cargos = useCargos()
-  const [aberto, setAberto] = useState<Usuario | 'novo' | null>(null)
-  const selecionado = aberto === 'novo' ? null : aberto
+
+  if (isPending) {
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        {Array.from({ length: 6 }, (_, indice) => (
+          <Skeleton key={indice} className="h-44 lg:h-10" />
+        ))}
+      </div>
+    )
+  }
+  if (error) return <ErroDeCarregamento error={error} />
+  if (usuarios.length === 0) {
+    return <p className="text-muted-foreground">Nenhum usuário cadastrado.</p>
+  }
 
   return (
     <>
-      <ScreenHeader
+      <ListaDeCards usuarios={usuarios} aoAbrir={aoAbrir} />
+      <TabelaDeUsuarios usuarios={usuarios} aoAbrir={aoAbrir} />
+    </>
+  )
+}
+
+function FormularioComCargos({
+  usuario,
+  aoFechar,
+}: {
+  usuario: Usuario | null
+  aoFechar: () => void
+}) {
+  const cargos = useCargos()
+
+  if (cargos.isPending) return <Skeleton className="h-80" />
+  if (cargos.error) return <ErroDeCarregamento error={cargos.error} />
+
+  return <FormularioDeUsuario usuario={usuario} cargos={cargos.data} aoFechar={aoFechar} />
+}
+
+export default function UsuariosLista() {
+  const [emEdicao, setEmEdicao] = useState<Usuario | 'novo' | null>(null)
+  const usuarioEmEdicao = emEdicao === 'novo' ? null : emEdicao
+
+  return (
+    <>
+      <CabecalhoDeTela
         title="Usuários"
         actions={
           <Button
             size="sm"
             onClick={() => {
-              setAberto('novo')
+              setEmEdicao('novo')
             }}
           >
             <Plus />
@@ -311,106 +448,36 @@ export default function UsuariosLista() {
         }
       />
 
-      {isPending ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1">
-          {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton key={i} className="h-44 lg:h-10" />
-          ))}
-        </div>
-      ) : error ? (
-        <LoadError error={error} />
-      ) : usuarios.length === 0 ? (
-        <p className="text-muted-foreground">Nenhum usuário cadastrado.</p>
-      ) : (
-        <>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
-            {usuarios.map((u) => (
-              <li key={u.id}>
-                <UserCard
-                  nome={u.nome}
-                  cargo={rotuloCargo(u.cargo)}
-                  ativo={u.ativo}
-                  foto={u.foto_url ?? undefined}
-                  onClick={() => {
-                    setAberto(u)
-                  }}
-                />
-              </li>
-            ))}
-          </ul>
-
-          <div className="hidden rounded-xl bg-card p-4 lg:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Cargo</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {usuarios.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell>
-                      <Button
-                        variant="link"
-                        className="h-auto p-0"
-                        onClick={() => {
-                          setAberto(u)
-                        }}
-                      >
-                        {u.nome}
-                      </Button>
-                    </TableCell>
-                    <TableCell>{u.email}</TableCell>
-                    <TableCell>{u.telefone ?? '—'}</TableCell>
-                    <TableCell>{rotuloCargo(u.cargo)}</TableCell>
-                    <TableCell>
-                      <StatusAtivo ativo={u.ativo} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </>
-      )}
+      <ConteudoDeUsuarios aoAbrir={setEmEdicao} />
 
       <Dialog
-        open={aberto !== null}
-        onOpenChange={(open) => {
-          if (!open) setAberto(null)
+        open={emEdicao !== null}
+        onOpenChange={(aberto) => {
+          if (!aberto) setEmEdicao(null)
         }}
       >
         <DialogContent className="max-h-dvh overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selecionado ? selecionado.nome : 'Cadastrar usuário'}</DialogTitle>
+            <DialogTitle>
+              {usuarioEmEdicao ? usuarioEmEdicao.nome : 'Cadastrar usuário'}
+            </DialogTitle>
             <DialogDescription>
-              {selecionado ? (
+              {usuarioEmEdicao ? (
                 <span className="flex items-center gap-2">
-                  {rotuloCargo(selecionado.cargo)} <StatusAtivo ativo={selecionado.ativo} />
+                  {rotuloCargo(usuarioEmEdicao.cargo)} <StatusAtivo ativo={usuarioEmEdicao.ativo} />
                 </span>
               ) : (
                 'Cria o acesso de um funcionário ou cliente.'
               )}
             </DialogDescription>
           </DialogHeader>
-          {cargos.isPending ? (
-            <Skeleton className="h-80" />
-          ) : cargos.error ? (
-            <LoadError error={cargos.error} />
-          ) : (
-            <FormUsuario
-              key={selecionado?.id ?? 'novo'}
-              usuario={selecionado}
-              cargos={cargos.data}
-              onFechar={() => {
-                setAberto(null)
-              }}
-            />
-          )}
+          <FormularioComCargos
+            key={usuarioEmEdicao?.id ?? 'novo'}
+            usuario={usuarioEmEdicao}
+            aoFechar={() => {
+              setEmEdicao(null)
+            }}
+          />
         </DialogContent>
       </Dialog>
     </>

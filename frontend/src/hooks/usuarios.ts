@@ -1,36 +1,36 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, type UsuarioEdicao } from '@/lib/api'
-import { chaveMe } from '@/lib/query-client'
+import { chaveMe } from '@/lib/cliente-de-consultas'
 
-const chave = ['usuarios'] as const
+const chaveUsuarios = ['usuarios'] as const
 
-function useInvalidarUsuarios() {
-  const queryClient = useQueryClient()
+function useInvalidarUsuariosEMe() {
+  const clienteDeConsultas = useQueryClient()
   return () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: chave }),
-      queryClient.invalidateQueries({ queryKey: chaveMe }),
+      clienteDeConsultas.invalidateQueries({ queryKey: chaveUsuarios }),
+      clienteDeConsultas.invalidateQueries({ queryKey: chaveMe }),
     ])
 }
 
 export function useUsuarios() {
-  return useQuery({ queryKey: chave, queryFn: api.usuarios.listar })
+  return useQuery({ queryKey: chaveUsuarios, queryFn: api.usuarios.listar })
 }
 
 export function useCriarUsuario() {
-  const invalidar = useInvalidarUsuarios()
+  const invalidar = useInvalidarUsuariosEMe()
   return useMutation({ mutationFn: api.usuarios.criar, onSuccess: invalidar })
 }
 
 export function useAtualizarUsuario(id: number) {
-  const invalidar = useInvalidarUsuarios()
+  const invalidar = useInvalidarUsuariosEMe()
   return useMutation({
-    mutationFn: (dados: UsuarioEdicao) => api.usuarios.atualizar(id, dados),
+    mutationFn: (usuario: UsuarioEdicao) => api.usuarios.atualizar(id, usuario),
     onSuccess: invalidar,
   })
 }
 
 export function useDesativarUsuario() {
-  const invalidar = useInvalidarUsuarios()
+  const invalidar = useInvalidarUsuariosEMe()
   return useMutation({ mutationFn: api.usuarios.desativar, onSuccess: invalidar })
 }

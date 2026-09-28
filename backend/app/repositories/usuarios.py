@@ -9,9 +9,9 @@ SELECT_USUARIO = """
 
 
 class UsuariosMySQL:
-    def por_id(self, id_):
+    def por_id(self, usuario_id):
         with cursor() as cur:
-            cur.execute(SELECT_USUARIO + " WHERE u.id = %s", (id_,))
+            cur.execute(SELECT_USUARIO + " WHERE u.id = %s", (usuario_id,))
             return cur.fetchone()
 
     def por_email(self, email):
@@ -19,7 +19,7 @@ class UsuariosMySQL:
             cur.execute(SELECT_USUARIO + " WHERE u.email = %s", (email,))
             return cur.fetchone()
 
-    def criar(self, dados):
+    def criar(self, usuario):
         with cursor() as cur:
             cur.execute(
                 """
@@ -27,7 +27,7 @@ class UsuariosMySQL:
                 VALUES (%(nome)s, %(email)s, %(senha_hash)s,
                         COALESCE(%(cargo_id)s, DEFAULT(cargo_id)), %(telefone)s)
                 """,
-                dados,
+                usuario,
             )
             return cur.lastrowid
 
@@ -41,7 +41,7 @@ class UsuariosMySQL:
             cur.execute("SELECT id, nome, nivel_acesso AS papel FROM cargo ORDER BY id")
             return cur.fetchall()
 
-    def atualizar(self, id_, dados):
+    def atualizar(self, usuario_id, usuario):
         with cursor() as cur:
             cur.execute(
                 """
@@ -54,9 +54,9 @@ class UsuariosMySQL:
                     ativo = COALESCE(%(ativo)s, ativo)
                 WHERE id = %(id)s
                 """,
-                {**dados, "id": id_},
+                {**usuario, "id": usuario_id},
             )
 
-    def desativar(self, id_):
+    def desativar(self, usuario_id):
         with cursor() as cur:
-            cur.execute("UPDATE usuario SET ativo = FALSE WHERE id = %s", (id_,))
+            cur.execute("UPDATE usuario SET ativo = FALSE WHERE id = %s", (usuario_id,))

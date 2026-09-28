@@ -17,12 +17,12 @@ Arquivo: `frontend/src/pages/admin/CargaLista.tsx`. Quem: `operacional`, `gestao
 
 Arquivo: `frontend/src/pages/admin/UsuariosLista.tsx`. Quem: só `gestao`. Rótulo "Usuários" (Guia L1); o mockup ainda diz "Funcionários".
 
-- **Lista** (`useUsuarios`, inclui inativos): no celular/tablet, grade de `UserCard` (2–3 colunas, como no mockup); no desktop (`lg`), tabela com nome, e-mail, telefone, cargo e status (Ativo/Inativo em `Badge`).
-- **Uma página só**: detalhe, edição e cadastro abrem no mesmo `Dialog` sobre a lista (como o `FuncionarioModal` legado). As rotas `/admin/usuarios/:id` e `/admin/usuarios/:id/editar` **saíram** do `App.tsx`.
+- **Lista** (`useUsuarios`, inclui inativos): no celular/tablet, grade de `CartaoDeUsuario` (`ListaDeCards`, 2–3 colunas, como no mockup); no desktop (`lg`), `TabelaDeUsuarios` com nome, e-mail, telefone, cargo e status (Ativo/Inativo em `Badge`). Os dois saem do `ConteudoDeUsuarios`, que centraliza carregando/erro/vazio.
+- **Uma página só**: detalhe, edição e cadastro abrem no mesmo `Dialog` sobre a lista (como o `FuncionarioModal` legado), montado pelo `FormularioDeUsuario` (campos via `CampoTexto`) + `AcoesDeAtivacao` (desativar/reativar). As rotas `/admin/usuarios/:id` e `/admin/usuarios/:id/editar` **saíram** do `Aplicacao.tsx`.
 - **Cadastro** (`useCriarUsuario` → `POST /api/usuarios`): nome, e-mail, telefone (opcional), cargo (`Select` de `useCargos`), senha (8+).
 - **Edição** (`useAtualizarUsuario(id)` → `PATCH /api/usuarios/{id}`): mesmos campos; senha em branco = mantém a atual. Telefone em branco não apaga o telefone (limitação do contrato: `null` = não mexe).
 - **Desativar** (`useDesativarUsuario` → `DELETE`, que é soft delete): botão com `AlertDialog` de confirmação. Escondido quando o usuário aberto é você mesmo, pra ninguém se trancar pra fora.
 - **Reativar**: usuário inativo mostra "Reativar usuário" → `PATCH { ativo: true }`.
-- **Erros**: `409 "Registro duplicado"` → "E-mail já cadastrado" no campo e-mail; outro `409` (cargo inexistente) → no campo cargo; `422` → "Valor inválido" no campo do `loc` (`marcarErrosDeCampo` de `@/lib/api`); resto → toast com `mensagemDeErro`.
+- **Erros**: `409 "Registro duplicado"` → "E-mail já cadastrado" no campo e-mail; outro `409` (cargo inexistente) → no campo cargo; `422` → "Valor inválido" no campo do `loc` (`tratouErrosDeCampo` de `@/lib/api`); resto → toast com `mensagemDeErro`.
 - **Rótulo do cargo**: a API manda o slug (`auxiliar_maquinista`). O mapa slug → rótulo ("Auxiliar de Maquinista") mora na própria página; slug desconhecido aparece cru.
-- **Foto**: só `foto_url` de leitura (sem upload na API). Sem foto, o `UserCard` mostra a inicial.
+- **Foto**: só `foto_url` de leitura (sem upload na API). Sem foto, o `CartaoDeUsuario` mostra a inicial.

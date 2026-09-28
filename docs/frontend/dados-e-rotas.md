@@ -16,9 +16,9 @@ página ──► hook (src/hooks/<recurso>.ts, TanStack Query) ──► api.<r
 
 | Módulo | Hooks | Endpoint |
 |---|---|---|
-| `contexts/AuthContext.tsx` | `useAuth()` → `usuario`, `carregando`, `login`, `logout` | `GET /api/auth/me`, `POST /api/auth/login`, `POST /api/auth/logout` |
+| `contexts/Autenticacao.tsx` | `useAutenticacao()` → `usuario`, `carregando`, `entrar`, `sair` | `GET /api/auth/me`, `POST /api/auth/login`, `POST /api/auth/logout` |
 | `hooks/auth.ts` | `useCadastro`, `useRecuperarSenha`, `useAtualizarPerfil` | `POST /api/auth/cadastro`, `POST /api/auth/recuperar-senha`, `PATCH /api/auth/me` |
-| `hooks/usuarios.ts` | `useUsuarios`, `useUsuario(id)`, `useCriarUsuario`, `useAtualizarUsuario(id)`, `useDesativarUsuario` | `/api/usuarios` |
+| `hooks/usuarios.ts` | `useUsuarios`, `useCriarUsuario`, `useAtualizarUsuario(id)`, `useDesativarUsuario` | `/api/usuarios` |
 | `hooks/cargos.ts` | `useCargos` | `GET /api/cargos` |
 | `hooks/linhas.ts` | `useLinhas` | `GET /api/linhas` |
 | `hooks/cargas.ts` | `useCargas`, `useCriarCarga` | `/api/cargas` |
@@ -32,9 +32,9 @@ Papel vem da API (`cliente` < `operacional` < `gestao`). Sem sessão → `/login
 | Rota | Tela (arquivo) | Quem |
 |---|---|---|
 | `/` | redireciona pra `/login` | — |
-| `/login` | `pages/auth/Login.tsx` | público (deslogado) |
-| `/cadastro` | `pages/auth/Cadastro.tsx` | público (deslogado) |
-| `/recuperar-senha` | `pages/auth/RecuperarSenha.tsx` | público (deslogado) |
+| `/login` | `pages/autenticacao/Login.tsx` | público (deslogado) |
+| `/cadastro` | `pages/autenticacao/Cadastro.tsx` | público (deslogado) |
+| `/recuperar-senha` | `pages/autenticacao/RecuperarSenha.tsx` | público (deslogado) |
 | `/admin` | `pages/admin/Dashboard.tsx` | operacional, gestao |
 | `/admin/rotas` | `pages/admin/Rotas.tsx` | operacional, gestao |
 | `/admin/carga` | `pages/admin/CargaLista.tsx` (cadastro em `Dialog`) | operacional, gestao |
@@ -44,6 +44,6 @@ Papel vem da API (`cliente` < `operacional` < `gestao`). Sem sessão → `/login
 | `/ui` | `pages/Vitrine.tsx` (vitrine do design system) | público |
 | qualquer outra | redireciona pra `/` | — |
 
-Renomes do Guia (L1) aplicados: `/admin/linhas` → `/admin/rotas`, `/admin/funcionarios*` → `/admin/usuarios`. Não há rota própria pra formulário: `/admin/usuarios/:id`, `/admin/usuarios/:id/editar` e os `…/cadastro` viraram `Dialog` dentro da lista. O dock do `PageShell` mostra só os itens do papel (cliente vê só Perfil). Cada tela é um pedaço de JS separado (`React.lazy`), baixado quando a rota abre.
+Renomes do Guia (L1) aplicados: `/admin/linhas` → `/admin/rotas`, `/admin/funcionarios*` → `/admin/usuarios`. Não há rota própria pra formulário: `/admin/usuarios/:id`, `/admin/usuarios/:id/editar` e os `…/cadastro` viraram `Dialog` dentro da lista. O dock da `CascaDePagina` mostra só os itens do papel (cliente vê só Perfil). Cada tela é um pedaço de JS separado (`React.lazy`), baixado quando a rota abre.
 
 Todas as telas são TSX sobre o design system e os hooks acima (fase 4 concluída). O que cada tela mostra, o que saiu do mockup e por quê: [`telas/`](telas/).

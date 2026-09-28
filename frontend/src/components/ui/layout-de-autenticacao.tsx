@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
+import ferrovia from '@/assets/ferrovia.jpg'
 import logo from '@/assets/logo.svg'
 
-interface AuthLayoutProps {
+interface LayoutDeAutenticacaoProps {
   title: string
   description?: string
   children: ReactNode
 }
 
-export function AuthLayout({ title, description, children }: AuthLayoutProps) {
+export function LayoutDeAutenticacao({ title, description, children }: LayoutDeAutenticacaoProps) {
   return (
     <div className="flex min-h-dvh flex-col bg-muted lg:flex-row">
       <div className="flex flex-1 flex-col lg:w-[45%] lg:flex-none">
@@ -21,11 +22,7 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
         </main>
       </div>
       <div className="hidden overflow-hidden bg-primary lg:block lg:w-[55%]">
-        <img
-          src="https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=1200&q=80"
-          alt=""
-          className="size-full object-cover opacity-80"
-        />
+        <img src={ferrovia} alt="" className="size-full object-cover opacity-80" />
       </div>
     </div>
   )

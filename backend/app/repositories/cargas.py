@@ -11,7 +11,7 @@ class CargasMySQL:
             cur.execute(SELECT_CARGA + " ORDER BY criado_em DESC, id DESC")
             return cur.fetchall()
 
-    def criar(self, dados):
+    def criar(self, carga):
         with cursor() as cur:
             cur.execute(
                 """
@@ -19,7 +19,7 @@ class CargasMySQL:
                 VALUES (%(tipo)s, %(peso_t)s, %(local_partida)s, %(destino)s, %(vagao)s,
                         %(trem_id)s)
                 """,
-                dados,
+                carga,
             )
             cur.execute(SELECT_CARGA + " WHERE id = %s", (cur.lastrowid,))
             return cur.fetchone()

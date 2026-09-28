@@ -4,7 +4,7 @@
 
 ## Como funciona
 
-`ThemeContext` (`src/contexts/ThemeContext.tsx`) guarda o tema em `localStorage` e aplica a classe `white` ou `black` na tag `<html>`. O `src/index.css` define os tokens no `:root` (claro) e sobrescreve no `.black` (escuro). Trocar de tema é só trocar a classe do `<html>` — nenhum componente sabe em qual tema está.
+O contexto de tema (`src/contexts/Tema.tsx`) guarda o tema em `localStorage` e aplica a classe `claro` ou `escuro` na tag `<html>`. O `src/index.css` define os tokens no `:root` (claro) e sobrescreve no `.escuro` (escuro). Trocar de tema é só trocar a classe do `<html>` — nenhum componente sabe em qual tema está.
 
 ## A regra semântica dos tokens
 

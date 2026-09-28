@@ -1,21 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import { chaveMe } from '@/lib/query-client'
+import { chaveMe } from '@/lib/cliente-de-consultas'
 
 export function useCadastro() {
-  return useMutation({ mutationFn: api.auth.cadastro })
+  return useMutation({ mutationFn: api.autenticacao.cadastro })
 }
 
 export function useRecuperarSenha() {
-  return useMutation({ mutationFn: api.auth.recuperarSenha })
+  return useMutation({ mutationFn: api.autenticacao.recuperarSenha })
 }
 
 export function useAtualizarPerfil() {
-  const queryClient = useQueryClient()
+  const clienteDeConsultas = useQueryClient()
   return useMutation({
-    mutationFn: api.auth.atualizarMe,
+    mutationFn: api.autenticacao.atualizarMe,
     onSuccess: (usuario) => {
-      queryClient.setQueryData(chaveMe, usuario)
+      clienteDeConsultas.setQueryData(chaveMe, usuario)
     },
   })
 }

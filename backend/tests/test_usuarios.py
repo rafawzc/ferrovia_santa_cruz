@@ -1,6 +1,6 @@
 import pytest
 
-from tests.fakes import CLIENTE, GESTAO, OPERACIONAL, SENHA
+from tests.fakes import ID_CLIENTE, ID_GESTAO, ID_OPERACIONAL, SENHA
 
 NOVO = {
     "nome": "Sergio Santana",
@@ -13,7 +13,7 @@ NOVO = {
 
 @pytest.fixture
 def gestao(como):
-    return como(GESTAO)
+    return como(ID_GESTAO)
 
 
 def test_gestao_lista_usuarios_sem_expor_hash(gestao):
@@ -24,21 +24,24 @@ def test_gestao_lista_usuarios_sem_expor_hash(gestao):
     assert all("senha_hash" not in u for u in resposta.json())
 
 
-@pytest.mark.parametrize("usuario_id", [OPERACIONAL, CLIENTE])
+@pytest.mark.parametrize("usuario_id", [ID_OPERACIONAL, ID_CLIENTE])
 def test_quem_nao_e_gestao_leva_403(como, usuario_id):
-    cliente = como(usuario_id)
+    nao_gestao = como(usuario_id)
 
-    assert cliente.get("/api/usuarios").status_code == 403
-    assert cliente.post("/api/usuarios", json=NOVO).status_code == 403
-    assert cliente.get("/api/cargos").status_code == 403
+    assert nao_gestao.get("/api/usuarios").status_code == 403
+    assert nao_gestao.post("/api/usuarios", json=NOVO).status_code == 403
+    assert nao_gestao.get("/api/cargos").status_code == 403
 
 
 def test_sem_cookie_leva_401(client):
     assert client.get("/api/usuarios").status_code == 401
 
 
+def test_detalhe_devolve_o_usuario(gestao):
+    assert gestao.get(f"/api/usuarios/{ID_OPERACIONAL}").json()["nome"] == "Carlos Souza"
+
+
 def test_detalhe_e_404_quando_nao_existe(gestao):
-    assert gestao.get(f"/api/usuarios/{OPERACIONAL}").json()["nome"] == "Carlos Souza"
     assert gestao.get("/api/usuarios/999").status_code == 404
 
 
@@ -69,7 +72,7 @@ def test_criar_sem_cargo_ou_com_senha_curta_e_422(gestao):
 
 def test_edita_so_os_campos_enviados_e_troca_a_senha(gestao, client):
     resposta = gestao.patch(
-        f"/api/usuarios/{OPERACIONAL}", json={"telefone": "4733330000", "senha": "novasenha1"}
+        f"/api/usuarios/{ID_OPERACIONAL}", json={"telefone": "4733330000", "senha": "novasenha1"}
     )
 
     assert resposta.status_code == 200
@@ -83,21 +86,21 @@ def test_edita_so_os_campos_enviados_e_troca_a_senha(gestao, client):
 
 def test_editar_inexistente_e_404_e_email_repetido_e_409(gestao):
     assert gestao.patch("/api/usuarios/999", json={"nome": "X"}).status_code == 404
-    repetido = gestao.patch(f"/api/usuarios/{OPERACIONAL}", json={"email": "ana@ferrovia.com"})
+    repetido = gestao.patch(f"/api/usuarios/{ID_OPERACIONAL}", json={"email": "ana@ferrovia.com"})
     assert repetido.status_code == 409
 
 
 def test_desativar_bloqueia_o_login(gestao, client):
-    assert gestao.delete(f"/api/usuarios/{OPERACIONAL}").status_code == 204
-    assert gestao.get(f"/api/usuarios/{OPERACIONAL}").json()["ativo"] is False
+    assert gestao.delete(f"/api/usuarios/{ID_OPERACIONAL}").status_code == 204
+    assert gestao.get(f"/api/usuarios/{ID_OPERACIONAL}").json()["ativo"] is False
     corpo = {"email": "carlos@ferrovia.com", "senha": SENHA}
     assert client.post("/api/auth/login", json=corpo).status_code == 403
 
 
 def test_reativar_pelo_patch(gestao):
-    gestao.delete(f"/api/usuarios/{OPERACIONAL}")
+    gestao.delete(f"/api/usuarios/{ID_OPERACIONAL}")
 
-    assert gestao.patch(f"/api/usuarios/{OPERACIONAL}", json={"ativo": True}).json()["ativo"]
+    assert gestao.patch(f"/api/usuarios/{ID_OPERACIONAL}", json={"ativo": True}).json()["ativo"]
 
 
 def test_desativar_inexistente_e_404(gestao):

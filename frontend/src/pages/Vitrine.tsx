@@ -15,10 +15,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { AuthLayout } from '@/components/ui/auth-layout'
+import { AlternadorDeTema } from '@/components/ui/alternador-de-tema'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { CampoDeSenha } from '@/components/ui/campo-de-senha'
 import {
   Card,
   CardContent,
@@ -27,6 +29,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { CartaoDeLinha } from '@/components/ui/cartao-de-linha'
+import { CartaoDeMetrica } from '@/components/ui/cartao-de-metrica'
+import { CartaoDeUsuario } from '@/components/ui/cartao-de-usuario'
+import { CascaDePagina } from '@/components/ui/casca-de-pagina'
 import {
   Dialog,
   DialogContent,
@@ -36,15 +42,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ErroDeCarregamento } from '@/components/ui/erro-de-carregamento'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { LineCard } from '@/components/ui/line-card'
-import { LoadError } from '@/components/ui/load-error'
-import { MetricCard } from '@/components/ui/metric-card'
-import { PageShell } from '@/components/ui/page-shell'
-import { PasswordInput } from '@/components/ui/password-input'
+import { LayoutDeAutenticacao } from '@/components/ui/layout-de-autenticacao'
 import { Progress } from '@/components/ui/progress'
-import { ScreenHeader } from '@/components/ui/screen-header'
 import {
   Select,
   SelectContent,
@@ -52,6 +54,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { STATUSES, SeloDeStatus } from '@/components/ui/selo-de-status'
 import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
@@ -62,7 +65,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import { STATUSES, StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import {
   Table,
@@ -73,9 +75,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { UserCard } from '@/components/ui/user-card'
 import { ApiError } from '@/lib/api'
 
 const TOKENS = [
@@ -95,7 +95,7 @@ const TOKENS = [
   { name: 'overlay', className: 'bg-overlay text-primary-foreground' },
 ]
 
-const BUTTON_VARIANTS = [
+const VARIANTES_DE_BOTAO = [
   'default',
   'secondary',
   'outline',
@@ -104,7 +104,7 @@ const BUTTON_VARIANTS = [
   'destructive',
   'success',
 ] as const
-const BADGE_VARIANTS = [
+const VARIANTES_DE_SELO = [
   'default',
   'secondary',
   'outline',
@@ -116,42 +116,42 @@ const BADGE_VARIANTS = [
 ] as const
 const CARGOS = ['Maquinista', 'Manutenção', 'Administração']
 
-const schema = z.object({
+const esquema = z.object({
   email: z.email('Email inválido'),
   senha: z.string().min(8, 'Mínimo de 8 caracteres'),
   cargo: z.string().min(1, 'Selecione o cargo'),
-  termos: z.boolean().refine((v) => v, 'Aceite os termos'),
+  termos: z.boolean().refine((termos) => termos, 'Aceite os termos'),
 })
 
-type FormValues = z.infer<typeof schema>
+type ValoresDoFormulario = z.infer<typeof esquema>
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-bold">{title}</h2>
+      <h2 className="text-lg font-bold">{titulo}</h2>
       {children}
     </section>
   )
 }
 
-function DemoForm() {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+function FormularioDemo() {
+  const formulario = useForm<ValoresDoFormulario>({
+    resolver: zodResolver(esquema),
     defaultValues: { email: '', senha: '', cargo: '', termos: false },
   })
 
   return (
     <form
       noValidate
-      onSubmit={(e) => {
-        void form.handleSubmit(() => toast.success('Formulário válido'))(e)
+      onSubmit={(evento) => {
+        void formulario.handleSubmit(() => toast.success('Formulário válido'))(evento)
       }}
       className="max-w-md"
     >
       <FieldGroup>
         <Controller
           name="email"
-          control={form.control}
+          control={formulario.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="demo-email">Email</FieldLabel>
@@ -168,18 +168,18 @@ function DemoForm() {
         />
         <Controller
           name="senha"
-          control={form.control}
+          control={formulario.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="demo-senha">Senha</FieldLabel>
-              <PasswordInput {...field} id="demo-senha" aria-invalid={fieldState.invalid} />
+              <CampoDeSenha {...field} id="demo-senha" aria-invalid={fieldState.invalid} />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
         <Controller
           name="cargo"
-          control={form.control}
+          control={formulario.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="demo-cargo">Cargo</FieldLabel>
@@ -188,9 +188,9 @@ function DemoForm() {
                   <SelectValue placeholder="Selecione o cargo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CARGOS.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
+                  {CARGOS.map((cargo) => (
+                    <SelectItem key={cargo} value={cargo}>
+                      {cargo}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -201,7 +201,7 @@ function DemoForm() {
         />
         <Controller
           name="termos"
-          control={form.control}
+          control={formulario.control}
           render={({ field, fieldState }) => (
             <Field orientation="horizontal" data-invalid={fieldState.invalid}>
               <Switch
@@ -221,244 +221,298 @@ function DemoForm() {
   )
 }
 
-export default function Vitrine() {
-  const [showAuth, setShowAuth] = useState(false)
+function SecaoTokens() {
+  return (
+    <Secao titulo="Tokens">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        {TOKENS.map((token) => (
+          <div
+            key={token.name}
+            className={`flex h-16 items-end rounded-lg border border-border p-2 text-xs font-semibold ${token.className}`}
+          >
+            {token.name}
+          </div>
+        ))}
+      </div>
+    </Secao>
+  )
+}
 
-  if (showAuth) {
+function SecaoBotoes() {
+  return (
+    <Secao titulo="Button">
+      <div className="flex flex-wrap items-center gap-3">
+        {VARIANTES_DE_BOTAO.map((variante) => (
+          <Button key={variante} variant={variante}>
+            {variante}
+          </Button>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button size="xs">xs</Button>
+        <Button size="sm">sm</Button>
+        <Button>default</Button>
+        <Button size="lg">lg</Button>
+        <Button size="icon" aria-label="Adicionar">
+          <Plus />
+        </Button>
+        <Button>
+          <Plus />
+          Com ícone
+        </Button>
+        <Button disabled>Desabilitado</Button>
+      </div>
+    </Secao>
+  )
+}
+
+function SecaoSelos() {
+  return (
+    <Secao titulo="Badge e SeloDeStatus">
+      <div className="flex flex-wrap gap-2">
+        {VARIANTES_DE_SELO.map((variante) => (
+          <Badge key={variante} variant={variante}>
+            {variante}
+          </Badge>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {STATUSES.map((status) => (
+          <SeloDeStatus key={status} status={status} />
+        ))}
+      </div>
+    </Secao>
+  )
+}
+
+function SecaoFormulario() {
+  return (
+    <Secao titulo="Formulário (Field + react-hook-form + zod)">
+      <FormularioDemo />
+    </Secao>
+  )
+}
+
+function SecaoCartao() {
+  return (
+    <Secao titulo="Card">
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle>Rota 1778</CardTitle>
+          <CardDescription>Última leitura há 2 min</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <p className="text-sm">Capacidade do vagão</p>
+          <Progress value={72} aria-label="Capacidade do vagão" />
+        </CardContent>
+        <CardFooter>
+          <Button size="sm">Detalhes</Button>
+        </CardFooter>
+      </Card>
+    </Secao>
+  )
+}
+
+function SecaoAbas() {
+  return (
+    <Secao titulo="Tabs">
+      <Tabs defaultValue="carga">
+        <TabsList>
+          <TabsTrigger value="carga">Carga</TabsTrigger>
+          <TabsTrigger value="passageiros">Passageiros</TabsTrigger>
+          <TabsTrigger value="relatorio">Relatório</TabsTrigger>
+        </TabsList>
+        <TabsContent value="carga">Conteúdo de carga.</TabsContent>
+        <TabsContent value="passageiros">Conteúdo de passageiros.</TabsContent>
+        <TabsContent value="relatorio">Conteúdo do relatório.</TabsContent>
+      </Tabs>
+    </Secao>
+  )
+}
+
+function SecaoSobreposicoes() {
+  return (
+    <Secao titulo="Dialog, AlertDialog e Sheet">
+      <div className="flex flex-wrap gap-3">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="secondary">Abrir dialog</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Cadastrar manutenção</DialogTitle>
+              <DialogDescription>Informe o motivo e a linha.</DialogDescription>
+            </DialogHeader>
+            <Input placeholder="Motivo" aria-label="Motivo" />
+            <DialogFooter>
+              <Button>Adicionar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Excluir</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir funcionário?</AlertDialogTitle>
+              <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction>Excluir</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline">Abrir sheet</Button>
+          </SheetTrigger>
+          <SheetContent side="bottom">
+            <SheetHeader>
+              <SheetTitle>Detalhes do vagão</SheetTitle>
+              <SheetDescription>Gaveta pra telas pequenas.</SheetDescription>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            toast('Alerta enviado', { description: 'Rota 1778' })
+          }}
+        >
+          Disparar toast
+        </Button>
+      </div>
+    </Secao>
+  )
+}
+
+function SecaoTabela() {
+  return (
+    <Secao titulo="Table">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Vagão</TableHead>
+            <TableHead>Carga</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>A</TableCell>
+            <TableCell>Minério</TableCell>
+            <TableCell>
+              <SeloDeStatus status="normal" />
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>B</TableCell>
+            <TableCell>Grãos</TableCell>
+            <TableCell>
+              <SeloDeStatus status="alerta" />
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </Secao>
+  )
+}
+
+function SecaoAuxiliares() {
+  return (
+    <Secao titulo="Avatar, Skeleton, Tooltip, Separator">
+      <div className="flex flex-wrap items-center gap-4">
+        <Avatar size="lg">
+          <AvatarFallback>MW</AvatarFallback>
+        </Avatar>
+        <Skeleton className="h-10 w-40" />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline">Passe o mouse</Button>
+          </TooltipTrigger>
+          <TooltipContent>Dica</TooltipContent>
+        </Tooltip>
+      </div>
+      <Separator />
+    </Secao>
+  )
+}
+
+function SecaoCompostosDoDominio({
+  aoVerLayoutDeAutenticacao,
+}: {
+  aoVerLayoutDeAutenticacao: () => void
+}) {
+  return (
+    <Secao titulo="Compostos do domínio">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <CartaoDeMetrica icon={BarChart3} label="Linhas ativas" value="4 / 5" status="normal" />
+        <CartaoDeMetrica icon={Radio} label="Sensores" value="9 / 10" status="alerta" />
+        <CartaoDeMetrica icon={Wrench} label="Manutenções" value={1} status="falha" />
+      </div>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <CartaoDeLinha numero="1778" status="manutencao" ativo />
+        <CartaoDeLinha numero="2645" status="atraso" ativo />
+        <CartaoDeLinha numero="9845" status="fechado" ativo={false} />
+        <CartaoDeLinha numero="5463" status="na_estacao" ativo />
+      </div>
+      <div className="flex flex-col gap-2">
+        <ErroDeCarregamento error={new ApiError(500, { detail: 'Erro interno' })} />
+        <ErroDeCarregamento error={new TypeError('Failed to fetch')} />
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <CartaoDeUsuario nome="Anna Rossi" cargo="RH" ativo />
+        <CartaoDeUsuario nome="Juliana Costa" cargo="Maquinista" ativo={false} />
+      </div>
+      <div>
+        <Button variant="outline" onClick={aoVerLayoutDeAutenticacao}>
+          Ver LayoutDeAutenticacao
+        </Button>
+      </div>
+    </Secao>
+  )
+}
+
+export default function Vitrine() {
+  const [mostrandoLayoutDeAutenticacao, setMostrandoLayoutDeAutenticacao] = useState(false)
+
+  if (mostrandoLayoutDeAutenticacao) {
     return (
-      <AuthLayout title="Entrar na Conta" description="Prévia do AuthLayout.">
+      <LayoutDeAutenticacao title="Entrar na Conta" description="Prévia do LayoutDeAutenticacao.">
         <Button
           className="w-full"
           onClick={() => {
-            setShowAuth(false)
+            setMostrandoLayoutDeAutenticacao(false)
           }}
         >
           Voltar pra vitrine
         </Button>
-      </AuthLayout>
+      </LayoutDeAutenticacao>
     )
   }
 
   return (
-    <PageShell>
-      <ScreenHeader title="Vitrine do design system" actions={<ThemeToggle />} />
+    <CascaDePagina>
+      <CabecalhoDeTela title="Vitrine do design system" actions={<AlternadorDeTema />} />
 
       <div className="flex flex-col gap-10">
-        <Section title="Tokens">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-            {TOKENS.map((t) => (
-              <div
-                key={t.name}
-                className={`flex h-16 items-end rounded-lg border border-border p-2 text-xs font-semibold ${t.className}`}
-              >
-                {t.name}
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        <Section title="Button">
-          <div className="flex flex-wrap items-center gap-3">
-            {BUTTON_VARIANTS.map((v) => (
-              <Button key={v} variant={v}>
-                {v}
-              </Button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button size="xs">xs</Button>
-            <Button size="sm">sm</Button>
-            <Button>default</Button>
-            <Button size="lg">lg</Button>
-            <Button size="icon" aria-label="Adicionar">
-              <Plus />
-            </Button>
-            <Button>
-              <Plus />
-              Com ícone
-            </Button>
-            <Button disabled>Desabilitado</Button>
-          </div>
-        </Section>
-
-        <Section title="Badge e StatusBadge">
-          <div className="flex flex-wrap gap-2">
-            {BADGE_VARIANTS.map((v) => (
-              <Badge key={v} variant={v}>
-                {v}
-              </Badge>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {STATUSES.map((s) => (
-              <StatusBadge key={s} status={s} />
-            ))}
-          </div>
-        </Section>
-
-        <Section title="Formulário (Field + react-hook-form + zod)">
-          <DemoForm />
-        </Section>
-
-        <Section title="Card">
-          <Card className="max-w-md">
-            <CardHeader>
-              <CardTitle>Rota 1778</CardTitle>
-              <CardDescription>Última leitura há 2 min</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <p className="text-sm">Capacidade do vagão</p>
-              <Progress value={72} aria-label="Capacidade do vagão" />
-            </CardContent>
-            <CardFooter>
-              <Button size="sm">Detalhes</Button>
-            </CardFooter>
-          </Card>
-        </Section>
-
-        <Section title="Tabs">
-          <Tabs defaultValue="carga">
-            <TabsList>
-              <TabsTrigger value="carga">Carga</TabsTrigger>
-              <TabsTrigger value="passageiros">Passageiros</TabsTrigger>
-              <TabsTrigger value="relatorio">Relatório</TabsTrigger>
-            </TabsList>
-            <TabsContent value="carga">Conteúdo de carga.</TabsContent>
-            <TabsContent value="passageiros">Conteúdo de passageiros.</TabsContent>
-            <TabsContent value="relatorio">Conteúdo do relatório.</TabsContent>
-          </Tabs>
-        </Section>
-
-        <Section title="Dialog, AlertDialog e Sheet">
-          <div className="flex flex-wrap gap-3">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="secondary">Abrir dialog</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Cadastrar manutenção</DialogTitle>
-                  <DialogDescription>Informe o motivo e a linha.</DialogDescription>
-                </DialogHeader>
-                <Input placeholder="Motivo" aria-label="Motivo" />
-                <DialogFooter>
-                  <Button>Adicionar</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Excluir</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Excluir funcionário?</AlertDialogTitle>
-                  <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction>Excluir</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline">Abrir sheet</Button>
-              </SheetTrigger>
-              <SheetContent side="bottom">
-                <SheetHeader>
-                  <SheetTitle>Detalhes do vagão</SheetTitle>
-                  <SheetDescription>Gaveta pra telas pequenas.</SheetDescription>
-                </SheetHeader>
-              </SheetContent>
-            </Sheet>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                toast('Alerta enviado', { description: 'Rota 1778' })
-              }}
-            >
-              Disparar toast
-            </Button>
-          </div>
-        </Section>
-
-        <Section title="Table">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Vagão</TableHead>
-                <TableHead>Carga</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>A</TableCell>
-                <TableCell>Minério</TableCell>
-                <TableCell>
-                  <StatusBadge status="normal" />
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>B</TableCell>
-                <TableCell>Grãos</TableCell>
-                <TableCell>
-                  <StatusBadge status="alerta" />
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </Section>
-
-        <Section title="Avatar, Skeleton, Tooltip, Separator">
-          <div className="flex flex-wrap items-center gap-4">
-            <Avatar size="lg">
-              <AvatarFallback>MW</AvatarFallback>
-            </Avatar>
-            <Skeleton className="h-10 w-40" />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline">Passe o mouse</Button>
-              </TooltipTrigger>
-              <TooltipContent>Dica</TooltipContent>
-            </Tooltip>
-          </div>
-          <Separator />
-        </Section>
-
-        <Section title="Compostos do domínio">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <MetricCard icon={BarChart3} label="Linhas ativas" value="4 / 5" tone="success" />
-            <MetricCard icon={Radio} label="Sensores" value="9 / 10" tone="warning" />
-            <MetricCard icon={Wrench} label="Manutenções" value={1} tone="danger" />
-          </div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <LineCard numero="1778" status="manutencao" ativo />
-            <LineCard numero="2645" status="atraso" ativo />
-            <LineCard numero="9845" status="fechado" ativo={false} />
-            <LineCard numero="5463" status="na_estacao" ativo />
-          </div>
-          <div className="flex flex-col gap-2">
-            <LoadError error={new ApiError(500, { detail: 'Erro interno' })} />
-            <LoadError error={new TypeError('Failed to fetch')} />
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <UserCard nome="Anna Rossi" cargo="RH" ativo />
-            <UserCard nome="Juliana Costa" cargo="Maquinista" ativo={false} />
-          </div>
-          <div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAuth(true)
-              }}
-            >
-              Ver AuthLayout
-            </Button>
-          </div>
-        </Section>
+        <SecaoTokens />
+        <SecaoBotoes />
+        <SecaoSelos />
+        <SecaoFormulario />
+        <SecaoCartao />
+        <SecaoAbas />
+        <SecaoSobreposicoes />
+        <SecaoTabela />
+        <SecaoAuxiliares />
+        <SecaoCompostosDoDominio
+          aoVerLayoutDeAutenticacao={() => {
+            setMostrandoLayoutDeAutenticacao(true)
+          }}
+        />
       </div>
-    </PageShell>
+    </CascaDePagina>
   )
 }

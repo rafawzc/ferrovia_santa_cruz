@@ -3,17 +3,17 @@ import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
-interface ScreenHeaderProps {
+interface CabecalhoDeTelaProps {
   title: string
-  back?: boolean
+  temVoltar?: boolean
   actions?: ReactNode
 }
 
-export function ScreenHeader({ title, back = false, actions }: ScreenHeaderProps) {
+export function CabecalhoDeTela({ title, temVoltar = false, actions }: CabecalhoDeTelaProps) {
   const navigate = useNavigate()
   return (
     <header className="mb-6 flex items-center gap-3">
-      {back && (
+      {temVoltar && (
         <Button
           variant="ghost"
           size="icon"
