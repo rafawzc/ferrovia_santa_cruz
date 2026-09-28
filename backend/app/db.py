@@ -2,7 +2,11 @@ import os
 from contextlib import contextmanager
 from functools import cache
 
-from mysql.connector import pooling
+from mysql.connector import Error, pooling
+
+
+class BancoIndisponivel(Exception):
+    pass
 
 
 @cache
@@ -19,7 +23,10 @@ def _pool():
 
 @contextmanager
 def cursor():
-    conn = _pool().get_connection()
+    try:
+        conn = _pool().get_connection()
+    except Error as erro:
+        raise BancoIndisponivel from erro
     try:
         with conn.cursor(dictionary=True) as cur:
             yield cur

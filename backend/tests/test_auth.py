@@ -1,3 +1,4 @@
+from app.db import BancoIndisponivel
 from tests.fakes import ID_GESTAO, ID_INATIVO, SENHA
 
 
@@ -110,6 +111,18 @@ def test_cadastro_com_email_repetido_e_409(client):
 
     assert resposta.status_code == 409
     assert resposta.json() == {"detail": "Registro duplicado"}
+
+
+def test_login_com_o_banco_fora_do_ar_e_503(client, usuarios):
+    def banco_fora_do_ar(email):
+        raise BancoIndisponivel
+
+    usuarios.por_email = banco_fora_do_ar
+
+    resposta = login(client)
+
+    assert resposta.status_code == 503
+    assert resposta.json() == {"detail": "Banco de dados indisponível"}
 
 
 def test_recuperar_senha_responde_202_sem_revelar_se_o_email_existe(client):
