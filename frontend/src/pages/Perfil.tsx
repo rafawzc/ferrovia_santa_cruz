@@ -4,38 +4,41 @@ import { Controller, useForm, useWatch, type Control } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AlternadorDeTema } from '@/components/ui/alternador-de-tema'
 import { Button } from '@/components/ui/button'
+import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { CampoDeSenha } from '@/components/ui/campo-de-senha'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
-import { ScreenHeader } from '@/components/ui/screen-header'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { mensagemDeErro } from '@/components/ui/load-error'
-import { useAuth } from '@/contexts/AuthContext'
+import { mensagemDeErro } from '@/components/ui/erro-de-carregamento'
+import { useAutenticacao } from '@/contexts/Autenticacao'
 import { useAtualizarPerfil } from '@/hooks/auth'
-import { ApiError, marcarErrosDeCampo, type PerfilEdicao, type Usuario } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo, type PerfilEdicao, type Usuario } from '@/lib/api'
 
-const schema = z
+const esquema = z
   .object({
     nome: z.string().trim().min(1, 'Informe o nome').max(120, 'Máximo de 120 caracteres'),
     email: z.email('Email inválido').max(160, 'Máximo de 160 caracteres'),
     telefone: z.string().trim().max(20, 'Máximo de 20 caracteres'),
     senha: z
       .string()
-      .refine((v) => v === '' || (v.length >= 8 && v.length <= 128), 'Entre 8 e 128 caracteres'),
+      .refine(
+        (valor) => valor === '' || (valor.length >= 8 && valor.length <= 128),
+        'Entre 8 e 128 caracteres',
+      ),
     senha_atual: z.string(),
   })
-  .refine((v) => v.senha === '' || v.senha_atual !== '', {
+  .refine((valores) => valores.senha === '' || valores.senha_atual !== '', {
     message: 'Informe a senha atual pra trocar a senha',
     path: ['senha_atual'],
   })
 
-type Valores = z.infer<typeof schema>
-type Nome = keyof Valores
+type ValoresDoFormulario = z.infer<typeof esquema>
+type NomeDoCampo = keyof ValoresDoFormulario
 
 const EDITAVEIS = ['nome', 'email', 'telefone', 'senha'] as const
 
-function valoresDe(usuario: Usuario): Valores {
+function valoresDe(usuario: Usuario): ValoresDoFormulario {
   return {
     nome: usuario.nome,
     email: usuario.email,
@@ -45,18 +48,29 @@ function valoresDe(usuario: Usuario): Valores {
   }
 }
 
+function dadosAlterados(
+  valores: ValoresDoFormulario,
+  alterados: Partial<Record<NomeDoCampo, boolean>>,
+): PerfilEdicao {
+  const dados: PerfilEdicao = Object.fromEntries(
+    EDITAVEIS.filter((campo) => alterados[campo]).map((campo) => [campo, valores[campo]]),
+  )
+  if (dados.senha) dados.senha_atual = valores.senha_atual
+  return dados
+}
+
 function iniciais(nome: string) {
   return nome
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((p) => p.charAt(0).toUpperCase())
+    .map((parte) => parte.charAt(0).toUpperCase())
     .join('')
 }
 
 interface CampoProps {
-  control: Control<Valores>
-  name: Nome
+  control: Control<ValoresDoFormulario>
+  name: NomeDoCampo
   label: string
   type?: 'text' | 'email' | 'tel' | 'password'
   autoComplete: string
@@ -73,7 +87,7 @@ function Campo({ control, name, label, type = 'text', autoComplete, descricao }:
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel htmlFor={id}>{label}</FieldLabel>
           {type === 'password' ? (
-            <PasswordInput
+            <CampoDeSenha
               {...field}
               id={id}
               autoComplete={autoComplete}
@@ -96,82 +110,80 @@ function Campo({ control, name, label, type = 'text', autoComplete, descricao }:
   )
 }
 
-function PerfilForm({ usuario }: { usuario: Usuario }) {
+function FormularioDePerfil({ usuario }: { usuario: Usuario }) {
   const atualizar = useAtualizarPerfil()
-  const form = useForm<Valores>({
-    resolver: zodResolver(schema),
+  const formulario = useForm<ValoresDoFormulario>({
+    resolver: zodResolver(esquema),
     defaultValues: valoresDe(usuario),
   })
-  const senha = useWatch({ control: form.control, name: 'senha' })
+  const senha = useWatch({ control: formulario.control, name: 'senha' })
 
-  function salvar(valores: Valores) {
-    const { dirtyFields } = form.formState
-    const dados: PerfilEdicao = Object.fromEntries(
-      EDITAVEIS.filter((c) => dirtyFields[c]).map((c) => [c, valores[c]]),
-    )
-    if (dados.senha) dados.senha_atual = valores.senha_atual
+  function aoErrar(erro: Error) {
+    if (erro instanceof ApiError && erro.status === 400) {
+      formulario.setError('senha_atual', { message: erro.message })
+      return
+    }
+    if (erro instanceof ApiError && erro.status === 409) {
+      formulario.setError('email', { message: 'Esse email já está em uso' })
+      return
+    }
+    if (tratouErrosDeCampo(erro, formulario)) return
+    toast.error(mensagemDeErro(erro))
+  }
 
-    atualizar.mutate(dados, {
+  function salvar(valores: ValoresDoFormulario) {
+    atualizar.mutate(dadosAlterados(valores, formulario.formState.dirtyFields), {
       onSuccess: (atualizado) => {
-        form.reset(valoresDe(atualizado))
+        formulario.reset(valoresDe(atualizado))
         toast.success('Perfil atualizado')
       },
-      onError: (erro) => {
-        if (erro instanceof ApiError && erro.status === 400) {
-          form.setError('senha_atual', { message: erro.message })
-          return
-        }
-        if (erro instanceof ApiError && erro.status === 409) {
-          form.setError('email', { message: 'Esse email já está em uso' })
-          return
-        }
-        if (marcarErrosDeCampo(erro, form)) return
-        toast.error(mensagemDeErro(erro))
-      },
+      onError: aoErrar,
     })
   }
+
+  const trocandoSenha = senha !== ''
 
   return (
     <form
       noValidate
-      onSubmit={(e) => {
-        void form.handleSubmit(salvar)(e)
+      onSubmit={(evento) => {
+        void formulario.handleSubmit(salvar)(evento)
       }}
     >
       <FieldGroup>
-        <Campo control={form.control} name="nome" label="Nome" autoComplete="name" />
+        <Campo control={formulario.control} name="nome" label="Nome" autoComplete="name" />
         <Campo
-          control={form.control}
+          control={formulario.control}
           name="email"
           label="Email"
           type="email"
           autoComplete="email"
         />
         <Campo
-          control={form.control}
+          control={formulario.control}
           name="telefone"
           label="Telefone"
           type="tel"
           autoComplete="tel"
         />
         <Campo
-          control={form.control}
+          control={formulario.control}
           name="senha"
           label="Nova senha"
           type="password"
           autoComplete="new-password"
           descricao="Deixe em branco pra manter a senha atual."
         />
-        {senha !== '' && (
+        {trocandoSenha && (
           <Campo
-            control={form.control}
+            control={formulario.control}
             name="senha_atual"
             label="Senha atual"
             type="password"
             autoComplete="current-password"
           />
         )}
-        <Button type="submit" disabled={!form.formState.isDirty || atualizar.isPending}>
+        <Button type="submit" disabled={!formulario.formState.isDirty || atualizar.isPending}>
           {atualizar.isPending ? 'Salvando…' : 'Salvar'}
         </Button>
       </FieldGroup>
@@ -180,12 +192,12 @@ function PerfilForm({ usuario }: { usuario: Usuario }) {
 }
 
 export default function Perfil() {
-  const { usuario, logout } = useAuth()
+  const { usuario, sair } = useAutenticacao()
   if (!usuario) return null
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <ScreenHeader title="Perfil" actions={<ThemeToggle />} />
+      <CabecalhoDeTela title="Perfil" actions={<AlternadorDeTema />} />
 
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
         <Avatar className="size-32 lg:size-40">
@@ -195,15 +207,15 @@ export default function Perfil() {
         <h2 className="text-lg font-bold text-foreground lg:text-xl">Informações do perfil</h2>
       </div>
 
-      <PerfilForm usuario={usuario} />
+      <FormularioDePerfil usuario={usuario} />
 
       <Button
         type="button"
         variant="destructive"
         className="mt-4 w-full"
-        disabled={logout.isPending}
+        disabled={sair.isPending}
         onClick={() => {
-          logout.mutate(undefined, {
+          sair.mutate(undefined, {
             onError: () => toast.error('Não foi possível sair. Tente de novo.'),
           })
         }}

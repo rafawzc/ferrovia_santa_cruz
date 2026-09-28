@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:where(.black, .black *));
+@custom-variant dark (&:where(.escuro, .escuro *));
 
 @theme inline {
   --color-background: var(--background);
@@ -75,7 +75,7 @@
   --delay-foreground: #ffffff;
 }
 
-.black {
+.escuro {
   --background: #130f0c;
   --foreground: #f7f2ee;
   --card: #3a2f27;

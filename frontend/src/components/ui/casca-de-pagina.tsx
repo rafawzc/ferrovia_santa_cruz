@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { AlertTriangle, BarChart3, Box, CircleUserRound, LayoutGrid, User } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAutenticacao } from '@/contexts/Autenticacao'
 import type { Papel } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -18,8 +18,9 @@ const NAV = [
 ]
 
 function Dock() {
-  const { usuario } = useAuth()
-  const itens = NAV.filter(({ papeis }) => !usuario || papeis.includes(usuario.papel))
+  const { usuario } = useAutenticacao()
+  if (!usuario) return null
+  const itens = NAV.filter(({ papeis }) => papeis.includes(usuario.papel))
   return (
     <nav
       aria-label="Navegação principal"
@@ -64,7 +65,7 @@ function Dock() {
   )
 }
 
-export function PageShell({ children }: { children: ReactNode }) {
+export function CascaDePagina({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-background pb-28 text-foreground">
       <main className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">{children}</main>

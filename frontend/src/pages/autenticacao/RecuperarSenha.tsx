@@ -3,27 +3,27 @@ import { ArrowLeft } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { z } from 'zod'
-import { AuthLayout } from '@/components/ui/auth-layout'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { LayoutDeAutenticacao } from '@/components/ui/layout-de-autenticacao'
 import { useRecuperarSenha } from '@/hooks/auth'
 
-const schema = z.object({
+const esquema = z.object({
   email: z.email('Email inválido'),
 })
 
-type FormValues = z.infer<typeof schema>
+type ValoresDoFormulario = z.infer<typeof esquema>
 
 export default function RecuperarSenha() {
   const recuperar = useRecuperarSenha()
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const formulario = useForm<ValoresDoFormulario>({
+    resolver: zodResolver(esquema),
     defaultValues: { email: '' },
   })
 
   return (
-    <AuthLayout
+    <LayoutDeAutenticacao
       title="Recuperar Senha"
       description="Informe o e-mail da sua conta. Se ele estiver cadastrado, enviaremos as instruções pra redefinir a senha."
     >
@@ -35,7 +35,7 @@ export default function RecuperarSenha() {
         <form
           noValidate
           onSubmit={(e) => {
-            void form.handleSubmit(({ email }) => {
+            void formulario.handleSubmit(({ email }) => {
               recuperar.mutate(email)
             })(e)
           }}
@@ -43,7 +43,7 @@ export default function RecuperarSenha() {
           <FieldGroup>
             <Controller
               name="email"
-              control={form.control}
+              control={formulario.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="recuperar-email">Email</FieldLabel>
@@ -74,6 +74,6 @@ export default function RecuperarSenha() {
           Voltar para o login
         </Link>
       </Button>
-    </AuthLayout>
+    </LayoutDeAutenticacao>
   )
 }

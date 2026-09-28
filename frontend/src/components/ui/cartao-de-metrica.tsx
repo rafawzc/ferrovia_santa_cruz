@@ -3,20 +3,20 @@ import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-const TONE = {
-  success: { dot: 'bg-success', label: 'Normal' },
-  warning: { dot: 'bg-warning', label: 'Atenção' },
-  danger: { dot: 'bg-danger', label: 'Crítico' },
+const STATUS = {
+  normal: { dot: 'bg-success', label: 'Normal' },
+  alerta: { dot: 'bg-warning', label: 'Atenção' },
+  falha: { dot: 'bg-danger', label: 'Crítico' },
 } as const
 
-interface MetricCardProps {
+interface CartaoDeMetricaProps {
   icon: LucideIcon
   label: string
   value: ReactNode
-  tone?: keyof typeof TONE
+  status?: keyof typeof STATUS
 }
 
-export function MetricCard({ icon: Icon, label, value, tone }: MetricCardProps) {
+export function CartaoDeMetrica({ icon: Icon, label, value, status }: CartaoDeMetricaProps) {
   return (
     <Card className="flex-row items-center gap-4 bg-accent p-4 text-accent-foreground">
       <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -26,9 +26,9 @@ export function MetricCard({ icon: Icon, label, value, tone }: MetricCardProps) 
         <p className="truncate text-sm font-medium">{label}</p>
         <p className="text-xl font-bold">{value}</p>
       </div>
-      {tone && (
-        <span className={cn('size-3 shrink-0 rounded-full', TONE[tone].dot)}>
-          <span className="sr-only">{TONE[tone].label}</span>
+      {status && (
+        <span className={cn('size-3 shrink-0 rounded-full', STATUS[status].dot)}>
+          <span className="sr-only">{STATUS[status].label}</span>
         </span>
       )}
     </Card>
