@@ -174,6 +174,21 @@ Regra escrita sem ferramenta = regra ignorada. Aqui o lint impõe:
 - **Back** — `ruff` (lint + format) + `scripts/check_comments.py` (zero comentário em `.py`).
 - **CI** — `.github/workflows/ci.yml` roda `./fsc check` em todo PR e push na `main`. Vermelho não entra.
 
+### Nomes em português (não tem lint — é disciplina)
+
+**Todo identificador que NÓS escrevemos é em português**, front e back: arquivo, componente, função, variável, tipo, prop, campo de contexto. Nada de meio-a-meio.
+
+Fica em inglês só o que é **contrato de terceiro** — mudar quebra:
+
+- API de lib (`useState`, `useQuery`, `data`, `error`, `isPending`, `onSuccess`, `queryKey`, `handleSubmit`, `children`, `className`) e prop de DOM/JSX (`name`, `value`, `onChange`, `onClick`, `type`, `id`, `variant`).
+- Primitivos shadcn vendored em `components/ui/` e o helper `cn` de `lib/utils.ts`.
+- String de URL (`/auth/login`), chave de payload da API (`senha_atual`, `cargo_id`) e nome de campo de formulário que vira essa chave.
+- Sufixo `Props` em tipo de componente e `status` (termo do domínio e do HTTP).
+
+**Prop nossa de callback usa prefixo `ao`, não `on`**: `aoFechar`, `aoSalvar`, `aoAbrir`, `aoErrar`.
+
+Detalhe e exemplos do front: [`frontend/CLAUDE.md`](../frontend/CLAUDE.md) (seção *Nomes em português*).
+
 ## Testes
 
 ```bash

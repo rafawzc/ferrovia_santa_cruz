@@ -24,7 +24,7 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 
 - **Estrito em todo recurso: router → service → repo `Protocol`.** Decisão do usuário (vale mais que o atalho antigo "router → repo quando não há regra"). Nenhum router nem `core/` importa de `app.repositories` (`grep -rn repositories app/routers` tem que dar vazio).
 - **Service** = `services/<recurso>.py` com `class <Recurso>Repo(Protocol)` + `class <Recurso>Service` que recebe o repo no `__init__`. Sem regra → métodos que só repassam (`linhas`, `cargas`, `alertas`, `dashboard`) — esperado, não é bloat. Com regra → `usuarios` (hash, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE).
-- **Fiação só em `app/deps.py`:** `<recurso>_repo()` devolve o `<Recurso>MySQL`; `_<recurso>(repo=Depends(<recurso>_repo))` monta o service; `<Recurso> = Annotated[<Recurso>Service, Depends(_<recurso>)]` é o que o router usa (`servico: Linhas`).
+- **Fiação só em `app/deps.py`:** `<recurso>_repo()` devolve o `<Recurso>MySQL`; `_<recurso>_servico(repo=Depends(<recurso>_repo))` monta o service; `<Recurso> = Annotated[<Recurso>Service, Depends(_<recurso>_servico)]` é o que o router usa (`servico: Linhas`).
 - **Teste troca o repo, não o service:** `app.dependency_overrides[deps.<recurso>_repo] = lambda: fake`. O service real roda em teste — a regra é coberta.
 - **Erro de integridade não é tratado no repo nem no service**: o `mysql.connector.errors.IntegrityError` sobe e o handler do `main.py` responde 409 (`1062` → "Registro duplicado", `1452` → "Referência inexistente"). Os fakes levantam o mesmo `IntegrityError` com o mesmo `errno` (`fakes.duplicado()`, `fakes.sem_referencia()`).
 - **Guard por papel** no `APIRouter(dependencies=[Depends(exige_papel(...))])`, não em cada rota. Sem cookie → 401 (`usuario_atual`), papel errado → 403.
@@ -32,12 +32,12 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 
 ## Como adicionar um endpoint
 
-1. **RED:** teste em `tests/test_<recurso>.py` usando `como(GESTAO|OPERACIONAL|CLIENTE)` e/ou `client` (anônimo). Cubra sucesso, 401, 403, 422 e 404/409 se couber.
+1. **RED:** teste em `tests/test_<recurso>.py` usando `como(ID_GESTAO|ID_OPERACIONAL|ID_CLIENTE)` e/ou `client` (anônimo). Cubra sucesso, 401, 403, 422 e 404/409 se couber.
 2. Fake novo em `tests/fakes.py` com os métodos do `Protocol`; registre em `conftest.py::client` (`app.dependency_overrides[deps.x_repo] = ...`). Fake com estado → instancie uma vez e sobrescreva com `lambda: instancia` (senão cada request pega um fake novo).
 3. **GREEN**, sempre as cinco peças:
    - `services/<recurso>.py`: `XRepo(Protocol)` + `XService(repo)` (repasse ou regra);
    - `repositories/<recurso>.py`: `XMySQL` (`with cursor() as cur`, `%s`/`%(nome)s`);
-   - `deps.py`: `x_repo()` → `XMySQL()`, `_x(repo)` → `XService(repo)`, alias `X = Annotated[XService, Depends(_x)]`;
+   - `deps.py`: `x_repo()` → `XMySQL()`, `_x_servico(repo)` → `XService(repo)`, alias `X = Annotated[XService, Depends(_x_servico)]`;
    - `routers/<recurso>.py`: Pydantic + guard, parâmetro `servico: X`, zero import de `repositories`;
    - inclua o router no laço do `main.py`.
 4. INSERT que precisa devolver a linha: faça o `SELECT ... WHERE id = %s` com `cur.lastrowid` **no mesmo `cursor()`** (mesma conexão/transação).

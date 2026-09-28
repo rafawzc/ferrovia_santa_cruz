@@ -4,7 +4,7 @@
 
 ## Em uma frase
 
-Tudo que desenha vive em `frontend/src/components/ui/`: primitivos do **shadcn/ui** (Radix + Tailwind v4) ajustados pra marca, e compostos do domínio (PageShell, StatusBadge…) montados em cima deles. Página só compõe esses componentes — não tem cor crua, controle cru, `style` nem valor arbitrário (o lint barra).
+Tudo que desenha vive em `frontend/src/components/ui/`: primitivos do **shadcn/ui** (Radix + Tailwind v4) ajustados pra marca, e compostos do domínio (`CascaDePagina`, `SeloDeStatus`…) montados em cima deles. Página só compõe esses componentes — não tem cor crua, controle cru, `style` nem valor arbitrário (o lint barra).
 
 ## Tokens
 
@@ -27,7 +27,7 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 | Dialog, AlertDialog | `dialog.tsx`, `alert-dialog.tsx` | modais de cadastro, confirmação | overlay pelo token |
 | Sheet | `sheet.tsx` | gaveta mobile (detalhe de vagão/manutenção) | overlay pelo token |
 | Table | `table.tsx` | tabela de carga no desktop | — |
-| Sonner (Toaster) | `sonner.tsx` | toasts de sucesso/erro | tema lido do `ThemeContext` |
+| Sonner (Toaster) | `sonner.tsx` | toasts de sucesso/erro | tema lido de `@/contexts/Tema` |
 | Avatar | `avatar.tsx` | foto de funcionário/perfil | — |
 | Skeleton | `skeleton.tsx` | carregamento | — |
 | Tooltip | `tooltip.tsx` | rótulos do dock | — |
@@ -38,24 +38,24 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 
 | Componente | Arquivo | O que faz |
 |------------|---------|-----------|
-| `PageShell` | `page-shell.tsx` | Layout das telas logadas: `main` centrado (`max-w-6xl`) + dock fixo embaixo (porta do `BottomNav`: item ativo em pílula com rótulo, tooltip nos outros, inclinação 3D). |
-| `AuthLayout` | `auth-layout.tsx` | Layout das telas de auth: logo + card arredondado no mobile; coluna 45% + foto no desktop. Props `title`, `description?`. |
-| `ScreenHeader` | `screen-header.tsx` | `h1` da tela, botão voltar opcional (`back`), slot `actions`. |
-| `StatusBadge` | `status-badge.tsx` | Status do banco → rótulo/cor (L7): `normal alerta falha manutencao atraso fechado na_estacao ja_partiu`. Tipo `Status` exportado. |
-| `MetricCard` | `metric-card.tsx` | Indicador do dashboard: ícone, rótulo, valor, bolinha de `tone` (com texto pra leitor de tela). |
-| `LineCard` | `line-card.tsx` | Card de rota: "Rota {numero}", `StatusBadge`, ativo/inativo. |
-| `UserCard` | `user-card.tsx` | Card de funcionário do grid: foto, nome, cargo, ativo. Clicável. |
-| `ThemeToggle` | `theme-toggle.tsx` | Switch claro/escuro com sol/lua. |
-| `PasswordInput` | `password-input.tsx` | Input de senha com mostrar/ocultar. |
-| `LoadError` | `load-error.tsx` | Estado de erro de uma query (`role="alert"`) + `mensagemDeErro(error)`: `detail` da API ou "Sem conexão com o servidor". |
+| `CascaDePagina` | `casca-de-pagina.tsx` | Layout das telas logadas: `main` centrado (`max-w-6xl`) + dock fixo embaixo (porta do `BottomNav`: item ativo em pílula com rótulo, tooltip nos outros, inclinação 3D). |
+| `LayoutDeAutenticacao` | `layout-de-autenticacao.tsx` | Layout das telas de auth: logo + card arredondado no mobile; coluna 45% + foto no desktop. Props `title`, `description?`. |
+| `CabecalhoDeTela` | `cabecalho-de-tela.tsx` | `h1` da tela, botão voltar opcional (`temVoltar`), slot `actions`. |
+| `SeloDeStatus` | `selo-de-status.tsx` | Status do banco → rótulo/cor (L7): `normal alerta falha manutencao atraso fechado na_estacao ja_partiu`. Tipo `Status` exportado. |
+| `CartaoDeMetrica` | `cartao-de-metrica.tsx` | Indicador do dashboard: ícone, rótulo, valor, bolinha de `status` (com texto pra leitor de tela). |
+| `CartaoDeLinha` | `cartao-de-linha.tsx` | Card de rota: "Rota {numero}", `SeloDeStatus`, ativo/inativo. |
+| `CartaoDeUsuario` | `cartao-de-usuario.tsx` | Card de funcionário do grid: foto, nome, cargo, ativo. Clicável. |
+| `AlternadorDeTema` | `alternador-de-tema.tsx` | Switch claro/escuro com sol/lua. |
+| `CampoDeSenha` | `campo-de-senha.tsx` | Input de senha com mostrar/ocultar. |
+| `ErroDeCarregamento` | `erro-de-carregamento.tsx` | Estado de erro de uma query (`role="alert"`) + `mensagemDeErro(error)`: `detail` da API ou "Sem conexão com o servidor". |
 
 ## Como montar uma tela
 
 1. Página em `src/pages/**/*.tsx`, importando só de `@/components/ui/*` (e libs), sempre por `@/`.
-2. Tela logada: **não** embrulhe em `<PageShell>` — o `ProtectedLayout` do `App.tsx` já envolve toda rota logada (embrulhar de novo dá dois docks). Comece com `<ScreenHeader title="…" />`. Tela de auth: `<AuthLayout title="…">`. Só a vitrine `/ui` (rota pública) monta o `PageShell` na mão.
+2. Tela logada: **não** embrulhe em `<CascaDePagina>` — o `LayoutProtegido` do `Aplicacao.tsx` já envolve toda rota logada (embrulhar de novo dá dois docks). Comece com `<CabecalhoDeTela title="…" />`. Tela de auth: `<LayoutDeAutenticacao title="…">`. Só a vitrine `/ui` (rota pública) monta a `CascaDePagina` na mão.
 3. Layout mobile-first com utilitários (`grid grid-cols-2 lg:grid-cols-4`), cor só por token.
-4. Formulário: `useForm({ resolver: zodResolver(schema) })` + `<Controller>` renderizando `<Field data-invalid>` / `<FieldLabel>` / controle com `aria-invalid` / `<FieldError errors={[fieldState.error]} />`. Exemplo completo em `src/pages/Vitrine.tsx` (`DemoForm`).
-5. Confirmação destrutiva: `AlertDialog`. Feedback: `toast()` do `sonner` (o `<Toaster />` já está no `main.tsx`). Erro de carregamento: `<LoadError error={error} />`. `422` da API: `if (marcarErrosDeCampo(erro, form)) return` (de `@/lib/api`). Data `criado_em`: `dataHora()` de `@/lib/utils`.
+4. Formulário: `useForm({ resolver: zodResolver(esquema) })` + `<Controller>` renderizando `<Field data-invalid>` / `<FieldLabel>` / controle com `aria-invalid` / `<FieldError errors={[fieldState.error]} />`. Exemplo completo em `src/pages/Vitrine.tsx` (`FormularioDemo`).
+5. Confirmação destrutiva: `AlertDialog`. Feedback: `toast()` do `sonner` (o `<Toaster />` já está no `principal.tsx`). Erro de carregamento: `<ErroDeCarregamento error={error} />`. `422` da API: `if (tratouErrosDeCampo(erro, formulario)) return` (de `@/lib/api`). Data `criado_em`: `dataHora()` de `@/lib/utils`.
 6. Faltou algo? Primitivo novo → `./fsc ui add <nome>`; padrão do domínio que se repete → composto novo em `ui/`. Nunca estilo solto na página.
 7. Confira em `/ui` e na própria tela, 414px e 1440px, nos dois temas.
 

@@ -63,7 +63,7 @@ export default defineConfig(
         {
           paths: [
             { name: 'cn', message: 'Use cn de @/lib/utils (o registry do shadcn gera "cn").' },
-            { name: 'next-themes', message: 'Use useTheme de @/contexts/ThemeContext.' },
+            { name: 'next-themes', message: 'Use useTema de @/contexts/Tema.' },
           ],
           patterns: [IMPORT_PAGES],
         },

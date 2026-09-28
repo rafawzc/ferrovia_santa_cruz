@@ -83,7 +83,7 @@ class LinhasMySQL:
             return cur.fetchall()
 ```
 
-Com parâmetro: `cur.execute("... WHERE u.id = %s", (id_,))`. Com vários campos, placeholder nomeado + `dict` (também parametrizado): `cur.execute("INSERT ... VALUES (%(nome)s, %(email)s)", dados)`.
+Com parâmetro: `cur.execute("... WHERE u.id = %s", (usuario_id,))`. Com vários campos, placeholder nomeado + `dict` (também parametrizado): `cur.execute("INSERT ... VALUES (%(nome)s, %(email)s)", usuario)`.
 
 Conflito de integridade (e-mail duplicado, FK pra nada) **não** é tratado no repo: o `IntegrityError` sobe e o handler do `main.py` responde `409`. Ver [`api.md`](api.md).
 

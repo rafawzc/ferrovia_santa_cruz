@@ -26,7 +26,7 @@
 
 **Contexto:** 11 componentes caseiros sem padrão (Button com ícone chumbado, Modal que não é dialog, Tabs sem ARIA). Precisamos de um design system que o grupo inteiro siga.
 
-**Decisão:** shadcn/ui. Primitivos shadcn e compostos do domínio (`StatusBadge`, `LineCard`, `PageShell`…) moram juntos em `src/components/ui/`. Tokens renomeados pro vocabulário shadcn (`--background`, `--primary`, `--muted`…) com a paleta marrom/bege. (L10, L11)
+**Decisão:** shadcn/ui. Primitivos shadcn e compostos do domínio (`SeloDeStatus`, `CartaoDeLinha`, `CascaDePagina`…) moram juntos em `src/components/ui/`. Tokens renomeados pro vocabulário shadcn (`--background`, `--primary`, `--muted`…) com a paleta marrom/bege. (L10, L11)
 
 **Porquê:** shadcn copia o código pro repo (não é lib fechada) — dá pra ajustar à paleta. Vem com a11y pronta (Radix por baixo): foco, teclado, ARIA. E fala Tailwind v4 nativo.
 

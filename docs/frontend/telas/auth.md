@@ -1,12 +1,12 @@
 # Telas de autenticação — Login, Cadastro, Recuperar senha
 
-Páginas em `frontend/src/pages/auth/*.tsx`, dentro do `PublicLayout` (`src/App.tsx`): quem já tem sessão nunca vê essas telas, é mandado pro início do papel. Layout = `AuthLayout` (logo + card no mobile, coluna + foto no desktop). Formulários com react-hook-form + zod + `Field`; senha com `PasswordInput`.
+Páginas em `frontend/src/pages/autenticacao/*.tsx`, dentro do `LayoutPublico` (`src/Aplicacao.tsx`): quem já tem sessão nunca vê essas telas, é mandado pro início do papel. Layout = `LayoutDeAutenticacao` (logo + card no mobile, coluna + foto no desktop). Formulários com react-hook-form + zod + `Field`; senha com `CampoDeSenha`.
 
 ## `/login` — `Login.tsx`
 
 - Campos: e-mail, senha (+ link "Esqueceu sua senha?" e "Criar Conta").
-- Envia `useAuth().login.mutate({ email, senha })` → `POST /api/auth/login`.
-- **Não navega.** O `login` grava `['me']`; o `PublicLayout` vê o usuário e redireciona (`state.de` ou `cliente → /perfil`, resto → `/admin`).
+- Envia `useAutenticacao().entrar.mutate({ email, senha })` → `POST /api/auth/login`.
+- **Não navega.** O `entrar` grava `['me']`; o `LayoutPublico` vê o usuário e redireciona (`state.de` ou `cliente → /perfil`, resto → `/admin`).
 - Erros (abaixo dos campos): `401` → "E-mail ou senha incorretos" (a API não diz qual dos dois errou); `403` → "Usuário desativado. Fale com a gestão."; outro → mensagem genérica.
 
 ## `/cadastro` — `Cadastro.tsx`

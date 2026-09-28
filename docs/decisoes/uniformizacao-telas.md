@@ -22,7 +22,7 @@ O Guia chegou depois do plano do grupo e é uma **uniformização mais rígida**
 | L4 | **`.html` do Guia = ID lógico de tela → página React** | Os nomes `login.html`, `rotas.html`… são identificadores de tela, não arquivos `.html`. Mapeiam pra páginas React (decisão já registrada no PLANO §1; reafirmada). |
 | L5 | **Obrigatórias sobem de 7 → 11** | Auth ganha `recupera_senha`; relatório vira `gera_relatorio` + `visualiza_relatorio`; `trens` e `sensores` viram telas próprias; `notificacoes_alertas` explícita. |
 | L6 | **Cor de status é fixa-semântica** (Guia §4.1) | normal=verde · atenção=amarelo · crítico=vermelho. Nunca tingida com a cor de marca. Resolve a pendência #2 do PLANO (guia monocromático sem cor de status). |
-| L7 | **Mapa de status do banco → rótulo/cor da UI** | `leitura_sensor.status_operacional`: `normal`→Normal/verde · `alerta`→Atenção/amarelo · `falha`→Crítico/vermelho. `linha.status`: `manutencao`→amarelo · `atraso`→laranja · `fechado`→vermelho · `na_estacao`/`ja_partiu`→verde (já no PLANO §3, `LineCard`). |
+| L7 | **Mapa de status do banco → rótulo/cor da UI** | `leitura_sensor.status_operacional`: `normal`→Normal/verde · `alerta`→Atenção/amarelo · `falha`→Crítico/vermelho. `linha.status`: `manutencao`→amarelo · `atraso`→laranja · `fechado`→vermelho · `na_estacao`/`ja_partiu`→verde (já no PLANO §3, hoje `CartaoDeLinha`). |
 
 ---
 
