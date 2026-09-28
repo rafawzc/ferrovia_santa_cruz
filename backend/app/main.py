@@ -16,7 +16,7 @@ CONFLITOS = {
 
 
 @app.exception_handler(IntegrityError)
-def conflito(request, erro: IntegrityError):
+def tratar_conflito(request, erro: IntegrityError):
     detalhe = CONFLITOS.get(erro.errno, "Conflito de integridade")
     return JSONResponse({"detail": detalhe}, status_code=409)
 

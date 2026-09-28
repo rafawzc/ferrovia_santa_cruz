@@ -1,6 +1,6 @@
 import pytest
 
-from tests.fakes import CLIENTE, GESTAO, OPERACIONAL
+from tests.fakes import ID_CLIENTE, ID_GESTAO, ID_OPERACIONAL
 
 CARGA = {
     "tipo": "Areia",
@@ -22,16 +22,16 @@ ROTAS = [
 
 @pytest.fixture
 def operacional(como):
-    return como(OPERACIONAL)
+    return como(ID_OPERACIONAL)
 
 
 @pytest.mark.parametrize(("metodo", "rota", "corpo"), ROTAS)
 def test_equipe_acessa_e_cliente_nao(como, metodo, rota, corpo):
-    for usuario_id in (GESTAO, OPERACIONAL):
+    for usuario_id in (ID_GESTAO, ID_OPERACIONAL):
         resposta = como(usuario_id).request(metodo, rota, json=corpo)
         assert resposta.status_code in (200, 201)
 
-    assert como(CLIENTE).request(metodo, rota, json=corpo).status_code == 403
+    assert como(ID_CLIENTE).request(metodo, rota, json=corpo).status_code == 403
 
 
 @pytest.mark.parametrize(("metodo", "rota", "corpo"), ROTAS)

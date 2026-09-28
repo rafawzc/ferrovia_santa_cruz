@@ -14,14 +14,14 @@ class AlertasMySQL:
             cur.execute(SELECT_ALERTA + " ORDER BY a.criado_em DESC, a.id DESC")
             return cur.fetchall()
 
-    def criar(self, dados):
+    def criar(self, alerta):
         with cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO alerta (linha_id, tempo_espera, motivo, status)
                 VALUES (%(linha_id)s, %(tempo_espera)s, %(motivo)s, %(status)s)
                 """,
-                dados,
+                alerta,
             )
             cur.execute(SELECT_ALERTA + " WHERE a.id = %s", (cur.lastrowid,))
             return cur.fetchone()

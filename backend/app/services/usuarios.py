@@ -4,13 +4,13 @@ from app.core.security import hash_senha, verificar_senha
 
 
 class UsuariosRepo(Protocol):
-    def por_id(self, id_: int) -> dict | None: ...
+    def por_id(self, usuario_id: int) -> dict | None: ...
     def por_email(self, email: str) -> dict | None: ...
     def listar(self) -> list[dict]: ...
     def listar_cargos(self) -> list[dict]: ...
-    def criar(self, dados: dict) -> int: ...
-    def atualizar(self, id_: int, dados: dict) -> None: ...
-    def desativar(self, id_: int) -> None: ...
+    def criar(self, usuario: dict) -> int: ...
+    def atualizar(self, usuario_id: int, usuario: dict) -> None: ...
+    def desativar(self, usuario_id: int) -> None: ...
 
 
 class CredenciaisInvalidas(Exception):
@@ -32,8 +32,8 @@ class UsuariosService:
     def __init__(self, repo: UsuariosRepo):
         self.repo = repo
 
-    def por_id(self, id_: int) -> dict | None:
-        return self.repo.por_id(id_)
+    def por_id(self, usuario_id: int) -> dict | None:
+        return self.repo.por_id(usuario_id)
 
     def listar(self) -> list[dict]:
         return self.repo.listar()
@@ -53,31 +53,33 @@ class UsuariosService:
         return usuario
 
     def cadastrar(self, nome: str, email: str, senha: str) -> dict:
-        dados = {"nome": nome, "email": email, "senha": senha, "cargo_id": None, "telefone": None}
-        return self.criar(dados)
+        return self.criar(
+            {"nome": nome, "email": email, "senha": senha, "cargo_id": None, "telefone": None}
+        )
 
-    def criar(self, dados: dict) -> dict:
-        return self.repo.por_id(self.repo.criar(_com_hash(dados)))
+    def criar(self, usuario: dict) -> dict:
+        return self.repo.por_id(self.repo.criar(_trocar_senha_por_hash(usuario)))
 
-    def atualizar(self, id_: int, dados: dict) -> dict | None:
-        if self.repo.por_id(id_) is None:
+    def atualizar(self, usuario_id: int, usuario: dict) -> dict | None:
+        if self.repo.por_id(usuario_id) is None:
             return None
-        self.repo.atualizar(id_, _com_hash(dados))
-        return self.repo.por_id(id_)
+        self.repo.atualizar(usuario_id, _trocar_senha_por_hash(usuario))
+        return self.repo.por_id(usuario_id)
 
     def atualizar_perfil(self, usuario: dict, dados: dict, senha_atual: str | None) -> dict:
         if dados["senha"] and not verificar_senha(senha_atual or "", usuario["senha_hash"]):
             raise SenhaAtualIncorreta
-        return self.atualizar(usuario["id"], {**dados, "cargo_id": None, "ativo": None})
+        sem_privilegios = {"cargo_id": None, "ativo": None}
+        return self.atualizar(usuario["id"], {**dados, **sem_privilegios})
 
-    def desativar(self, id_: int) -> bool:
-        if self.repo.por_id(id_) is None:
+    def desativar(self, usuario_id: int) -> bool:
+        if self.repo.por_id(usuario_id) is None:
             return False
-        self.repo.desativar(id_)
+        self.repo.desativar(usuario_id)
         return True
 
 
-def _com_hash(dados: dict) -> dict:
-    senha = dados["senha"]
-    sem_senha = {k: v for k, v in dados.items() if k != "senha"}
+def _trocar_senha_por_hash(usuario: dict) -> dict:
+    senha = usuario["senha"]
+    sem_senha = {k: v for k, v in usuario.items() if k != "senha"}
     return {**sem_senha, "senha_hash": hash_senha(senha) if senha else None}

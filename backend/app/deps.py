@@ -34,28 +34,28 @@ def dashboard_repo() -> DashboardRepo:
     return DashboardMySQL()
 
 
-def _usuarios(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
+def _usuarios_servico(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
     return UsuariosService(repo)
 
 
-def _linhas(repo: Annotated[LinhasRepo, Depends(linhas_repo)]) -> LinhasService:
+def _linhas_servico(repo: Annotated[LinhasRepo, Depends(linhas_repo)]) -> LinhasService:
     return LinhasService(repo)
 
 
-def _cargas(repo: Annotated[CargasRepo, Depends(cargas_repo)]) -> CargasService:
+def _cargas_servico(repo: Annotated[CargasRepo, Depends(cargas_repo)]) -> CargasService:
     return CargasService(repo)
 
 
-def _alertas(repo: Annotated[AlertasRepo, Depends(alertas_repo)]) -> AlertasService:
+def _alertas_servico(repo: Annotated[AlertasRepo, Depends(alertas_repo)]) -> AlertasService:
     return AlertasService(repo)
 
 
-def _dashboard(repo: Annotated[DashboardRepo, Depends(dashboard_repo)]) -> DashboardService:
+def _dashboard_servico(repo: Annotated[DashboardRepo, Depends(dashboard_repo)]) -> DashboardService:
     return DashboardService(repo)
 
 
-Usuarios = Annotated[UsuariosService, Depends(_usuarios)]
-Linhas = Annotated[LinhasService, Depends(_linhas)]
-Cargas = Annotated[CargasService, Depends(_cargas)]
-Alertas = Annotated[AlertasService, Depends(_alertas)]
-Dashboard = Annotated[DashboardService, Depends(_dashboard)]
+Usuarios = Annotated[UsuariosService, Depends(_usuarios_servico)]
+Linhas = Annotated[LinhasService, Depends(_linhas_servico)]
+Cargas = Annotated[CargasService, Depends(_cargas_servico)]
+Alertas = Annotated[AlertasService, Depends(_alertas_servico)]
+Dashboard = Annotated[DashboardService, Depends(_dashboard_servico)]

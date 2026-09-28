@@ -2,9 +2,14 @@ from mysql.connector.errors import IntegrityError
 
 from app.core.security import hash_senha
 
-CARGOS = {1: ("comum", "cliente"), 2: ("admin", "gestao"), 5: ("maquinista", "operacional")}
+CARGO_CLIENTE = 1
+CARGOS = {
+    CARGO_CLIENTE: ("comum", "cliente"),
+    2: ("admin", "gestao"),
+    5: ("maquinista", "operacional"),
+}
 SENHA = "ferrovia123"
-GESTAO, OPERACIONAL, CLIENTE, INATIVO = 1, 2, 3, 4
+ID_GESTAO, ID_OPERACIONAL, ID_CLIENTE, ID_INATIVO = 1, 2, 3, 4
 
 
 def duplicado():
@@ -20,10 +25,10 @@ class UsuariosFake:
         hash_ = hash_senha(SENHA)
         self.dados = {}
         for id_, nome, email, cargo_id, ativo in [
-            (GESTAO, "Ana Gestora", "ana@ferrovia.com", 2, True),
-            (OPERACIONAL, "Carlos Souza", "carlos@ferrovia.com", 5, True),
-            (CLIENTE, "Cliente Comum", "cliente@email.com", 1, True),
-            (INATIVO, "Ex Funcionario", "ex@ferrovia.com", 5, False),
+            (ID_GESTAO, "Ana Gestora", "ana@ferrovia.com", 2, True),
+            (ID_OPERACIONAL, "Carlos Souza", "carlos@ferrovia.com", 5, True),
+            (ID_CLIENTE, "Cliente Comum", "cliente@email.com", 1, True),
+            (ID_INATIVO, "Ex Funcionario", "ex@ferrovia.com", 5, False),
         ]:
             self.dados[id_] = {
                 "id": id_,
@@ -42,9 +47,14 @@ class UsuariosFake:
 
     def _valida(self, dados, ignorar_id=None):
         email = dados.get("email")
-        if any(u["email"] == email and u["id"] != ignorar_id for u in self.dados.values()):
+        email_em_uso = any(
+            u["email"] == email and u["id"] != ignorar_id for u in self.dados.values()
+        )
+        if email_em_uso:
             raise duplicado()
-        if dados.get("cargo_id") is not None and dados["cargo_id"] not in CARGOS:
+        cargo_id = dados.get("cargo_id")
+        cargo_inexistente = cargo_id is not None and cargo_id not in CARGOS
+        if cargo_inexistente:
             raise sem_referencia()
 
     def por_id(self, id_):
@@ -68,7 +78,7 @@ class UsuariosFake:
             "telefone": None,
             "foto_url": None,
             "ativo": True,
-            "cargo_id": 1,
+            "cargo_id": CARGO_CLIENTE,
             **{k: v for k, v in dados.items() if v is not None},
         }
         return id_
@@ -114,7 +124,9 @@ class CargasFake:
         return self.dados
 
     def criar(self, dados):
-        if dados["trem_id"] is not None and dados["trem_id"] not in TRENS:
+        trem_id = dados["trem_id"]
+        trem_inexistente = trem_id is not None and trem_id not in TRENS
+        if trem_inexistente:
             raise sem_referencia()
         carga = {**dados, "id": len(self.dados) + 1, "criado_em": AGORA}
         self.dados.append(carga)
@@ -139,10 +151,16 @@ class AlertasFake:
         return self.dados
 
     def criar(self, dados):
-        linha = next((li for li in LINHAS if li["id"] == dados["linha_id"]), None)
-        if linha is None:
+        linha_encontrada = next(
+            (linha for linha in LINHAS if linha["id"] == dados["linha_id"]), None
+        )
+        if linha_encontrada is None:
             raise sem_referencia()
-        alerta = {**dados, "id": len(self.dados) + 1, "linha_numero": linha["numero"]}
+        alerta = {
+            **dados,
+            "id": len(self.dados) + 1,
+            "linha_numero": linha_encontrada["numero"],
+        }
         alerta["criado_em"] = AGORA
         self.dados.insert(0, alerta)
         return alerta
