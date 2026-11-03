@@ -6,6 +6,7 @@ from app.repositories.alertas import AlertasMySQL
 from app.repositories.cargas import CargasMySQL
 from app.repositories.dashboard import DashboardMySQL
 from app.repositories.linhas import LinhasMySQL
+from app.repositories.relatorios import RelatoriosMySQL
 from app.repositories.sensores import SensoresMySQL
 from app.repositories.trens import TrensMySQL
 from app.repositories.usuarios import UsuariosMySQL
@@ -14,6 +15,7 @@ from app.services.alertas import AlertasRepo, AlertasService
 from app.services.cargas import CargasRepo, CargasService
 from app.services.dashboard import DashboardRepo, DashboardService
 from app.services.linhas import LinhasRepo, LinhasService
+from app.services.relatorios import RelatoriosRepo, RelatoriosService
 from app.services.sensores import SensoresRepo, SensoresService
 from app.services.trens import TrensRepo, TrensService
 from app.services.usuarios import UsuariosRepo, UsuariosService
@@ -52,6 +54,10 @@ def viagens_repo() -> ViagensRepo:
     return ViagensMySQL()
 
 
+def relatorios_repo() -> RelatoriosRepo:
+    return RelatoriosMySQL()
+
+
 def _usuarios_servico(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
     return UsuariosService(repo)
 
@@ -84,6 +90,12 @@ def _viagens_servico(repo: Annotated[ViagensRepo, Depends(viagens_repo)]) -> Via
     return ViagensService(repo)
 
 
+def _relatorios_servico(
+    repo: Annotated[RelatoriosRepo, Depends(relatorios_repo)],
+) -> RelatoriosService:
+    return RelatoriosService(repo)
+
+
 Usuarios = Annotated[UsuariosService, Depends(_usuarios_servico)]
 Linhas = Annotated[LinhasService, Depends(_linhas_servico)]
 Cargas = Annotated[CargasService, Depends(_cargas_servico)]
@@ -92,3 +104,4 @@ Dashboard = Annotated[DashboardService, Depends(_dashboard_servico)]
 Trens = Annotated[TrensService, Depends(_trens_servico)]
 Sensores = Annotated[SensoresService, Depends(_sensores_servico)]
 Viagens = Annotated[ViagensService, Depends(_viagens_servico)]
+Relatorios = Annotated[RelatoriosService, Depends(_relatorios_servico)]

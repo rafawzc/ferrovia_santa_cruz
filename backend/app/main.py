@@ -10,6 +10,7 @@ from app.routers import (
     cargas,
     dashboard,
     linhas,
+    relatorios,
     sensores,
     trens,
     usuarios,
@@ -17,7 +18,19 @@ from app.routers import (
 )
 
 app = FastAPI(title="Ferrovia Santa Cruz")
-for modulo in (auth, usuarios, linhas, cargas, alertas, dashboard, trens, sensores, viagens):
+MODULOS = (
+    auth,
+    usuarios,
+    linhas,
+    cargas,
+    alertas,
+    dashboard,
+    trens,
+    sensores,
+    viagens,
+    relatorios,
+)
+for modulo in MODULOS:
     app.include_router(modulo.router)
 
 CONFLITOS = {
