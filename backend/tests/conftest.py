@@ -12,6 +12,7 @@ from tests.fakes import (
     SensoresFake,
     TrensFake,
     UsuariosFake,
+    ViagensFake,
 )
 
 
@@ -23,14 +24,16 @@ def usuarios():
 @pytest.fixture
 def client(usuarios):
     app.dependency_overrides[deps.usuarios_repo] = lambda: usuarios
-    app.dependency_overrides[deps.linhas_repo] = LinhasFake
     app.dependency_overrides[deps.dashboard_repo] = DashboardFake
     cargas, alertas = CargasFake(), AlertasFake()
     trens, sensores = TrensFake(), SensoresFake()
     app.dependency_overrides[deps.cargas_repo] = lambda: cargas
     app.dependency_overrides[deps.alertas_repo] = lambda: alertas
+    linhas, viagens = LinhasFake(), ViagensFake()
     app.dependency_overrides[deps.trens_repo] = lambda: trens
     app.dependency_overrides[deps.sensores_repo] = lambda: sensores
+    app.dependency_overrides[deps.linhas_repo] = lambda: linhas
+    app.dependency_overrides[deps.viagens_repo] = lambda: viagens
     yield TestClient(app)
     app.dependency_overrides.clear()
 
