@@ -9,6 +9,7 @@ from tests.fakes import (
     CargasFake,
     DashboardFake,
     LinhasFake,
+    RelatoriosFake,
     SensoresFake,
     TrensFake,
     UsuariosFake,
@@ -31,6 +32,8 @@ def client(usuarios):
     app.dependency_overrides[deps.alertas_repo] = lambda: alertas
     app.dependency_overrides[deps.trens_repo] = lambda: trens
     app.dependency_overrides[deps.sensores_repo] = lambda: sensores
+    relatorios = RelatoriosFake()
+    app.dependency_overrides[deps.relatorios_repo] = lambda: relatorios
     yield TestClient(app)
     app.dependency_overrides.clear()
 

@@ -6,6 +6,7 @@ from app.repositories.alertas import AlertasMySQL
 from app.repositories.cargas import CargasMySQL
 from app.repositories.dashboard import DashboardMySQL
 from app.repositories.linhas import LinhasMySQL
+from app.repositories.relatorios import RelatoriosMySQL
 from app.repositories.sensores import SensoresMySQL
 from app.repositories.trens import TrensMySQL
 from app.repositories.usuarios import UsuariosMySQL
@@ -13,6 +14,7 @@ from app.services.alertas import AlertasRepo, AlertasService
 from app.services.cargas import CargasRepo, CargasService
 from app.services.dashboard import DashboardRepo, DashboardService
 from app.services.linhas import LinhasRepo, LinhasService
+from app.services.relatorios import RelatoriosRepo, RelatoriosService
 from app.services.sensores import SensoresRepo, SensoresService
 from app.services.trens import TrensRepo, TrensService
 from app.services.usuarios import UsuariosRepo, UsuariosService
@@ -46,6 +48,10 @@ def sensores_repo() -> SensoresRepo:
     return SensoresMySQL()
 
 
+def relatorios_repo() -> RelatoriosRepo:
+    return RelatoriosMySQL()
+
+
 def _usuarios_servico(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
     return UsuariosService(repo)
 
@@ -74,6 +80,12 @@ def _sensores_servico(repo: Annotated[SensoresRepo, Depends(sensores_repo)]) -> 
     return SensoresService(repo)
 
 
+def _relatorios_servico(
+    repo: Annotated[RelatoriosRepo, Depends(relatorios_repo)],
+) -> RelatoriosService:
+    return RelatoriosService(repo)
+
+
 Usuarios = Annotated[UsuariosService, Depends(_usuarios_servico)]
 Linhas = Annotated[LinhasService, Depends(_linhas_servico)]
 Cargas = Annotated[CargasService, Depends(_cargas_servico)]
@@ -81,3 +93,4 @@ Alertas = Annotated[AlertasService, Depends(_alertas_servico)]
 Dashboard = Annotated[DashboardService, Depends(_dashboard_servico)]
 Trens = Annotated[TrensService, Depends(_trens_servico)]
 Sensores = Annotated[SensoresService, Depends(_sensores_servico)]
+Relatorios = Annotated[RelatoriosService, Depends(_relatorios_servico)]

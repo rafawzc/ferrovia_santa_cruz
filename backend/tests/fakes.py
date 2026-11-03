@@ -1,3 +1,5 @@
+from datetime import date
+
 from mysql.connector.errors import IntegrityError
 
 from app.core.security import hash_senha
@@ -376,3 +378,49 @@ class SensoresFake:
         trem_id = sensor.get("trem_id")
         if trem_id is not None and _trem_por_id(trem_id) is None:
             raise sem_referencia()
+
+
+AGREGADOS = {
+    "desempenho": [
+        (1, date(2026, 10, 5), {"velocidade_media": 72.4, "velocidade_maxima": 81.1}),
+        (2, date(2026, 10, 9), {"velocidade_media": 78.5, "velocidade_maxima": 94.6}),
+    ],
+    "consumo": [(2, date(2026, 10, 9), {"consumo_total": 738.7, "consumo_medio": 369.35})],
+    "eficiencia": [
+        (1, date(2026, 10, 5), {"concluidas": 1, "canceladas": 0, "atrasadas": 1}),
+        (2, date(2026, 10, 9), {"concluidas": 2, "canceladas": 0, "atrasadas": 0}),
+    ],
+    "manutencao": [
+        (
+            1,
+            date(2026, 10, 5),
+            {
+                "total_alertas": 1,
+                "criticos": 1,
+                "atencao": 0,
+                "normais": 0,
+                "ultima_inspecao": "2026-08-02",
+            },
+        ),
+        (
+            2,
+            date(2026, 10, 9),
+            {
+                "total_alertas": 2,
+                "criticos": 1,
+                "atencao": 1,
+                "normais": 0,
+                "ultima_inspecao": "2026-09-14",
+            },
+        ),
+    ],
+}
+
+
+class RelatoriosFake:
+    def agregar(self, tipo, periodo):
+        return [
+            {"trem_prefixo": _trem_por_id(trem_id)["prefixo"], **medidas}
+            for trem_id, dia, medidas in AGREGADOS[tipo]
+            if periodo["inicio"] <= dia <= periodo["fim"] and periodo["trem_id"] in (None, trem_id)
+        ]
