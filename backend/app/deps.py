@@ -6,11 +6,15 @@ from app.repositories.alertas import AlertasMySQL
 from app.repositories.cargas import CargasMySQL
 from app.repositories.dashboard import DashboardMySQL
 from app.repositories.linhas import LinhasMySQL
+from app.repositories.sensores import SensoresMySQL
+from app.repositories.trens import TrensMySQL
 from app.repositories.usuarios import UsuariosMySQL
 from app.services.alertas import AlertasRepo, AlertasService
 from app.services.cargas import CargasRepo, CargasService
 from app.services.dashboard import DashboardRepo, DashboardService
 from app.services.linhas import LinhasRepo, LinhasService
+from app.services.sensores import SensoresRepo, SensoresService
+from app.services.trens import TrensRepo, TrensService
 from app.services.usuarios import UsuariosRepo, UsuariosService
 
 
@@ -34,6 +38,14 @@ def dashboard_repo() -> DashboardRepo:
     return DashboardMySQL()
 
 
+def trens_repo() -> TrensRepo:
+    return TrensMySQL()
+
+
+def sensores_repo() -> SensoresRepo:
+    return SensoresMySQL()
+
+
 def _usuarios_servico(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
     return UsuariosService(repo)
 
@@ -54,8 +66,18 @@ def _dashboard_servico(repo: Annotated[DashboardRepo, Depends(dashboard_repo)]) 
     return DashboardService(repo)
 
 
+def _trens_servico(repo: Annotated[TrensRepo, Depends(trens_repo)]) -> TrensService:
+    return TrensService(repo)
+
+
+def _sensores_servico(repo: Annotated[SensoresRepo, Depends(sensores_repo)]) -> SensoresService:
+    return SensoresService(repo)
+
+
 Usuarios = Annotated[UsuariosService, Depends(_usuarios_servico)]
 Linhas = Annotated[LinhasService, Depends(_linhas_servico)]
 Cargas = Annotated[CargasService, Depends(_cargas_servico)]
 Alertas = Annotated[AlertasService, Depends(_alertas_servico)]
 Dashboard = Annotated[DashboardService, Depends(_dashboard_servico)]
+Trens = Annotated[TrensService, Depends(_trens_servico)]
+Sensores = Annotated[SensoresService, Depends(_sensores_servico)]

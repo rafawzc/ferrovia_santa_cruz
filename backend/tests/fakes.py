@@ -20,6 +20,10 @@ def sem_referencia():
     return IntegrityError(msg="Cannot add or update a child row", errno=1452)
 
 
+def em_uso():
+    return IntegrityError(msg="Cannot delete or update a parent row", errno=1451)
+
+
 class UsuariosFake:
     def __init__(self):
         hash_ = hash_senha(SENHA)
@@ -97,7 +101,80 @@ LINHAS = [
     {"id": 2, "numero": "2645", "status": "atraso", "ativo": True},
     {"id": 3, "numero": "9845", "status": "fechado", "ativo": False},
 ]
-TRENS = {1, 2, 3}
+TRENS_INICIAIS = [
+    {
+        "id": 1,
+        "prefixo": "TR-118",
+        "modelo": "EMD SD70M",
+        "ano": 2014,
+        "capacidade_t": 1650.5,
+        "status": "ativo",
+        "ultima_inspecao": "2026-08-02",
+        "linha_id": 2,
+        "total_sensores": 2,
+    },
+    {
+        "id": 2,
+        "prefixo": "TR-204",
+        "modelo": "GE AC44i",
+        "ano": 2018,
+        "capacidade_t": 1800.0,
+        "status": "manutencao",
+        "ultima_inspecao": "2026-09-14",
+        "linha_id": 1,
+        "total_sensores": 1,
+    },
+    {
+        "id": 3,
+        "prefixo": "TR-301",
+        "modelo": "Villares V8 SD",
+        "ano": 2009,
+        "capacidade_t": 980.75,
+        "status": "parado",
+        "ultima_inspecao": None,
+        "linha_id": None,
+        "total_sensores": 0,
+    },
+]
+TRENS = {trem["id"] for trem in TRENS_INICIAIS}
+SENSORES_INICIAIS = [
+    {
+        "id": 1,
+        "codigo": "S-VEL-001",
+        "nome": "Velocimetro dianteiro",
+        "tipo_dado": "velocidade",
+        "localizacao": "Cabine",
+        "segmento": "Jaragua - Joinville",
+        "trem_id": 1,
+        "ultima_leitura_status": "alerta",
+        "ultima_leitura_valor": 94.6,
+        "ultima_leitura_data": AGORA,
+    },
+    {
+        "id": 2,
+        "codigo": "S-TEMP-001",
+        "nome": "Temperatura do motor",
+        "tipo_dado": "temperatura",
+        "localizacao": "Motor",
+        "segmento": "Jaragua - Joinville",
+        "trem_id": 1,
+        "ultima_leitura_status": "falha",
+        "ultima_leitura_valor": 115.7,
+        "ultima_leitura_data": AGORA,
+    },
+    {
+        "id": 3,
+        "codigo": "S-LOC-001",
+        "nome": "Localizador GPS",
+        "tipo_dado": "localizacao",
+        "localizacao": "Cabine",
+        "segmento": None,
+        "trem_id": 2,
+        "ultima_leitura_status": None,
+        "ultima_leitura_valor": None,
+        "ultima_leitura_data": None,
+    },
+]
 
 
 class LinhasFake:
@@ -174,3 +251,128 @@ class DashboardFake:
             "sensores": 4,
             "velocidade_media": 90.4,
         }
+
+
+def _numero_da_linha(linha_id):
+    return next((linha["numero"] for linha in LINHAS if linha["id"] == linha_id), None)
+
+
+def _com_trem(sensor):
+    trem = _trem_por_id(sensor["trem_id"])
+    return {**sensor, "trem_prefixo": trem["prefixo"], "trem_modelo": trem["modelo"]}
+
+
+def _trem_por_id(trem_id):
+    return next((trem for trem in TRENS_INICIAIS if trem["id"] == trem_id), None)
+
+
+class TrensFake:
+    def __init__(self):
+        self.dados = [
+            {**trem, "linha_numero": _numero_da_linha(trem["linha_id"])} for trem in TRENS_INICIAIS
+        ]
+
+    def listar(self, busca, status):
+        alvo = (busca or "").lower()
+        achados = [
+            trem
+            for trem in self.dados
+            if alvo in trem["prefixo"].lower() or alvo in trem["modelo"].lower()
+        ]
+        if status is not None:
+            achados = [trem for trem in achados if trem["status"] == status]
+        return sorted(achados, key=lambda trem: trem["prefixo"])
+
+    def por_id(self, trem_id):
+        return next((trem for trem in self.dados if trem["id"] == trem_id), None)
+
+    def criar(self, trem):
+        self._valida(trem)
+        novo = {
+            **trem,
+            "id": max(existente["id"] for existente in self.dados) + 1,
+            "linha_numero": _numero_da_linha(trem["linha_id"]),
+            "total_sensores": 0,
+        }
+        self.dados.append(novo)
+        return novo
+
+    def atualizar(self, trem_id, trem):
+        enviados = {campo: valor for campo, valor in trem.items() if valor is not None}
+        self._valida(enviados, ignorar_id=trem_id)
+        alvo = self.por_id(trem_id)
+        alvo.update(enviados)
+        alvo["linha_numero"] = _numero_da_linha(alvo["linha_id"])
+
+    def excluir(self, trem_id):
+        alvo = self.por_id(trem_id)
+        if alvo["total_sensores"]:
+            raise em_uso()
+        self.dados.remove(alvo)
+
+    def _valida(self, trem, ignorar_id=None):
+        prefixo = trem.get("prefixo")
+        repetido = any(
+            existente["prefixo"] == prefixo and existente["id"] != ignorar_id
+            for existente in self.dados
+        )
+        if repetido:
+            raise duplicado()
+        linha_id = trem.get("linha_id")
+        if linha_id is not None and _numero_da_linha(linha_id) is None:
+            raise sem_referencia()
+
+
+class SensoresFake:
+    def __init__(self):
+        self.dados = [_com_trem(sensor) for sensor in SENSORES_INICIAIS]
+
+    def listar(self, tipo, trem_id):
+        achados = [
+            sensor
+            for sensor in self.dados
+            if (tipo is None or sensor["tipo_dado"] == tipo)
+            and (trem_id is None or sensor["trem_id"] == trem_id)
+        ]
+        return sorted(achados, key=lambda sensor: (sensor["trem_prefixo"], sensor["codigo"]))
+
+    def por_id(self, sensor_id):
+        return next((sensor for sensor in self.dados if sensor["id"] == sensor_id), None)
+
+    def criar(self, sensor):
+        self._valida(sensor)
+        novo = _com_trem(
+            {
+                **sensor,
+                "id": max(existente["id"] for existente in self.dados) + 1,
+                "ultima_leitura_status": None,
+                "ultima_leitura_valor": None,
+                "ultima_leitura_data": None,
+            }
+        )
+        self.dados.append(novo)
+        return novo
+
+    def atualizar(self, sensor_id, sensor):
+        enviados = {campo: valor for campo, valor in sensor.items() if valor is not None}
+        self._valida(enviados, ignorar_id=sensor_id)
+        alvo = self.por_id(sensor_id)
+        alvo.update(_com_trem({**alvo, **enviados}))
+
+    def excluir(self, sensor_id):
+        alvo = self.por_id(sensor_id)
+        if alvo["ultima_leitura_data"] is not None:
+            raise em_uso()
+        self.dados.remove(alvo)
+
+    def _valida(self, sensor, ignorar_id=None):
+        codigo = sensor.get("codigo")
+        repetido = any(
+            existente["codigo"] == codigo and existente["id"] != ignorar_id
+            for existente in self.dados
+        )
+        if repetido:
+            raise duplicado()
+        trem_id = sensor.get("trem_id")
+        if trem_id is not None and _trem_por_id(trem_id) is None:
+            raise sem_referencia()
