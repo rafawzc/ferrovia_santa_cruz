@@ -9,6 +9,15 @@ const STATUS = {
   fechado: { label: 'Fechado', variant: 'danger' },
   na_estacao: { label: 'Na estação', variant: 'success' },
   ja_partiu: { label: 'Já partiu', variant: 'success' },
+  atencao: { label: 'Atenção', variant: 'warning' },
+  critico: { label: 'Crítico', variant: 'danger' },
+  ativo: { label: 'Ativo', variant: 'success' },
+  parado: { label: 'Parado', variant: 'danger' },
+  programada: { label: 'Programada', variant: 'outline' },
+  em_andamento: { label: 'Em andamento', variant: 'success' },
+  concluida: { label: 'Concluída', variant: 'secondary' },
+  cancelada: { label: 'Cancelada', variant: 'danger' },
+  atrasada: { label: 'Atrasada', variant: 'delay' },
 } as const
 
 export type Status = keyof typeof STATUS

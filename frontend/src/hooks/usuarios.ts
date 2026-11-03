@@ -34,3 +34,7 @@ export function useDesativarUsuario() {
   const invalidar = useInvalidarUsuariosEMe()
   return useMutation({ mutationFn: api.usuarios.desativar, onSuccess: invalidar })
 }
+
+export function useSenhaTemporaria() {
+  return useMutation({ mutationFn: api.usuarios.senhaTemporaria })
+}
