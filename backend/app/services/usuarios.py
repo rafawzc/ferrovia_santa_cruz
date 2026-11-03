@@ -1,3 +1,4 @@
+import secrets
 from typing import Protocol
 
 from app.core.security import hash_senha, verificar_senha
@@ -11,6 +12,8 @@ class UsuariosRepo(Protocol):
     def criar(self, usuario: dict) -> int: ...
     def atualizar(self, usuario_id: int, usuario: dict) -> None: ...
     def desativar(self, usuario_id: int) -> None: ...
+    def trocar_senha(self, usuario_id: int, senha_hash: str) -> None: ...
+    def contar_administradores_ativos(self) -> int: ...
 
 
 class CredenciaisInvalidas(Exception):
@@ -25,7 +28,17 @@ class SenhaAtualIncorreta(Exception):
     pass
 
 
+class AutoDesativacaoProibida(Exception):
+    pass
+
+
+class UltimoAdministradorAtivo(Exception):
+    pass
+
+
 _HASH_FALSO = hash_senha("iguala-o-tempo-de-resposta-de-email-inexistente")
+_ALFABETO_TEMPORARIO = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
+_TAMANHO_TEMPORARIO = 12
 
 
 class UsuariosService:
@@ -60,9 +73,12 @@ class UsuariosService:
     def criar(self, usuario: dict) -> dict:
         return self.repo.por_id(self.repo.criar(_trocar_senha_por_hash(usuario)))
 
-    def atualizar(self, usuario_id: int, usuario: dict) -> dict | None:
-        if self.repo.por_id(usuario_id) is None:
+    def atualizar(self, usuario_id: int, usuario: dict, autor_id: int) -> dict | None:
+        alvo = self.repo.por_id(usuario_id)
+        if alvo is None:
             return None
+        if usuario["ativo"] is False:
+            self._exigir_desativacao_permitida(alvo, autor_id)
         self.repo.atualizar(usuario_id, _trocar_senha_por_hash(usuario))
         return self.repo.por_id(usuario_id)
 
@@ -70,13 +86,28 @@ class UsuariosService:
         if dados["senha"] and not verificar_senha(senha_atual or "", usuario["senha_hash"]):
             raise SenhaAtualIncorreta
         sem_privilegios = {"cargo_id": None, "ativo": None}
-        return self.atualizar(usuario["id"], {**dados, **sem_privilegios})
+        return self.atualizar(usuario["id"], {**dados, **sem_privilegios}, usuario["id"])
 
-    def desativar(self, usuario_id: int) -> bool:
-        if self.repo.por_id(usuario_id) is None:
+    def desativar(self, usuario_id: int, autor_id: int) -> bool:
+        alvo = self.repo.por_id(usuario_id)
+        if alvo is None:
             return False
+        self._exigir_desativacao_permitida(alvo, autor_id)
         self.repo.desativar(usuario_id)
         return True
+
+    def gerar_senha_temporaria(self, usuario_id: int) -> str | None:
+        if self.repo.por_id(usuario_id) is None:
+            return None
+        senha = "".join(secrets.choice(_ALFABETO_TEMPORARIO) for _ in range(_TAMANHO_TEMPORARIO))
+        self.repo.trocar_senha(usuario_id, hash_senha(senha))
+        return senha
+
+    def _exigir_desativacao_permitida(self, alvo: dict, autor_id: int) -> None:
+        if alvo["papel"] == "gestao" and self.repo.contar_administradores_ativos() <= 1:
+            raise UltimoAdministradorAtivo
+        if alvo["id"] == autor_id:
+            raise AutoDesativacaoProibida
 
 
 def _trocar_senha_por_hash(usuario: dict) -> dict:
