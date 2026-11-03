@@ -4,10 +4,10 @@ from mysql.connector import errorcode
 from mysql.connector.errors import IntegrityError
 
 from app.db import BancoIndisponivel
-from app.routers import alertas, auth, cargas, dashboard, linhas, usuarios
+from app.routers import alertas, auth, cargas, dashboard, linhas, usuarios, viagens
 
 app = FastAPI(title="Ferrovia Santa Cruz")
-for modulo in (auth, usuarios, linhas, cargas, alertas, dashboard):
+for modulo in (auth, usuarios, linhas, cargas, alertas, dashboard, viagens):
     app.include_router(modulo.router)
 
 CONFLITOS = {

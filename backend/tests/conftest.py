@@ -4,7 +4,14 @@ from fastapi.testclient import TestClient
 from app import deps
 from app.core.security import criar_token
 from app.main import app
-from tests.fakes import AlertasFake, CargasFake, DashboardFake, LinhasFake, UsuariosFake
+from tests.fakes import (
+    AlertasFake,
+    CargasFake,
+    DashboardFake,
+    LinhasFake,
+    UsuariosFake,
+    ViagensFake,
+)
 
 
 @pytest.fixture
@@ -15,11 +22,13 @@ def usuarios():
 @pytest.fixture
 def client(usuarios):
     app.dependency_overrides[deps.usuarios_repo] = lambda: usuarios
-    app.dependency_overrides[deps.linhas_repo] = LinhasFake
     app.dependency_overrides[deps.dashboard_repo] = DashboardFake
     cargas, alertas = CargasFake(), AlertasFake()
     app.dependency_overrides[deps.cargas_repo] = lambda: cargas
     app.dependency_overrides[deps.alertas_repo] = lambda: alertas
+    linhas, viagens = LinhasFake(), ViagensFake()
+    app.dependency_overrides[deps.linhas_repo] = lambda: linhas
+    app.dependency_overrides[deps.viagens_repo] = lambda: viagens
     yield TestClient(app)
     app.dependency_overrides.clear()
 

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from mysql.connector.errors import IntegrityError
 
 from app.core.security import hash_senha
@@ -93,16 +95,65 @@ class UsuariosFake:
 
 AGORA = "2026-09-22T10:00:00"
 LINHAS = [
-    {"id": 1, "numero": "1778", "status": "manutencao", "ativo": True},
-    {"id": 2, "numero": "2645", "status": "atraso", "ativo": True},
-    {"id": 3, "numero": "9845", "status": "fechado", "ativo": False},
+    {
+        "id": 1,
+        "numero": "1778",
+        "origem": "Genebra",
+        "destino": "Zermatt",
+        "status": "manutencao",
+        "ativo": True,
+    },
+    {
+        "id": 2,
+        "numero": "2645",
+        "origem": "Zurique",
+        "destino": "Berna",
+        "status": "atraso",
+        "ativo": True,
+    },
+    {
+        "id": 3,
+        "numero": "9845",
+        "origem": "Lucerna",
+        "destino": "Basileia",
+        "status": "fechado",
+        "ativo": False,
+    },
 ]
 TRENS = {1, 2, 3}
 
 
 class LinhasFake:
-    def listar(self):
-        return LINHAS
+    def __init__(self):
+        self.dados = [dict(linha) for linha in LINHAS]
+
+    def _valida(self, dados, ignorar_id=None):
+        numero = dados["numero"]
+        repetido = any(
+            linha["numero"] == numero and linha["id"] != ignorar_id for linha in self.dados
+        )
+        if repetido:
+            raise duplicado()
+
+    def listar(self, filtros):
+        status = filtros["status"]
+        return [linha for linha in self.dados if status in (None, linha["status"])]
+
+    def por_id(self, linha_id):
+        return next((linha for linha in self.dados if linha["id"] == linha_id), None)
+
+    def criar(self, dados):
+        self._valida(dados)
+        linha = {**dados, "id": max(linha["id"] for linha in self.dados) + 1}
+        self.dados.append(linha)
+        return linha
+
+    def atualizar(self, linha_id, dados):
+        self._valida(dados, ignorar_id=linha_id)
+        self.por_id(linha_id).update({k: v for k, v in dados.items() if v is not None})
+
+    def remover(self, linha_id):
+        self.dados = [linha for linha in self.dados if linha["id"] != linha_id]
 
 
 class CargasFake:
@@ -137,18 +188,46 @@ class AlertasFake:
     def __init__(self):
         self.dados = [
             {
+                "id": 2,
+                "linha_id": None,
+                "linha_numero": None,
+                "leitura_id": 7,
+                "tipo": "temperatura",
+                "severidade": "critico",
+                "tempo_espera": None,
+                "motivo": "temperatura acima do limite",
+                "status": "Falha",
+                "tratado": False,
+                "criado_em": AGORA,
+            },
+            {
                 "id": 1,
                 "linha_id": 1,
                 "linha_numero": "1778",
+                "leitura_id": None,
+                "tipo": "manual",
+                "severidade": "atencao",
                 "tempo_espera": "15 a 30 min",
                 "motivo": "manutencao no trilho",
                 "status": "Parado",
+                "tratado": True,
                 "criado_em": AGORA,
-            }
+            },
         ]
 
-    def listar(self):
-        return self.dados
+    def listar(self, filtros):
+        campos = ("severidade", "tipo", "tratado")
+        return [
+            alerta
+            for alerta in self.dados
+            if all(filtros[campo] in (None, alerta[campo]) for campo in campos)
+        ]
+
+    def por_id(self, alerta_id):
+        return next((alerta for alerta in self.dados if alerta["id"] == alerta_id), None)
+
+    def marcar_tratado(self, alerta_id, tratado):
+        self.por_id(alerta_id)["tratado"] = tratado
 
     def criar(self, dados):
         linha_encontrada = next(
@@ -160,8 +239,10 @@ class AlertasFake:
             **dados,
             "id": len(self.dados) + 1,
             "linha_numero": linha_encontrada["numero"],
+            "leitura_id": None,
+            "tratado": False,
+            "criado_em": AGORA,
         }
-        alerta["criado_em"] = AGORA
         self.dados.insert(0, alerta)
         return alerta
 
@@ -174,3 +255,91 @@ class DashboardFake:
             "sensores": 4,
             "velocidade_media": 90.4,
         }
+
+
+PREFIXOS = {1: "FSC-01", 2: "FSC-02", 3: "FSC-03"}
+VIAGENS = [
+    {
+        "id": 1,
+        "linha_id": 1,
+        "trem_id": 1,
+        "partida_prevista": datetime(2026, 9, 22, 6, 0),
+        "chegada_prevista": datetime(2026, 9, 22, 9, 0),
+        "status": "programada",
+        "criado_em": AGORA,
+    },
+    {
+        "id": 2,
+        "linha_id": 2,
+        "trem_id": 2,
+        "partida_prevista": datetime(2026, 9, 23, 9, 0),
+        "chegada_prevista": datetime(2026, 9, 23, 12, 0),
+        "status": "em_andamento",
+        "criado_em": AGORA,
+    },
+    {
+        "id": 3,
+        "linha_id": 1,
+        "trem_id": 3,
+        "partida_prevista": datetime(2026, 9, 22, 18, 0),
+        "chegada_prevista": datetime(2026, 9, 22, 21, 0),
+        "status": "concluida",
+        "criado_em": AGORA,
+    },
+]
+
+
+class ViagensFake:
+    def __init__(self):
+        self.dados = [dict(viagem) for viagem in VIAGENS]
+
+    def _completo(self, viagem):
+        linha = next(linha for linha in LINHAS if linha["id"] == viagem["linha_id"])
+        return {
+            **viagem,
+            "linha_numero": linha["numero"],
+            "origem": linha["origem"],
+            "destino": linha["destino"],
+            "trem_prefixo": PREFIXOS[viagem["trem_id"]],
+        }
+
+    def _valida(self, dados):
+        linha_id, trem_id = dados["linha_id"], dados["trem_id"]
+        sem_linha = linha_id is not None and all(linha["id"] != linha_id for linha in LINHAS)
+        sem_trem = trem_id is not None and trem_id not in PREFIXOS
+        if sem_linha or sem_trem:
+            raise sem_referencia()
+
+    def _combina(self, viagem, filtros):
+        data = filtros["data"]
+        iguais = all(
+            filtros[campo] in (None, viagem[campo]) for campo in ("status", "trem_id", "linha_id")
+        )
+        return iguais and data in (None, viagem["partida_prevista"].date())
+
+    def listar(self, filtros):
+        achadas = [viagem for viagem in self.dados if self._combina(viagem, filtros)]
+        achadas.sort(key=lambda viagem: viagem["partida_prevista"], reverse=True)
+        return [self._completo(viagem) for viagem in achadas]
+
+    def por_id(self, viagem_id):
+        viagem = next((v for v in self.dados if v["id"] == viagem_id), None)
+        return self._completo(viagem) if viagem else None
+
+    def criar(self, dados):
+        self._valida(dados)
+        viagem = {
+            **dados,
+            "id": max(viagem["id"] for viagem in self.dados) + 1,
+            "criado_em": AGORA,
+        }
+        self.dados.append(viagem)
+        return self._completo(viagem)
+
+    def atualizar(self, viagem_id, dados):
+        self._valida(dados)
+        viagem = next(v for v in self.dados if v["id"] == viagem_id)
+        viagem.update({k: v for k, v in dados.items() if v is not None})
+
+    def remover(self, viagem_id):
+        self.dados = [viagem for viagem in self.dados if viagem["id"] != viagem_id]

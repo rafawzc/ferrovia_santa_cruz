@@ -7,11 +7,13 @@ from app.repositories.cargas import CargasMySQL
 from app.repositories.dashboard import DashboardMySQL
 from app.repositories.linhas import LinhasMySQL
 from app.repositories.usuarios import UsuariosMySQL
+from app.repositories.viagens import ViagensMySQL
 from app.services.alertas import AlertasRepo, AlertasService
 from app.services.cargas import CargasRepo, CargasService
 from app.services.dashboard import DashboardRepo, DashboardService
 from app.services.linhas import LinhasRepo, LinhasService
 from app.services.usuarios import UsuariosRepo, UsuariosService
+from app.services.viagens import ViagensRepo, ViagensService
 
 
 def usuarios_repo() -> UsuariosRepo:
@@ -34,6 +36,10 @@ def dashboard_repo() -> DashboardRepo:
     return DashboardMySQL()
 
 
+def viagens_repo() -> ViagensRepo:
+    return ViagensMySQL()
+
+
 def _usuarios_servico(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
     return UsuariosService(repo)
 
@@ -54,8 +60,13 @@ def _dashboard_servico(repo: Annotated[DashboardRepo, Depends(dashboard_repo)]) 
     return DashboardService(repo)
 
 
+def _viagens_servico(repo: Annotated[ViagensRepo, Depends(viagens_repo)]) -> ViagensService:
+    return ViagensService(repo)
+
+
 Usuarios = Annotated[UsuariosService, Depends(_usuarios_servico)]
 Linhas = Annotated[LinhasService, Depends(_linhas_servico)]
 Cargas = Annotated[CargasService, Depends(_cargas_servico)]
 Alertas = Annotated[AlertasService, Depends(_alertas_servico)]
 Dashboard = Annotated[DashboardService, Depends(_dashboard_servico)]
+Viagens = Annotated[ViagensService, Depends(_viagens_servico)]
