@@ -5,6 +5,7 @@ from fastapi import Depends
 from app.repositories.alertas import AlertasMySQL
 from app.repositories.cargas import CargasMySQL
 from app.repositories.dashboard import DashboardMySQL
+from app.repositories.leituras import LeiturasMySQL
 from app.repositories.linhas import LinhasMySQL
 from app.repositories.relatorios import RelatoriosMySQL
 from app.repositories.sensores import SensoresMySQL
@@ -14,6 +15,7 @@ from app.repositories.viagens import ViagensMySQL
 from app.services.alertas import AlertasRepo, AlertasService
 from app.services.cargas import CargasRepo, CargasService
 from app.services.dashboard import DashboardRepo, DashboardService
+from app.services.leituras import LeiturasRepo, LeiturasService
 from app.services.linhas import LinhasRepo, LinhasService
 from app.services.relatorios import RelatoriosRepo, RelatoriosService
 from app.services.sensores import SensoresRepo, SensoresService
@@ -58,6 +60,10 @@ def relatorios_repo() -> RelatoriosRepo:
     return RelatoriosMySQL()
 
 
+def leituras_repo() -> LeiturasRepo:
+    return LeiturasMySQL()
+
+
 def _usuarios_servico(repo: Annotated[UsuariosRepo, Depends(usuarios_repo)]) -> UsuariosService:
     return UsuariosService(repo)
 
@@ -96,6 +102,10 @@ def _relatorios_servico(
     return RelatoriosService(repo)
 
 
+def _leituras_servico(repo: Annotated[LeiturasRepo, Depends(leituras_repo)]) -> LeiturasService:
+    return LeiturasService(repo)
+
+
 Usuarios = Annotated[UsuariosService, Depends(_usuarios_servico)]
 Linhas = Annotated[LinhasService, Depends(_linhas_servico)]
 Cargas = Annotated[CargasService, Depends(_cargas_servico)]
@@ -105,3 +115,4 @@ Trens = Annotated[TrensService, Depends(_trens_servico)]
 Sensores = Annotated[SensoresService, Depends(_sensores_servico)]
 Viagens = Annotated[ViagensService, Depends(_viagens_servico)]
 Relatorios = Annotated[RelatoriosService, Depends(_relatorios_servico)]
+Leituras = Annotated[LeiturasService, Depends(_leituras_servico)]

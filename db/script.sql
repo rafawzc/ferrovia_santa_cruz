@@ -105,6 +105,7 @@ CREATE TABLE viagem (
     status           ENUM('programada','em_andamento','concluida','cancelada','atrasada')
                      NOT NULL DEFAULT 'programada',
     criado_em        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_viagem_partida (partida_prevista),
     CONSTRAINT fk_viagem_linha FOREIGN KEY (linha_id)
         REFERENCES linha(id) ON DELETE RESTRICT,
     CONSTRAINT fk_viagem_trem FOREIGN KEY (trem_id)

@@ -9,6 +9,7 @@ from app.routers import (
     auth,
     cargas,
     dashboard,
+    leituras,
     linhas,
     relatorios,
     sensores,
@@ -29,6 +30,7 @@ MODULOS = (
     sensores,
     viagens,
     relatorios,
+    leituras,
 )
 for modulo in MODULOS:
     app.include_router(modulo.router)
