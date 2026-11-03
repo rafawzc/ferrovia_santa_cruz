@@ -186,7 +186,9 @@ INSERT INTO sensor (codigo, nome, tipo_dado, localizacao, segmento, trem_id) VAL
     ('S-FAL-001', 'Falha de freio',        'falha',       'Eixo dianteiro', 'Jaragua - Joinville',
         (SELECT id FROM trem WHERE prefixo = 'TR-118')),
     ('S-LOC-001', 'Localizador GPS',       'localizacao', 'Teto da cabine', 'Mafra - Porto Uniao',
-        (SELECT id FROM trem WHERE prefixo = 'TR-301'));
+        (SELECT id FROM trem WHERE prefixo = 'TR-301')),
+    ('S-ENE-002', 'Consumo de energia',    'energia',     'Motor',          'Jaragua - Joinville',
+        (SELECT id FROM trem WHERE prefixo = 'TR-118'));
 
 INSERT INTO leitura_sensor (sensor_id, valor, status_operacional, data_hora) VALUES
     ((SELECT id FROM sensor WHERE codigo = 'S-VEL-001'),  72.40, 'normal', CURRENT_TIMESTAMP - INTERVAL 20 HOUR),
@@ -198,7 +200,9 @@ INSERT INTO leitura_sensor (sensor_id, valor, status_operacional, data_hora) VAL
     ((SELECT id FROM sensor WHERE codigo = 'S-TEMP-001'),115.70, 'falha',  CURRENT_TIMESTAMP - INTERVAL  2 HOUR),
     ((SELECT id FROM sensor WHERE codigo = 'S-ENE-001'), 310.50, 'normal', CURRENT_TIMESTAMP - INTERVAL 16 HOUR),
     ((SELECT id FROM sensor WHERE codigo = 'S-ENE-001'), 428.20, 'alerta', CURRENT_TIMESTAMP - INTERVAL  4 HOUR),
-    ((SELECT id FROM sensor WHERE codigo = 'S-FAL-001'),   1.00, 'falha',  CURRENT_TIMESTAMP - INTERVAL  1 HOUR);
+    ((SELECT id FROM sensor WHERE codigo = 'S-FAL-001'),   1.00, 'falha',  CURRENT_TIMESTAMP - INTERVAL  1 HOUR),
+    ((SELECT id FROM sensor WHERE codigo = 'S-ENE-002'), 287.40, 'normal', CURRENT_TIMESTAMP - INTERVAL 15 HOUR),
+    ((SELECT id FROM sensor WHERE codigo = 'S-ENE-002'), 352.10, 'normal', CURRENT_TIMESTAMP - INTERVAL  5 HOUR);
 
 INSERT INTO alerta (linha_id, leitura_id, tipo, severidade, tempo_espera, motivo, status, tratado) VALUES
     ((SELECT id FROM linha WHERE numero = '1778'), NULL,
@@ -212,7 +216,15 @@ INSERT INTO alerta (linha_id, leitura_id, tipo, severidade, tempo_espera, motivo
         'temperatura', 'critico', NULL, 'Temperatura do motor acima do limite critico', 'Critico', FALSE),
     (NULL, (SELECT id FROM leitura_sensor WHERE sensor_id =
                 (SELECT id FROM sensor WHERE codigo = 'S-FAL-001') ORDER BY data_hora DESC LIMIT 1),
-        'falha', 'critico', NULL, 'Falha detectada no freio do eixo dianteiro', 'Critico', FALSE);
+        'falha', 'critico', NULL, 'Falha detectada no freio do eixo dianteiro', 'Critico', FALSE),
+    (NULL, (SELECT id FROM leitura_sensor WHERE sensor_id =
+                (SELECT id FROM sensor WHERE codigo = 'S-VEL-001')
+              AND status_operacional = 'alerta' ORDER BY data_hora DESC LIMIT 1),
+        'velocidade', 'atencao', NULL, 'Velocidade acima do limite de atencao', 'Atencao', FALSE),
+    (NULL, (SELECT id FROM leitura_sensor WHERE sensor_id =
+                (SELECT id FROM sensor WHERE codigo = 'S-ENE-001')
+              AND status_operacional = 'alerta' ORDER BY data_hora DESC LIMIT 1),
+        'energia', 'atencao', NULL, 'Consumo de energia acima do limite de atencao', 'Atencao', FALSE);
 
 INSERT INTO viagem (linha_id, trem_id, partida_prevista, chegada_prevista, status) VALUES
     ((SELECT id FROM linha WHERE numero = '1778'), (SELECT id FROM trem WHERE prefixo = 'TR-204'),

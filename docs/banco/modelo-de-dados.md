@@ -310,7 +310,17 @@ Schema e carga moram no **mesmo arquivo**, [`db/script.sql`](../../db/script.sql
 - As FKs são resolvidas por **subconsulta no campo único** (`(SELECT id FROM trem WHERE prefixo = 'TR-204')`), não por id mágico — reordenar um `INSERT` não quebra nada.
 - As datas são **relativas a `CURRENT_TIMESTAMP`** (`- INTERVAL 6 HOUR`), não fixas. É isso que mantém dado dentro da janela de 24h da velocidade média e viagens em andamento em qualquer dia em que o projeto for importado. Com datas fixas, o painel do avaliador mostraria "sem dados".
 
-A carga foi dimensionada pra que painel e relatórios mostrem resultado **na primeira importação**: trens nos três status, sensores dos cinco tipos, dez leituras em janelas de tempo diferentes, alertas em mais de uma severidade (tratados e não tratados) e viagens nos cinco status.
+A carga foi dimensionada pra que painel e relatórios mostrem resultado **na primeira importação**: trens nos três status, sensores dos cinco tipos, doze leituras em janelas de tempo diferentes, alertas em mais de uma severidade (tratados e não tratados) e viagens nos cinco status.
+
+O seed respeita a invariante que a ingestão impõe: **toda leitura fora do limite tem o alerta correspondente**. Query de guarda, que precisa dar zero:
+
+```sql
+SELECT COUNT(*) FROM leitura_sensor l
+  LEFT JOIN alerta a ON a.leitura_id = l.id
+ WHERE l.status_operacional <> 'normal' AND a.id IS NULL;
+```
+
+Dois sensores de energia em trens diferentes existem por causa do relatório de consumo: com um só, o gráfico da apresentação teria uma barra.
 
 ## Lacuna conhecida — "localização em mapa" (tela 7)
 
