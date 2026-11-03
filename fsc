@@ -35,6 +35,10 @@ Frontend
   npm <args>          run npm in a throwaway frontend container
   ui add <comps...>   add shadcn components and lint-fix them
 
+IoT
+  sim [args]          post simulated sensor readings (needs ./fsc up first)
+                      --rodadas N --intervalo SECS
+
   help                show this message
 EOF
 }
@@ -195,6 +199,7 @@ main() {
     db:reset) db_reset "$@" ;;
     npm) run_frontend npm "$@" ;;
     ui) ui "$@" ;;
+    sim) run_backend python scripts/simulador.py "$@" ;;
     help | -h | --help) show_help ;;
     *) show_help; exit 1 ;;
   esac

@@ -174,3 +174,49 @@ class DashboardFake:
             "sensores": 4,
             "velocidade_media": 90.4,
         }
+
+
+CHAVE_SENSOR = "chave-de-teste-do-sensor"
+SENSOR_VELOCIDADE, SENSOR_TEMPERATURA, SENSOR_FALHA = 1, 2, 3
+SENSOR_ENERGIA, SENSOR_LOCALIZACAO, SENSOR_INEXISTENTE = 4, 5, 99
+SENSORES = [
+    {"id": SENSOR_VELOCIDADE, "tipo_dado": "velocidade"},
+    {"id": SENSOR_TEMPERATURA, "tipo_dado": "temperatura"},
+    {"id": SENSOR_FALHA, "tipo_dado": "falha"},
+    {"id": SENSOR_ENERGIA, "tipo_dado": "energia"},
+    {"id": SENSOR_LOCALIZACAO, "tipo_dado": "localizacao"},
+]
+
+
+class LeiturasFake:
+    def __init__(self):
+        self.dados = []
+        self.alertas = []
+
+    def tipo_do_sensor(self, sensor_id):
+        return next((s["tipo_dado"] for s in SENSORES if s["id"] == sensor_id), None)
+
+    def sensores(self):
+        return SENSORES
+
+    def criar(self, leitura, alerta):
+        if self.tipo_do_sensor(leitura["sensor_id"]) is None:
+            raise sem_referencia()
+        gravada = {**leitura, "id": len(self.dados) + 1, "data_hora": AGORA}
+        self.dados.append(gravada)
+        alerta_id = None
+        if alerta is not None:
+            alerta_id = len(self.alertas) + 1
+            self.alertas.append({**alerta, "id": alerta_id, "leitura_id": gravada["id"]})
+        return {**gravada, "alerta_id": alerta_id}
+
+    def listar(self, sensor_id, limite):
+        achadas = [
+            leitura
+            for leitura in reversed(self.dados)
+            if sensor_id is None or leitura["sensor_id"] == sensor_id
+        ]
+        return [
+            {**leitura, "sensor_codigo": f"S-{leitura['sensor_id']}", "trem_prefixo": "TR-204"}
+            for leitura in achadas[:limite]
+        ]
