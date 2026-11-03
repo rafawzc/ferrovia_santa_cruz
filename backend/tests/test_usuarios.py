@@ -1,6 +1,15 @@
 import pytest
 
-from tests.fakes import ID_CLIENTE, ID_GESTAO, ID_OPERACIONAL, SENHA
+from tests.fakes import (
+    ID_CLIENTE,
+    ID_GESTAO,
+    ID_GESTAO_SUPLENTE,
+    ID_OPERACIONAL,
+    SENHA,
+)
+
+AUTO_DESATIVACAO = {"detail": "Você não pode desativar a própria conta"}
+ULTIMO_ADMINISTRADOR = {"detail": "Não é possível desativar o último administrador ativo"}
 
 NOVO = {
     "nome": "Sergio Santana",
@@ -105,6 +114,110 @@ def test_reativar_pelo_patch(gestao):
 
 def test_desativar_inexistente_e_404(gestao):
     assert gestao.delete("/api/usuarios/999").status_code == 404
+
+
+def test_nao_desativa_a_propria_conta_pelo_delete(gestao, usuarios):
+    resposta = gestao.delete(f"/api/usuarios/{ID_GESTAO}")
+
+    assert resposta.status_code == 403
+    assert resposta.json() == AUTO_DESATIVACAO
+    assert usuarios.dados[ID_GESTAO]["ativo"] is True
+
+
+def test_nao_desativa_a_propria_conta_pelo_patch(gestao, usuarios):
+    resposta = gestao.patch(f"/api/usuarios/{ID_GESTAO}", json={"ativo": False})
+
+    assert resposta.status_code == 403
+    assert resposta.json() == AUTO_DESATIVACAO
+    assert usuarios.dados[ID_GESTAO]["ativo"] is True
+
+
+def test_nao_desativa_o_ultimo_administrador_ativo_pelo_delete(gestao, usuarios):
+    usuarios.desativar(ID_GESTAO_SUPLENTE)
+
+    resposta = gestao.delete(f"/api/usuarios/{ID_GESTAO}")
+
+    assert resposta.status_code == 409
+    assert resposta.json() == ULTIMO_ADMINISTRADOR
+    assert usuarios.dados[ID_GESTAO]["ativo"] is True
+
+
+def test_nao_desativa_o_ultimo_administrador_ativo_pelo_patch(gestao, usuarios):
+    usuarios.desativar(ID_GESTAO_SUPLENTE)
+
+    resposta = gestao.patch(f"/api/usuarios/{ID_GESTAO}", json={"ativo": False})
+
+    assert resposta.status_code == 409
+    assert resposta.json() == ULTIMO_ADMINISTRADOR
+    assert usuarios.dados[ID_GESTAO]["ativo"] is True
+
+
+def test_desativa_administrador_quando_ha_outro_ativo(gestao, usuarios):
+    pelo_delete = gestao.delete(f"/api/usuarios/{ID_GESTAO_SUPLENTE}")
+
+    assert pelo_delete.status_code == 204
+    assert usuarios.dados[ID_GESTAO_SUPLENTE]["ativo"] is False
+
+    pelo_patch = gestao.patch(f"/api/usuarios/{ID_GESTAO_SUPLENTE}", json={"ativo": True})
+
+    assert pelo_patch.json()["ativo"] is True
+
+
+def test_senha_temporaria_e_devolvida_uma_vez_e_grava_so_o_hash(gestao, usuarios, client):
+    hash_antes = usuarios.dados[ID_OPERACIONAL]["senha_hash"]
+
+    resposta = gestao.post(f"/api/usuarios/{ID_OPERACIONAL}/senha-temporaria")
+
+    assert resposta.status_code == 200
+    senha = resposta.json()["senha_temporaria"]
+    assert list(resposta.json()) == ["senha_temporaria"]
+    assert len(senha) == 12
+    hash_depois = usuarios.dados[ID_OPERACIONAL]["senha_hash"]
+    assert hash_depois != hash_antes
+    assert senha not in hash_depois
+    assert (
+        client.post(
+            "/api/auth/login", json={"email": "carlos@ferrovia.com", "senha": senha}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/api/auth/login", json={"email": "carlos@ferrovia.com", "senha": SENHA}
+        ).status_code
+        == 401
+    )
+
+
+def test_senha_temporaria_nova_invalida_a_anterior(gestao, client):
+    rota = f"/api/usuarios/{ID_OPERACIONAL}/senha-temporaria"
+    anterior = gestao.post(rota).json()["senha_temporaria"]
+
+    atual = gestao.post(rota).json()["senha_temporaria"]
+
+    assert atual != anterior
+    corpo = {"email": "carlos@ferrovia.com", "senha": anterior}
+    assert client.post("/api/auth/login", json=corpo).status_code == 401
+    corpo["senha"] = atual
+    assert client.post("/api/auth/login", json=corpo).status_code == 200
+
+
+def test_senha_temporaria_de_usuario_inexistente_e_404(gestao):
+    resposta = gestao.post("/api/usuarios/999/senha-temporaria")
+
+    assert resposta.status_code == 404
+    assert resposta.json() == {"detail": "Usuário não encontrado"}
+
+
+@pytest.mark.parametrize("usuario_id", [ID_OPERACIONAL, ID_CLIENTE])
+def test_senha_temporaria_so_pra_gestao(como, usuario_id):
+    rota = f"/api/usuarios/{ID_GESTAO}/senha-temporaria"
+
+    assert como(usuario_id).post(rota).status_code == 403
+
+
+def test_senha_temporaria_sem_cookie_e_401(client):
+    assert client.post(f"/api/usuarios/{ID_GESTAO}/senha-temporaria").status_code == 401
 
 
 def test_lista_cargos_pro_formulario(gestao):

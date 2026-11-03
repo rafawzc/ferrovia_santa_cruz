@@ -10,6 +10,7 @@ CARGOS = {
 }
 SENHA = "ferrovia123"
 ID_GESTAO, ID_OPERACIONAL, ID_CLIENTE, ID_INATIVO = 1, 2, 3, 4
+ID_OPERACIONAL_SEM_TREM, ID_OPERACIONAL_SEM_LEITURA, ID_GESTAO_SUPLENTE = 5, 6, 7
 
 
 def duplicado():
@@ -24,11 +25,21 @@ class UsuariosFake:
     def __init__(self):
         hash_ = hash_senha(SENHA)
         self.dados = {}
-        for id_, nome, email, cargo_id, ativo in [
-            (ID_GESTAO, "Ana Gestora", "ana@ferrovia.com", 2, True),
-            (ID_OPERACIONAL, "Carlos Souza", "carlos@ferrovia.com", 5, True),
-            (ID_CLIENTE, "Cliente Comum", "cliente@email.com", 1, True),
-            (ID_INATIVO, "Ex Funcionario", "ex@ferrovia.com", 5, False),
+        for id_, nome, email, cargo_id, ativo, trem_id in [
+            (ID_GESTAO, "Ana Gestora", "ana@ferrovia.com", 2, True, None),
+            (ID_OPERACIONAL, "Carlos Souza", "carlos@ferrovia.com", 5, True, TREM_COM_LEITURA),
+            (ID_CLIENTE, "Cliente Comum", "cliente@email.com", 1, True, None),
+            (ID_INATIVO, "Ex Funcionario", "ex@ferrovia.com", 5, False, None),
+            (ID_OPERACIONAL_SEM_TREM, "Davi Sem Trem", "davi@ferrovia.com", 5, True, None),
+            (
+                ID_OPERACIONAL_SEM_LEITURA,
+                "Elisa Parada",
+                "elisa@ferrovia.com",
+                5,
+                True,
+                TREM_SEM_LEITURA,
+            ),
+            (ID_GESTAO_SUPLENTE, "Bruna Lima", "bruna@ferrovia.com", 2, True, None),
         ]:
             self.dados[id_] = {
                 "id": id_,
@@ -39,6 +50,7 @@ class UsuariosFake:
                 "telefone": None,
                 "foto_url": None,
                 "ativo": ativo,
+                "trem_id": trem_id,
             }
 
     def _completo(self, usuario):
@@ -79,6 +91,7 @@ class UsuariosFake:
             "foto_url": None,
             "ativo": True,
             "cargo_id": CARGO_CLIENTE,
+            "trem_id": None,
             **{k: v for k, v in dados.items() if v is not None},
         }
         return id_
@@ -90,6 +103,14 @@ class UsuariosFake:
     def desativar(self, id_):
         self.dados[id_]["ativo"] = False
 
+    def trocar_senha(self, id_, senha_hash):
+        self.dados[id_]["senha_hash"] = senha_hash
+
+    def contar_administradores_ativos(self):
+        return sum(
+            1 for u in self.dados.values() if u["ativo"] and CARGOS[u["cargo_id"]][1] == "gestao"
+        )
+
 
 AGORA = "2026-09-22T10:00:00"
 LINHAS = [
@@ -98,6 +119,36 @@ LINHAS = [
     {"id": 3, "numero": "9845", "status": "fechado", "ativo": False},
 ]
 TRENS = {1, 2, 3}
+TREM_COM_LEITURA, TREM_SEM_LEITURA = 1, 2
+INDICADORES = {
+    None: {
+        "trens_por_status": [
+            {"status": "ativo", "quantidade": 2},
+            {"status": "manutencao", "quantidade": 1},
+        ],
+        "alertas_ativos_por_severidade": [
+            {"severidade": "atencao", "quantidade": 1},
+            {"severidade": "critico", "quantidade": 3},
+        ],
+        "sensores_criticos": 2,
+        "viagens_em_andamento": 4,
+        "velocidade_media": 72.5,
+    },
+    TREM_COM_LEITURA: {
+        "trens_por_status": [{"status": "ativo", "quantidade": 1}],
+        "alertas_ativos_por_severidade": [{"severidade": "critico", "quantidade": 1}],
+        "sensores_criticos": 1,
+        "viagens_em_andamento": 2,
+        "velocidade_media": 68.0,
+    },
+    TREM_SEM_LEITURA: {
+        "trens_por_status": [{"status": "parado", "quantidade": 1}],
+        "alertas_ativos_por_severidade": [],
+        "sensores_criticos": 0,
+        "viagens_em_andamento": 0,
+        "velocidade_media": None,
+    },
+}
 
 
 class LinhasFake:
@@ -167,10 +218,17 @@ class AlertasFake:
 
 
 class DashboardFake:
-    def metricas(self):
-        return {
-            "linhas_ativas": 3,
-            "linhas_em_manutencao": 1,
-            "sensores": 4,
-            "velocidade_media": 90.4,
-        }
+    def trens_por_status(self, trem_id):
+        return INDICADORES[trem_id]["trens_por_status"]
+
+    def alertas_ativos_por_severidade(self, trem_id):
+        return INDICADORES[trem_id]["alertas_ativos_por_severidade"]
+
+    def sensores_criticos(self, trem_id):
+        return INDICADORES[trem_id]["sensores_criticos"]
+
+    def viagens_em_andamento(self, trem_id):
+        return INDICADORES[trem_id]["viagens_em_andamento"]
+
+    def velocidade_media(self, trem_id):
+        return INDICADORES[trem_id]["velocidade_media"]
