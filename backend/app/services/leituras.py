@@ -51,10 +51,11 @@ class LeiturasService:
         nivel = _nivel(tipo_dado, leitura["valor"])
         if nivel is None:
             return self.repo.criar({**leitura, "status_operacional": "normal"}, None)
-        status_operacional, severidade, descricao = NIVEIS[nivel]
+        status_operacional, rotulo_do_status, descricao = NIVEIS[nivel]
         alerta = {
             "tipo": tipo_dado,
             "motivo": f"{GRANDEZAS[tipo_dado]} {descricao}",
-            "status": severidade,
+            "severidade": nivel,
+            "status": rotulo_do_status,
         }
         return self.repo.criar({**leitura, "status_operacional": status_operacional}, alerta)

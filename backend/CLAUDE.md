@@ -24,13 +24,15 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 ## Camadas como ficaram (L21)
 
 - **Estrito em todo recurso: router → service → repo `Protocol`.** Decisão do usuário (vale mais que o atalho antigo "router → repo quando não há regra"). Nenhum router nem `core/` importa de `app.repositories` (`grep -rn repositories app/routers` tem que dar vazio).
-- **Service** = `services/<recurso>.py` com `class <Recurso>Repo(Protocol)` + `class <Recurso>Service` que recebe o repo no `__init__`. Sem regra → métodos que só repassam (`linhas`, `cargas`, `alertas`, `dashboard`) — esperado, não é bloat. Com regra → `usuarios` (hash, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE).
+- **Service** = `services/<recurso>.py` com `class <Recurso>Repo(Protocol)` + `class <Recurso>Service` que recebe o repo no `__init__`. Sem regra → métodos que só repassam (`linhas`, `cargas`, `alertas`, `trens`, `sensores`, `viagens`) — esperado, não é bloat. Com regra → `usuarios` (hash, "e-mail inexistente custa o mesmo tempo que senha errada", desativado não loga, 404 antes do UPDATE, trava do último administrador), `dashboard` (o conteúdo muda com o papel de quem chama), `leituras` (limites por tipo de sensor e alerta automático) e `relatorios` (colunas e gráfico de cada tipo).
 - **Fiação só em `app/deps.py`:** `<recurso>_repo()` devolve o `<Recurso>MySQL`; `_<recurso>_servico(repo=Depends(<recurso>_repo))` monta o service; `<Recurso> = Annotated[<Recurso>Service, Depends(_<recurso>_servico)]` é o que o router usa (`servico: Linhas`).
 - **Teste troca o repo, não o service:** `app.dependency_overrides[deps.<recurso>_repo] = lambda: fake`. O service real roda em teste — a regra é coberta.
 - **Banco fora do ar não é tratado no repo nem no service**: o `cursor()` embrulha só o `_pool().get_connection()` num `except Error` e levanta `BancoIndisponivel`; o handler do `main.py` responde 503 `"Banco de dados indisponível"`. O `try` cobre **apenas a obtenção da conexão** de propósito — erro durante o `execute` (`ProgrammingError`, `IntegrityError`) continua subindo com o tipo original, senão SQL quebrado viraria "banco indisponível" e a gente debugaria no lugar errado. O driver levanta dois tipos pra mesma situação (`DatabaseError` 2005 com o pool frio, `InterfaceError` com o pool quente e o banco morto depois) — por isso o `except` é no `Error` base, não numa lista de subclasses. No teste o fake levanta `BancoIndisponivel` direto.
 - **Erro de integridade não é tratado no repo nem no service**: o `mysql.connector.errors.IntegrityError` sobe e o handler do `main.py` responde 409 (`1062` → "Registro duplicado", `1452` → "Referência inexistente"). Os fakes levantam o mesmo `IntegrityError` com o mesmo `errno` (`fakes.duplicado()`, `fakes.sem_referencia()`).
 - **Guard por papel** no `APIRouter(dependencies=[Depends(exige_papel(...))])`, não em cada rota. Sem cookie → 401 (`usuario_atual`), papel errado → 403.
-- **Exceção: `trens` e `sensores` têm guard também na rota.** Leitura e escrita exigem papéis diferentes nesses dois recursos — o router leva `exige_papel("operacional", "gestao")` (quem lê) e cada rota de escrita (`POST`/`PATCH`/`DELETE`) leva `dependencies=SO_GESTAO` (`[Depends(exige_papel("gestao"))]`). Os dois guards rodam; o do router primeiro. Só isso justifica furar a regra acima — papel igual em todas as rotas continua indo só no router.
+- **Exceção: onde leitura e escrita exigem papéis diferentes, o guard também vai na rota.** Vale para `linhas`, `trens`, `sensores` e `viagens`: o router leva o guard de quem lê (`operacional`+`gestao`; em `viagens` inclui `cliente`) e cada rota de escrita (`POST`/`PATCH`/`DELETE`) leva `dependencies` com `exige_papel("gestao")`. Os dois guards rodam; o do router primeiro. Papel igual em todas as rotas continua indo só no router.
+- **`dashboard` e `leituras` são casos à parte.** `dashboard` deixa os três papéis entrarem e é o *service* que decide o conteúdo por `usuario["papel"]` e `usuario["trem_id"]` (por isso o router passa o usuário inteiro). `leituras` não tem guard no router: `POST` e `GET /sensores` usam a chave `X-API-Key` (`exige_chave_de_sensor`, env `SENSOR_API_KEY`), só o `GET` de listagem usa cookie.
+- **Trava do último administrador** (`services/usuarios.py`): `UltimoAdministradorAtivo` → 409 no router. Cobre desativar (`DELETE` e `PATCH ativo=false`) e trocar o cargo (`PATCH cargo_id` para papel diferente de `gestao`). Na desativação a trava é checada **antes** da auto-desativação (`AutoDesativacaoProibida`, 403): o único administrador tentando se desativar recebe 409. `_deixa_de_ser_administrador` trata `cargo_id` desconhecido como "continua gestão" para deixar a FK responder 409 "Referência inexistente".
 - O papel **não** vem do JWT: `usuario_atual` relê o usuário pelo `sub` a cada request. Desativar/trocar cargo vale na hora.
 
 ## Como adicionar um endpoint
@@ -53,7 +55,7 @@ scripts/check_comments.py  checagem de "zero comentários" (L7)
 - `COALESCE(%(x)s, DEFAULT(cargo_id))` no INSERT deixa o **banco** decidir o cargo padrão (cadastro público → `comum`). Não chumbe `1` no Python.
 - PATCH parcial é `SET col = COALESCE(%(col)s, col)`: SQL estático, sem montar SET dinâmico. Preço: `null` não apaga campo.
 - `UsuariosMySQL.atualizar` usa `%(nome)s` pra **todas** as colunas: o `dados` precisa ter todas as chaves, senão `KeyError` no execute (o fake não pega isso). Por isso `atualizar_perfil` (`PATCH /api/auth/me`) completa `cargo_id`/`ativo` com `None` em vez de o router omitir.
-- **Apagar pai referenciado levanta `1451` (`ER_ROW_IS_REFERENCED_2`), não `1452`** — 1452 é inserir filho sem pai. É o erro do `DELETE` de trem com sensor e de sensor com leitura (ambas as FKs são `RESTRICT`); o `CONFLITOS` do `main.py` traduz em 409 "Registro em uso por outro cadastro", genérico de propósito — a frase da tela é do frontend, que tem o contexto. Fake equivalente: `fakes.em_uso()`.
+- **Apagar pai referenciado levanta `1451` (`ER_ROW_IS_REFERENCED_2`), não `1452`** — 1452 é inserir filho sem pai. É o erro do `DELETE` de trem com sensor ou viagem, de sensor com leitura e de rota com viagem (todas as FKs são `RESTRICT`); o `CONFLITOS` do `main.py` traduz em 409 "Registro em uso por outro cadastro", genérico de propósito — a frase da tela é do frontend, que tem o contexto. Fake equivalente: `fakes.em_uso()`.
 - INSERT que falha com 409 **queima** o `AUTO_INCREMENT` (InnoDB). Não assuma id sequencial em smoke.
 - `DB_HOST` vem do `environment:` do compose (é o nome do serviço, não segredo), não do `.env`. `JWT_SECRET` < 32 bytes só gera warning do PyJWT, mas troque.
 
@@ -70,14 +72,9 @@ HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p fsc-api-smoke -f docker-co
 
 `-p` diferente = volume próprio, banco recém-seedado.
 
-## IoT — espaço reservado (L22/L23)
+## IoT — ingestão de leituras
 
-Ingestão **não** existe ainda. Quando vier (`POST /api/leituras`, auth por API key do sensor), cabe sem mexer em nada que existe:
-
-- `repositories/leituras.py` (`LeiturasMySQL.criar`) — `leitura_sensor.sensor_id` é FK: sensor inexistente já vira 409 pelo handler global.
-- `services/leituras.py` (`LeiturasRepo` + `LeiturasService`, regra se houver, ex: derivar `status_operacional`) e a fiação em `deps.py`.
-- `routers/leituras.py` com uma dependência própria de API key **no lugar** de `usuario_atual` — o cookie/JWT é só pra gente, sensor não loga.
-- `./fsc sim` (simulador) roda dentro do container `backend` e bate na mesma URL que o device real.
+`POST /api/leituras` existe (`routers/leituras.py`). Autentica por `X-API-Key` contra `SENSOR_API_KEY`, não por cookie: sensor não loga. `services/leituras.py` calcula o `status_operacional` pelos limites de `LIMITES` (por `tipo_dado`; `localizacao` não tem limite) e, se passou do limite, manda o repo gravar leitura e alerta na mesma transação (`LeiturasMySQL.criar`, um `cursor()` só). O alerta automático nasce com `severidade` igual ao nível calculado (`atencao` ou `critico`), e o texto do nível vai em `status` ("Atencao"/"Critico"). Até a correção desta onda o INSERT omitia `severidade` e o banco aplicava o padrão `normal` em todos os casos, o que fazia a central de alertas nunca destacar um crítico de sensor. `./fsc sim` roda o simulador dentro do container `backend` e bate na mesma URL que o device real.
 
 ## Venv em `/opt/venv`, não em `/app/.venv`
 

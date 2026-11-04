@@ -35,8 +35,8 @@ class LeiturasMySQL:
             if alerta is not None:
                 cur.execute(
                     """
-                    INSERT INTO alerta (leitura_id, tipo, motivo, status, tratado)
-                    VALUES (%(leitura_id)s, %(tipo)s, %(motivo)s, %(status)s, FALSE)
+                    INSERT INTO alerta (leitura_id, tipo, motivo, severidade, status, tratado)
+                    VALUES (%(leitura_id)s, %(tipo)s, %(motivo)s, %(severidade)s, %(status)s, FALSE)
                     """,
                     {**alerta, "leitura_id": leitura_id},
                 )

@@ -298,12 +298,15 @@ function FormularioDeUsuario({
 
   const aoErrar = (erro: Error) => {
     if (erro instanceof ApiError && erro.status === 409) {
-      const emailDuplicado = erro.message === 'Registro duplicado'
-      if (emailDuplicado) {
+      if (erro.message === 'Registro duplicado') {
         formulario.setError('email', { message: 'E-mail já cadastrado' })
-      } else {
-        formulario.setError('cargo_id', { message: 'Cargo não encontrado' })
+        return
       }
+      if (erro.message === 'Referência inexistente') {
+        formulario.setError('cargo_id', { message: 'Cargo não encontrado' })
+        return
+      }
+      toast.error(mensagemDeErro(erro))
       return
     }
     if (tratouErrosDeCampo(erro, formulario)) return

@@ -59,6 +59,7 @@ def test_acima_do_limite_de_atencao_gera_alerta_de_atencao(client, leituras):
             "leitura_id": corpo["id"],
             "tipo": "temperatura",
             "motivo": "Temperatura do motor acima do limite de atencao",
+            "severidade": "atencao",
             "status": "Atencao",
         }
     ]
@@ -75,9 +76,20 @@ def test_acima_do_limite_critico_gera_alerta_critico(client, leituras):
             "leitura_id": corpo["id"],
             "tipo": "temperatura",
             "motivo": "Temperatura do motor acima do limite critico",
+            "severidade": "critico",
             "status": "Critico",
         }
     ]
+
+
+@pytest.mark.parametrize(
+    "valor, severidade_esperada",
+    [(100.0, "atencao"), (120.0, "critico")],
+)
+def test_severidade_do_alerta_e_o_nivel_da_leitura(client, leituras, valor, severidade_esperada):
+    envia(client, valor)
+
+    assert [alerta["severidade"] for alerta in leituras.alertas] == [severidade_esperada]
 
 
 def test_sensor_de_localizacao_nunca_gera_alerta(client, leituras):
