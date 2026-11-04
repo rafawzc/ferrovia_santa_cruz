@@ -1,6 +1,6 @@
 # Tela Perfil (`/perfil`)
 
-Página: `frontend/src/pages/Perfil.tsx`. Rota logada, **qualquer papel** (é o início do `cliente`). Referência visual: `docs/design/desktop/usuarios-editar-edicao.png` (a variante com o dock em "Perfil"). Não existe mockup mobile; o layout é uma coluna só (`max-w-2xl`), igual nos dois tamanhos.
+Página: `frontend/src/pages/Perfil.tsx`. Rota logada, **qualquer papel** (item do menu de todos; o início do `cliente` é [`/viagens`](viagens.md)). Referência visual: `docs/design/desktop/usuarios-editar-edicao.png` (a variante com o dock em "Perfil"). Não existe mockup mobile; o layout é uma coluna só (`max-w-2xl`), igual nos dois tamanhos.
 
 ## O que mostra
 

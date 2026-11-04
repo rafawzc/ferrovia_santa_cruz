@@ -66,15 +66,26 @@ criar.mutate(carga, {
 - **Erro**: tudo que a API recusa vira `ApiError` (`status`, `body.detail`; `message` = `detail` quando é string). Falha de rede chega como `TypeError`, não `ApiError`. Helpers únicos, não reescreva na página:
   - `422` (lista `loc`/`type`) → `if (tratouErrosDeCampo(erro, formulario)) return` (`@/lib/api`): marca "Valor inválido" em cada campo do `loc` que existe no form.
   - Estado de erro de query → `<ErroDeCarregamento error={error} />`; texto de toast → `mensagemDeErro(erro)` (os dois de `@/components/ui/erro-de-carregamento`).
-  - `criado_em` vem sem fuso e em UTC → `dataHora(iso)` de `@/lib/utils` (soma `Z` antes do `new Date`).
+  - `criado_em` e demais datetimes vêm sem fuso e em UTC → `dataHora(iso)` de `@/lib/utils` (soma `Z` antes do `new Date`). Data pura (`AAAA-MM-DD`, ex: `ultima_inspecao`, `inicio` do relatório) → `dataBrasileira(iso)`, que só reordena a string. Número → `formatarNumero` (pt-BR, até 2 casas).
+  - Rótulo de cargo e de tipo de relatório → `lib/rotulos.ts`. Rótulo de status → `rotuloDeStatus`/`opcoesDeStatus` de `selo-de-status.tsx`.
 - **Retry**: queries só repetem erro que não é `ApiError` (rede); 4xx/5xx da API falham na hora.
 - **401 global**: `src/lib/cliente-de-consultas.ts` escuta erro de qualquer query/mutação; `401` zera `['me']` → o guard manda pro `/login`. Tela não trata 401.
 - **Sessão**: `contexts/Autenticacao.tsx` → `useAutenticacao()` dá `usuario` (`Usuario | null`), `carregando`, e as mutações `entrar`/`sair` (objetos do TanStack: `entrar.mutate(credenciais)`, `entrar.isPending`, `entrar.error`). `me` com `401` vira `null`, não erro. `entrar` grava `['me']` direto; `sair` zera `['me']` e remove o resto do cache.
-- **Pós-login**: a tela de login só chama `entrar.mutate`. Quem navega é o `LayoutPublico`: com usuário, manda pra `state.de` (URL que o guard guardou) ou pro início do papel (`cliente` → `/perfil`, resto → `/admin`).
+- **Pós-login**: a tela de login só chama `entrar.mutate`. Quem navega é o `LayoutPublico`: com usuário, manda pra `state.de` (URL que o guard guardou) ou pro início do papel (`cliente` → `/viagens`, resto → `/admin`; `inicioDo` em `Aplicacao.tsx`).
 - **Rotas** (`src/Aplicacao.tsx`, layout routes do react-router 7): `LayoutPublico` (login/cadastro/recuperar), `LayoutProtegido` (exige sessão, envolve `CascaDePagina` + `Suspense`), `Papeis` (papel errado → início do papel). Tabela completa em `docs/frontend/dados-e-rotas.md`. Rota nova: `lazy(() => import(...))` + `<Route>` dentro do grupo de papel certo + item no `NAV` do `casca-de-pagina.tsx` (com `papeis`).
 - **Raiz** (`principal.tsx`): `QueryClientProvider` → `ProvedorDeTema` → `ProvedorDeAutenticacao` → `TooltipProvider` → `Aplicacao` + `Toaster`. Tela não monta `Toaster` nem `TooltipProvider`.
 - **Formulário de cadastro/edição** abre em `Dialog` sobre a lista (carga, usuários), não em rota própria.
 - **Tela logada não monta `CascaDePagina`**: o `LayoutProtegido` já envolve.
+
+## Impressão
+
+Só os relatórios (`/admin/relatorios/ver`) são feitos pra sair no papel. O que sustenta isso:
+
+- O bloco `@media print` de `src/index.css` fica **fora de qualquer `@layer`, de propósito**. CSS sem layer vence as utilities do Tailwind (que vivem em `@layer utilities`); o `.nao-imprime { display: none }` não leva `!important`, então dentro de um layer ele perderia para `flex`/`inline-flex` no mesmo elemento (a faixa de botões do relatório é `nao-imprime flex flex-wrap`, e todo `Button` é `inline-flex`). Não mova o bloco pra dentro de `@layer base`.
+- `.nao-imprime` esconde chrome: alternador de tema (`Aplicacao.tsx`), barra "Conectado como…" e dock (`casca-de-pagina.tsx`) e botões da tela. Elemento novo que não deve ir pro papel leva essa classe.
+- O mesmo bloco redefine os tokens de `:root` e `.escuro` para preto sobre branco, porque no tema escuro o papel saía com texto claro sobre fundo branco. Só os tokens listados lá são trocados (`background`, `foreground`, `card`, `card-foreground`, `muted`, `muted-foreground`, `border`, `primary`, `primary-foreground`, `success`, `warning`, `danger`); tela imprimível que use outro token (`accent`, `secondary`, `delay`…) precisa dele no bloco. `success` e `danger` ficam ambos pretos, então a cor deixa de significar status no papel.
+- Variantes `print:block` / `print:hidden` em vez de só `md:`: a folha A4 é mais estreita que o breakpoint `md`, então a versão em cartões ganharia da tabela. Padrão: tabela `hidden md:block print:block`, cartões `md:hidden print:hidden`.
+- Não há teste automático: confira com Ctrl+P (pré-visualização) nos dois temas.
 
 ## TypeScript
 
