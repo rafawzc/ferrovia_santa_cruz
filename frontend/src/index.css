@@ -131,3 +131,9 @@
     outline-offset: 2px;
   }
 }
+
+@media print {
+  .nao-imprime {
+    display: none;
+  }
+}

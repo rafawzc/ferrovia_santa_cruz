@@ -52,9 +52,11 @@ import {
   useAtualizarUsuario,
   useCriarUsuario,
   useDesativarUsuario,
+  useSenhaTemporaria,
   useUsuarios,
 } from '@/hooks/usuarios'
 import { ApiError, tratouErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
 const CARGOS: Record<string, string> = {
   comum: 'Cliente',
@@ -148,7 +150,9 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
   }
 
   const ehVoceMesmo = usuario.id === eu?.id
-  if (ehVoceMesmo) return null
+  if (ehVoceMesmo) {
+    return <p className="text-sm text-muted-foreground">Você não pode desativar a própria conta.</p>
+  }
 
   return (
     <AlertDialog>
@@ -161,8 +165,9 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
         <AlertDialogHeader>
           <AlertDialogTitle>Desativar {usuario.nome}?</AlertDialogTitle>
           <AlertDialogDescription>
-            A pessoa perde o acesso na hora. O cadastro e o histórico continuam, e dá pra reativar
-            depois.
+            A pessoa perde o acesso na hora. Desativar não exclui: o cadastro e o histórico
+            continuam, e dá pra reativar depois. O último administrador ativo não pode ser
+            desativado.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -184,6 +189,85 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  )
+}
+
+function AcaoSenhaTemporaria({ usuario }: { usuario: Usuario }) {
+  const gerar = useSenhaTemporaria()
+  const [senha, setSenha] = useState<string | null>(null)
+
+  const copiar = (texto: string) => {
+    void navigator.clipboard.writeText(texto).then(
+      () => {
+        toast.success('Senha copiada')
+      },
+      () => {
+        toast.error('Não foi possível copiar. Copie manualmente.')
+      },
+    )
+  }
+
+  return (
+    <>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button type="button" variant="outline" disabled={gerar.isPending}>
+            Gerar senha temporária
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gerar senha temporária para {usuario.nome}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A senha anterior deixa de valer na hora. A nova senha aparece uma única vez, para você
+              repassar à pessoa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                gerar.mutate(usuario.id, {
+                  onSuccess: (resposta) => {
+                    setSenha(resposta.senha_temporaria)
+                  },
+                  onError: (erro) => toast.error(erroTexto(erro, 'gerar a senha temporária')),
+                })
+              }}
+            >
+              Gerar senha
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog
+        open={senha !== null}
+        onOpenChange={(aberto) => {
+          if (!aberto) setSenha(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Senha temporária de {usuario.nome}</DialogTitle>
+            <DialogDescription>
+              Esta senha não será mostrada de novo. Copie e repasse agora.
+            </DialogDescription>
+          </DialogHeader>
+          <p className="rounded-lg bg-muted p-4 text-center font-mono text-2xl font-bold select-all">
+            {senha}
+          </p>
+          <Button
+            type="button"
+            onClick={() => {
+              if (senha !== null) copiar(senha)
+            }}
+          >
+            Copiar senha
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -311,6 +395,7 @@ function FormularioDeUsuario({
           {salvando ? 'Salvando…' : rotuloDeEnvio}
         </Button>
 
+        {usuario && <AcaoSenhaTemporaria usuario={usuario} />}
         {usuario && <AcoesDeAtivacao usuario={usuario} aoFechar={aoFechar} />}
       </FieldGroup>
     </form>
@@ -330,7 +415,7 @@ function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
       {usuarios.map((usuario) => (
-        <li key={usuario.id}>
+        <li key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
           <CartaoDeUsuario
             nome={usuario.nome}
             cargo={rotuloCargo(usuario.cargo)}
@@ -361,7 +446,7 @@ function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
         </TableHeader>
         <TableBody>
           {usuarios.map((usuario) => (
-            <TableRow key={usuario.id}>
+            <TableRow key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
               <TableCell>
                 <Button
                   variant="link"

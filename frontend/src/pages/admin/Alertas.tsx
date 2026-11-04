@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,14 +17,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SeloDeStatus } from '@/components/ui/selo-de-status'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAlertas, useCriarAlerta } from '@/hooks/alertas'
+import { useAlertas, useCriarAlerta, useTratarAlerta } from '@/hooks/alertas'
 import { useLinhas } from '@/hooks/linhas'
-import { ApiError, tratouErrosDeCampo } from '@/lib/api'
-import { dataHora } from '@/lib/utils'
+import {
+  ApiError,
+  tratouErrosDeCampo,
+  type Alerta,
+  type FiltroAlertas,
+  type Severidade,
+} from '@/lib/api'
+import { cn, dataHora } from '@/lib/utils'
 
 const esquema = z.object({
   linha_id: z.string().min(1, 'Escolha a rota'),
+  tipo: z.string().trim().min(1, 'Informe o tipo').max(40, 'Máximo de 40 caracteres'),
+  severidade: z.enum(['normal', 'atencao', 'critico']),
   tempo_espera: z.string().trim().max(40, 'Máximo de 40 caracteres'),
   motivo: z.string().trim().min(1, 'Informe o motivo').max(200, 'Máximo de 200 caracteres'),
   status: z.string().trim().min(1, 'Informe o status').max(40, 'Máximo de 40 caracteres'),
@@ -30,7 +41,20 @@ const esquema = z.object({
 
 type ValoresDoFormulario = z.infer<typeof esquema>
 
-const VAZIO: ValoresDoFormulario = { linha_id: '', tempo_espera: '', motivo: '', status: '' }
+const SEVERIDADES: { valor: Severidade; rotulo: string }[] = [
+  { valor: 'normal', rotulo: 'Normal' },
+  { valor: 'atencao', rotulo: 'Atenção' },
+  { valor: 'critico', rotulo: 'Crítico' },
+]
+
+const VAZIO: ValoresDoFormulario = {
+  linha_id: '',
+  tipo: '',
+  severidade: 'normal',
+  tempo_espera: '',
+  motivo: '',
+  status: '',
+}
 
 function NovoAlerta() {
   const linhas = useLinhas()
@@ -44,6 +68,8 @@ function NovoAlerta() {
     criar.mutate(
       {
         linha_id: Number(v.linha_id),
+        tipo: v.tipo,
+        severidade: v.severidade,
         motivo: v.motivo,
         status: v.status,
         ...(v.tempo_espera && { tempo_espera: v.tempo_espera }),
@@ -116,6 +142,43 @@ function NovoAlerta() {
               )}
             />
             <Controller
+              name="tipo"
+              control={formulario.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="alerta-tipo">Tipo</FieldLabel>
+                  <Input
+                    {...field}
+                    id="alerta-tipo"
+                    placeholder="Ex: via, clima, operacional"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="severidade"
+              control={formulario.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor="alerta-severidade">Severidade</FieldLabel>
+                  <Select name={field.name} value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="alerta-severidade" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SEVERIDADES.map((o) => (
+                        <SelectItem key={o.valor} value={o.valor}>
+                          {o.rotulo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
+            <Controller
               name="tempo_espera"
               control={formulario.control}
               render={({ field, fieldState }) => (
@@ -173,8 +236,141 @@ function NovoAlerta() {
   )
 }
 
-function ListaDeAlertas() {
-  const { data: alertas, isPending, error } = useAlertas()
+type Situacao = 'abertos' | 'tratados' | 'todos'
+
+const TRATADO_DA_SITUACAO: Record<Situacao, boolean | undefined> = {
+  abertos: false,
+  tratados: true,
+  todos: undefined,
+}
+
+interface FiltrosProps {
+  severidade: Severidade | 'todas'
+  tipo: string
+  situacao: Situacao
+  aoMudarSeveridade: (valor: Severidade | 'todas') => void
+  aoMudarTipo: (valor: string) => void
+  aoMudarSituacao: (valor: Situacao) => void
+}
+
+function Filtros({
+  severidade,
+  tipo,
+  situacao,
+  aoMudarSeveridade,
+  aoMudarTipo,
+  aoMudarSituacao,
+}: FiltrosProps) {
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <Select
+        value={severidade}
+        onValueChange={(v) => {
+          aoMudarSeveridade(SEVERIDADES.find((o) => o.valor === v)?.valor ?? 'todas')
+        }}
+      >
+        <SelectTrigger className="w-full" aria-label="Filtrar por severidade">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todas">Todas as severidades</SelectItem>
+          {SEVERIDADES.map((o) => (
+            <SelectItem key={o.valor} value={o.valor}>
+              {o.rotulo}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Input
+        value={tipo}
+        onChange={(e) => {
+          aoMudarTipo(e.target.value)
+        }}
+        placeholder="Filtrar por tipo"
+        aria-label="Filtrar por tipo"
+      />
+      <Select
+        value={situacao}
+        onValueChange={(v) => {
+          if (v === 'abertos' || v === 'tratados' || v === 'todos') aoMudarSituacao(v)
+        }}
+      >
+        <SelectTrigger className="w-full" aria-label="Filtrar por situação">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="abertos">Não tratados</SelectItem>
+          <SelectItem value="tratados">Tratados</SelectItem>
+          <SelectItem value="todos">Todos</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function CartaoDeAlerta({ alerta: a }: { alerta: Alerta }) {
+  const tratar = useTratarAlerta()
+
+  function alternar() {
+    tratar.mutate(
+      { id: a.id, tratado: !a.tratado },
+      {
+        onError: (error) => {
+          toast.error(`Não foi possível atualizar: ${mensagemDeErro(error)}`)
+        },
+      },
+    )
+  }
+
+  const critico = a.severidade === 'critico' && !a.tratado
+  const origem = a.linha_numero === null ? `${a.tipo} (sensor)` : `Rota ${a.linha_numero}`
+
+  return (
+    <Card
+      className={cn(
+        'gap-2 p-4',
+        'bg-accent text-accent-foreground',
+        critico && 'border-2 border-danger',
+        a.tratado && 'opacity-60',
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="flex items-center gap-2 font-semibold">
+          {origem}
+          <SeloDeStatus status={a.severidade} />
+          <Badge variant="outline">{a.tipo}</Badge>
+          {a.tratado && <Badge variant="secondary">Tratado</Badge>}
+        </p>
+        <time dateTime={a.criado_em} className="text-xs text-muted-foreground">
+          {dataHora(a.criado_em)}
+        </time>
+      </div>
+      <p className="text-sm">
+        <span className="text-muted-foreground">Status:</span> {a.status}
+      </p>
+      <p className="text-sm">
+        <span className="text-muted-foreground">Motivo:</span> {a.motivo}
+      </p>
+      {a.tempo_espera && (
+        <p className="text-sm">
+          <span className="text-muted-foreground">Tempo de espera:</span> {a.tempo_espera}
+        </p>
+      )}
+      <Button
+        size="sm"
+        variant={a.tratado ? 'outline' : 'default'}
+        className="self-end"
+        disabled={tratar.isPending}
+        onClick={alternar}
+      >
+        {a.tratado ? 'Reabrir' : 'Marcar como tratado'}
+      </Button>
+    </Card>
+  )
+}
+
+function ListaDeAlertas({ filtro }: { filtro: FiltroAlertas }) {
+  const { data: alertas, isPending, error } = useAlertas(filtro)
 
   if (isPending) {
     return (
@@ -187,32 +383,14 @@ function ListaDeAlertas() {
   }
   if (error) return <ErroDeCarregamento error={error} />
   if (alertas.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nenhum alerta enviado ainda.</p>
+    return <p className="text-sm text-muted-foreground">Nenhum alerta encontrado.</p>
   }
 
   return (
     <ul className="flex flex-col gap-3">
       {alertas.map((a) => (
         <li key={a.id}>
-          <Card className="gap-2 bg-accent p-4 text-accent-foreground">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="font-semibold">Rota {a.linha_numero}</p>
-              <time dateTime={a.criado_em} className="text-xs text-muted-foreground">
-                {dataHora(a.criado_em)}
-              </time>
-            </div>
-            <p className="text-sm">
-              <span className="text-muted-foreground">Status:</span> {a.status}
-            </p>
-            <p className="text-sm">
-              <span className="text-muted-foreground">Motivo:</span> {a.motivo}
-            </p>
-            {a.tempo_espera && (
-              <p className="text-sm">
-                <span className="text-muted-foreground">Tempo de espera:</span> {a.tempo_espera}
-              </p>
-            )}
-          </Card>
+          <CartaoDeAlerta alerta={a} />
         </li>
       ))}
     </ul>
@@ -220,12 +398,31 @@ function ListaDeAlertas() {
 }
 
 function Historico() {
+  const [severidade, setSeveridade] = useState<Severidade | 'todas'>('todas')
+  const [tipo, setTipo] = useState('')
+  const [situacao, setSituacao] = useState<Situacao>('abertos')
+  const tipoLimpo = tipo.trim()
+
   return (
     <section aria-labelledby="historico" className="flex flex-col gap-4">
       <h2 id="historico" className="text-lg font-bold text-foreground">
-        Alertas enviados
+        Central de alertas
       </h2>
-      <ListaDeAlertas />
+      <Filtros
+        severidade={severidade}
+        tipo={tipo}
+        situacao={situacao}
+        aoMudarSeveridade={setSeveridade}
+        aoMudarTipo={setTipo}
+        aoMudarSituacao={setSituacao}
+      />
+      <ListaDeAlertas
+        filtro={{
+          ...(severidade !== 'todas' && { severidade }),
+          ...(tipoLimpo && { tipo: tipoLimpo }),
+          tratado: TRATADO_DA_SITUACAO[situacao],
+        }}
+      />
     </section>
   )
 }
