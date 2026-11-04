@@ -24,9 +24,9 @@ class DashboardService:
             }
         if usuario["papel"] == "operacional" and usuario["trem_id"] is None:
             return {
-                "trens_por_status": [],
-                "alertas_ativos_por_severidade": [],
-                "sensores_criticos": 0,
+                "trens_por_status": None,
+                "alertas_ativos_por_severidade": None,
+                "sensores_criticos": None,
                 "viagens_em_andamento": 0,
                 "velocidade_media": None,
             }

@@ -23,13 +23,13 @@ import { useViagens } from '@/hooks/viagens'
 import type { Viagem, ViagemStatus } from '@/lib/api'
 import { dataHora } from '@/lib/utils'
 
-const STATUS_DE_VIAGEM: ViagemStatus[] = [
+const STATUS_DE_VIAGEM = [
   'programada',
   'em_andamento',
   'atrasada',
   'concluida',
   'cancelada',
-]
+] as const satisfies readonly ViagemStatus[]
 const TODOS = 'todos'
 
 function ListaDeViagens({ viagens }: { viagens: Viagem[] }) {

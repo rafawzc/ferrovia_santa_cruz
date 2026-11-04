@@ -13,7 +13,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
@@ -34,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SeloDeStatus } from '@/components/ui/selo-de-status'
+import { opcoesDeStatus, SeloDeStatus } from '@/components/ui/selo-de-status'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -47,17 +46,13 @@ import {
 import { useAutenticacao } from '@/contexts/Autenticacao'
 import { useLinhas } from '@/hooks/linhas'
 import { useAtualizarTrem, useCriarTrem, useExcluirTrem, useTrens } from '@/hooks/trens'
-import { ApiError, tratouErrosDeCampo, type Linha, type Trem } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo, type Linha, type Trem, type TremStatus } from '@/lib/api'
+import { dataBrasileira } from '@/lib/utils'
 
-const STATUS_DE_TREM = [
-  { valor: 'ativo', rotulo: 'Ativo' },
-  { valor: 'manutencao', rotulo: 'Manutenção' },
-  { valor: 'parado', rotulo: 'Parado' },
-] as const
+const STATUS_DE_TREM: TremStatus[] = ['ativo', 'manutencao', 'parado']
+const OPCOES_DE_STATUS = opcoesDeStatus(STATUS_DE_TREM)
 
 const numero = (texto: string) => Number(texto.replace(',', '.'))
-
-const dataBrasileira = (data: string | null) => (data ? data.split('-').reverse().join('/') : '—')
 
 const esquema = z.object({
   prefixo: z.string().trim().min(1, 'Informe o prefixo').max(20, 'Até 20 caracteres'),
@@ -138,6 +133,18 @@ function FormularioDeTrem({ trem, linhas, aoFechar }: FormularioDeTremProps) {
   }
 
   const enviar = formulario.handleSubmit((valores) => {
+    if (trem?.ultima_inspecao && !valores.ultima_inspecao) {
+      formulario.setError('ultima_inspecao', {
+        message: 'Não é possível remover a última inspeção; informe outra data.',
+      })
+      return
+    }
+    if (trem?.linha_id && !valores.linha_id) {
+      formulario.setError('linha_id', {
+        message: 'Não é possível remover a rota do trem; selecione outra rota.',
+      })
+      return
+    }
     const dados = {
       prefixo: valores.prefixo,
       modelo: valores.modelo,
@@ -196,7 +203,7 @@ function FormularioDeTrem({ trem, linhas, aoFechar }: FormularioDeTremProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_DE_TREM.map((opcao) => (
+                  {OPCOES_DE_STATUS.map((opcao) => (
                     <SelectItem key={opcao.valor} value={opcao.valor}>
                       {opcao.rotulo}
                     </SelectItem>
@@ -253,76 +260,35 @@ function FormularioComLinhas({ trem, aoFechar }: { trem: Trem | null; aoFechar: 
 }
 
 interface AcoesProps {
-  trem: Trem
-  aoEditar: (trem: Trem) => void
+  podeEscrever: boolean
+  aoEditar: () => void
+  aoExcluir: () => void
 }
 
-function AcoesDoTrem({ trem, aoEditar }: AcoesProps) {
-  const { usuario } = useAutenticacao()
-  const excluir = useExcluirTrem()
-
-  if (usuario?.papel !== 'gestao') return null
-
+function Acoes({ podeEscrever, aoEditar, aoExcluir }: AcoesProps) {
+  if (!podeEscrever) return null
   return (
     <div className="flex gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          aoEditar(trem)
-        }}
-      >
+      <Button size="sm" variant="outline" onClick={aoEditar}>
         <Pencil />
         Editar
       </Button>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="sm" disabled={excluir.isPending}>
-            <Trash2 />
-            Excluir
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir o trem {trem.prefixo}?</AlertDialogTitle>
-            <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                excluir.mutate(trem.id, {
-                  onSuccess: () => {
-                    toast.success('Trem excluído')
-                  },
-                  onError: (erro) => {
-                    if (erro instanceof ApiError && erro.status === 409) {
-                      toast.error(
-                        'Este trem tem sensores vinculados. Exclua ou transfira os sensores antes.',
-                      )
-                      return
-                    }
-                    toast.error(`Não foi possível excluir: ${mensagemDeErro(erro)}`)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Button size="sm" variant="destructive" onClick={aoExcluir}>
+        <Trash2 />
+        Excluir
+      </Button>
     </div>
   )
 }
 
 interface ListaProps {
   trens: Trem[]
+  podeEscrever: boolean
   aoEditar: (trem: Trem) => void
+  aoExcluir: (trem: Trem) => void
 }
 
-function ListaDeCartoes({ trens, aoEditar }: ListaProps) {
+function ListaDeCartoes({ trens, podeEscrever, aoEditar, aoExcluir }: ListaProps) {
   return (
     <ul className="grid gap-3 md:hidden">
       {trens.map((trem) => (
@@ -339,20 +305,28 @@ function ListaDeCartoes({ trens, aoEditar }: ListaProps) {
             <dt className="text-muted-foreground">Capacidade</dt>
             <dd>{trem.capacidade_t} t</dd>
             <dt className="text-muted-foreground">Última inspeção</dt>
-            <dd>{dataBrasileira(trem.ultima_inspecao)}</dd>
+            <dd>{trem.ultima_inspecao ? dataBrasileira(trem.ultima_inspecao) : '—'}</dd>
             <dt className="text-muted-foreground">Rota</dt>
             <dd>{trem.linha_numero ?? '—'}</dd>
             <dt className="text-muted-foreground">Sensores</dt>
             <dd>{trem.total_sensores}</dd>
           </dl>
-          <AcoesDoTrem trem={trem} aoEditar={aoEditar} />
+          <Acoes
+            podeEscrever={podeEscrever}
+            aoEditar={() => {
+              aoEditar(trem)
+            }}
+            aoExcluir={() => {
+              aoExcluir(trem)
+            }}
+          />
         </li>
       ))}
     </ul>
   )
 }
 
-function TabelaDeTrens({ trens, aoEditar }: ListaProps) {
+function TabelaDeTrens({ trens, podeEscrever, aoEditar, aoExcluir }: ListaProps) {
   return (
     <div className="hidden rounded-xl bg-card p-4 md:block">
       <Table>
@@ -366,7 +340,7 @@ function TabelaDeTrens({ trens, aoEditar }: ListaProps) {
             <TableHead>Última inspeção</TableHead>
             <TableHead>Rota</TableHead>
             <TableHead>Sensores</TableHead>
-            <TableHead />
+            {podeEscrever && <TableHead>Ações</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -379,12 +353,24 @@ function TabelaDeTrens({ trens, aoEditar }: ListaProps) {
               <TableCell>
                 <SeloDeStatus status={trem.status} />
               </TableCell>
-              <TableCell>{dataBrasileira(trem.ultima_inspecao)}</TableCell>
+              <TableCell>
+                {trem.ultima_inspecao ? dataBrasileira(trem.ultima_inspecao) : '—'}
+              </TableCell>
               <TableCell>{trem.linha_numero ?? '—'}</TableCell>
               <TableCell>{trem.total_sensores}</TableCell>
-              <TableCell>
-                <AcoesDoTrem trem={trem} aoEditar={aoEditar} />
-              </TableCell>
+              {podeEscrever && (
+                <TableCell>
+                  <Acoes
+                    podeEscrever
+                    aoEditar={() => {
+                      aoEditar(trem)
+                    }}
+                    aoExcluir={() => {
+                      aoExcluir(trem)
+                    }}
+                  />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -396,11 +382,13 @@ function TabelaDeTrens({ trens, aoEditar }: ListaProps) {
 interface ConteudoProps {
   busca: string
   status: string
+  podeEscrever: boolean
   aoEditar: (trem: Trem) => void
+  aoExcluir: (trem: Trem) => void
 }
 
-function ConteudoDeTrens({ busca, status, aoEditar }: ConteudoProps) {
-  const filtroDeStatus = STATUS_DE_TREM.find((opcao) => opcao.valor === status)?.valor
+function ConteudoDeTrens({ busca, status, podeEscrever, aoEditar, aoExcluir }: ConteudoProps) {
+  const filtroDeStatus = STATUS_DE_TREM.find((item) => item === status)
   const { data: trens, isPending, error } = useTrens({ busca, status: filtroDeStatus })
 
   if (isPending) {
@@ -419,25 +407,53 @@ function ConteudoDeTrens({ busca, status, aoEditar }: ConteudoProps) {
 
   return (
     <>
-      <ListaDeCartoes trens={trens} aoEditar={aoEditar} />
-      <TabelaDeTrens trens={trens} aoEditar={aoEditar} />
+      <ListaDeCartoes
+        trens={trens}
+        podeEscrever={podeEscrever}
+        aoEditar={aoEditar}
+        aoExcluir={aoExcluir}
+      />
+      <TabelaDeTrens
+        trens={trens}
+        podeEscrever={podeEscrever}
+        aoEditar={aoEditar}
+        aoExcluir={aoExcluir}
+      />
     </>
   )
 }
 
 export default function Trens() {
   const { usuario } = useAutenticacao()
+  const podeEscrever = usuario?.papel === 'gestao'
+  const excluir = useExcluirTrem()
   const [busca, setBusca] = useState('')
   const [status, setStatus] = useState('todos')
   const [emEdicao, setEmEdicao] = useState<Trem | 'novo' | null>(null)
+  const [paraExcluir, setParaExcluir] = useState<Trem | null>(null)
   const tremEmEdicao = emEdicao === 'novo' ? null : emEdicao
+
+  const confirmarExclusao = (trem: Trem) => {
+    excluir.mutate(trem.id, {
+      onSuccess: () => {
+        toast.success('Trem excluído')
+      },
+      onError: (erro) => {
+        if (erro instanceof ApiError && erro.status === 409) {
+          toast.error('Este trem tem sensores vinculados. Exclua ou transfira os sensores antes.')
+          return
+        }
+        toast.error(`Não foi possível excluir: ${mensagemDeErro(erro)}`)
+      },
+    })
+  }
 
   return (
     <>
       <CabecalhoDeTela
         title="Trens"
         actions={
-          usuario?.papel === 'gestao' && (
+          podeEscrever && (
             <Button
               size="sm"
               onClick={() => {
@@ -467,7 +483,7 @@ export default function Trens() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos os status</SelectItem>
-            {STATUS_DE_TREM.map((opcao) => (
+            {OPCOES_DE_STATUS.map((opcao) => (
               <SelectItem key={opcao.valor} value={opcao.valor}>
                 {opcao.rotulo}
               </SelectItem>
@@ -476,7 +492,13 @@ export default function Trens() {
         </Select>
       </div>
 
-      <ConteudoDeTrens busca={busca} status={status} aoEditar={setEmEdicao} />
+      <ConteudoDeTrens
+        busca={busca}
+        status={status}
+        podeEscrever={podeEscrever}
+        aoEditar={setEmEdicao}
+        aoExcluir={setParaExcluir}
+      />
 
       <Dialog
         open={emEdicao !== null}
@@ -502,6 +524,31 @@ export default function Trens() {
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={paraExcluir !== null}
+        onOpenChange={(aberto) => {
+          if (!aberto) setParaExcluir(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir o trem {paraExcluir?.prefixo}?</AlertDialogTitle>
+            <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (paraExcluir) confirmarExclusao(paraExcluir)
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

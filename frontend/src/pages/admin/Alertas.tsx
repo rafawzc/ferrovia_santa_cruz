@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SeloDeStatus } from '@/components/ui/selo-de-status'
+import { SeloDeStatus, opcoesDeStatus } from '@/components/ui/selo-de-status'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAlertas, useCriarAlerta, useTratarAlerta } from '@/hooks/alertas'
 import { useLinhas } from '@/hooks/linhas'
@@ -41,11 +41,9 @@ const esquema = z.object({
 
 type ValoresDoFormulario = z.infer<typeof esquema>
 
-const SEVERIDADES: { valor: Severidade; rotulo: string }[] = [
-  { valor: 'normal', rotulo: 'Normal' },
-  { valor: 'atencao', rotulo: 'Atenção' },
-  { valor: 'critico', rotulo: 'Crítico' },
-]
+const SEVERIDADES: Severidade[] = ['normal', 'atencao', 'critico']
+
+const OPCOES_DE_SEVERIDADE = opcoesDeStatus(SEVERIDADES)
 
 const VAZIO: ValoresDoFormulario = {
   linha_id: '',
@@ -168,7 +166,7 @@ function NovoAlerta() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {SEVERIDADES.map((o) => (
+                      {OPCOES_DE_SEVERIDADE.map((o) => (
                         <SelectItem key={o.valor} value={o.valor}>
                           {o.rotulo}
                         </SelectItem>
@@ -266,7 +264,7 @@ function Filtros({
       <Select
         value={severidade}
         onValueChange={(v) => {
-          aoMudarSeveridade(SEVERIDADES.find((o) => o.valor === v)?.valor ?? 'todas')
+          aoMudarSeveridade(SEVERIDADES.find((s) => s === v) ?? 'todas')
         }}
       >
         <SelectTrigger className="w-full" aria-label="Filtrar por severidade">
@@ -274,7 +272,7 @@ function Filtros({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="todas">Todas as severidades</SelectItem>
-          {SEVERIDADES.map((o) => (
+          {OPCOES_DE_SEVERIDADE.map((o) => (
             <SelectItem key={o.valor} value={o.valor}>
               {o.rotulo}
             </SelectItem>

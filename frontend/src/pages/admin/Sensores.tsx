@@ -13,7 +13,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
@@ -48,7 +47,7 @@ import { useAutenticacao } from '@/contexts/Autenticacao'
 import { useAtualizarSensor, useCriarSensor, useExcluirSensor, useSensores } from '@/hooks/sensores'
 import { useTrens } from '@/hooks/trens'
 import { ApiError, tratouErrosDeCampo, type Sensor, type Trem } from '@/lib/api'
-import { dataHora } from '@/lib/utils'
+import { dataHora, formatarNumero } from '@/lib/utils'
 
 const TIPOS_DE_SENSOR = [
   { valor: 'velocidade', rotulo: 'Velocidade' },
@@ -57,6 +56,10 @@ const TIPOS_DE_SENSOR = [
   { valor: 'energia', rotulo: 'Energia' },
   { valor: 'localizacao', rotulo: 'Localização' },
 ] as const
+
+const UNIDADE_DO_TIPO: Partial<Record<Sensor['tipo_dado'], string>> = {
+  velocidade: 'km/h',
+}
 
 const esquema = z.object({
   codigo: z.string().trim().min(1, 'Informe o código').max(20, 'Até 20 caracteres'),
@@ -118,6 +121,12 @@ function FormularioDeSensor({ sensor, trens, aoFechar }: FormularioDeSensorProps
   }
 
   const enviar = formulario.handleSubmit((valores) => {
+    if (sensor?.segmento && !valores.segmento) {
+      formulario.setError('segmento', {
+        message: 'Não é possível remover o segmento; informe outro valor.',
+      })
+      return
+    }
     const dados = {
       codigo: valores.codigo,
       nome: valores.nome,
@@ -230,68 +239,32 @@ function FormularioComTrens({ sensor, aoFechar }: FormularioComTrensProps) {
 }
 
 interface AcoesProps {
-  sensor: Sensor
-  aoEditar: (sensor: Sensor) => void
+  podeEscrever: boolean
+  aoEditar: () => void
+  aoExcluir: () => void
 }
 
-function AcoesDoSensor({ sensor, aoEditar }: AcoesProps) {
-  const { usuario } = useAutenticacao()
-  const excluir = useExcluirSensor()
-
-  if (usuario?.papel !== 'gestao') return null
-
+function Acoes({ podeEscrever, aoEditar, aoExcluir }: AcoesProps) {
+  if (!podeEscrever) return null
   return (
     <div className="flex gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => {
-          aoEditar(sensor)
-        }}
-      >
+      <Button size="sm" variant="outline" onClick={aoEditar}>
         <Pencil />
         Editar
       </Button>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="sm" disabled={excluir.isPending}>
-            <Trash2 />
-            Excluir
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir o sensor {sensor.codigo}?</AlertDialogTitle>
-            <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                excluir.mutate(sensor.id, {
-                  onSuccess: () => {
-                    toast.success('Sensor excluído')
-                  },
-                  onError: (erro) => {
-                    if (erro instanceof ApiError && erro.status === 409) {
-                      toast.error(
-                        'Este sensor já tem leituras registradas e não pode ser excluído.',
-                      )
-                      return
-                    }
-                    toast.error(`Não foi possível excluir: ${mensagemDeErro(erro)}`)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Button size="sm" variant="destructive" onClick={aoExcluir}>
+        <Trash2 />
+        Excluir
+      </Button>
     </div>
   )
+}
+
+const valorComUnidade = (sensor: Sensor) => {
+  if (sensor.ultima_leitura_valor === null) return '—'
+  const unidade = UNIDADE_DO_TIPO[sensor.tipo_dado]
+  const valor = formatarNumero(sensor.ultima_leitura_valor)
+  return unidade ? `${valor} ${unidade}` : valor
 }
 
 function UltimaLeitura({ sensor }: { sensor: Sensor }) {
@@ -299,7 +272,7 @@ function UltimaLeitura({ sensor }: { sensor: Sensor }) {
   return (
     <span className="flex flex-wrap items-center gap-2">
       <SeloDeStatus status={sensor.ultima_leitura_status} />
-      {sensor.ultima_leitura_valor} · {dataHora(sensor.ultima_leitura_data)}
+      {valorComUnidade(sensor)} · {dataHora(sensor.ultima_leitura_data)}
     </span>
   )
 }
@@ -309,10 +282,12 @@ const rotuloDoTipo = (tipo: Sensor['tipo_dado']) =>
 
 interface ListaProps {
   sensores: Sensor[]
+  podeEscrever: boolean
   aoEditar: (sensor: Sensor) => void
+  aoExcluir: (sensor: Sensor) => void
 }
 
-function ListaDeCartoes({ sensores, aoEditar }: ListaProps) {
+function ListaDeCartoes({ sensores, podeEscrever, aoEditar, aoExcluir }: ListaProps) {
   return (
     <ul className="grid gap-3 md:hidden">
       {sensores.map((sensor) => (
@@ -335,14 +310,22 @@ function ListaDeCartoes({ sensores, aoEditar }: ListaProps) {
               <UltimaLeitura sensor={sensor} />
             </dd>
           </dl>
-          <AcoesDoSensor sensor={sensor} aoEditar={aoEditar} />
+          <Acoes
+            podeEscrever={podeEscrever}
+            aoEditar={() => {
+              aoEditar(sensor)
+            }}
+            aoExcluir={() => {
+              aoExcluir(sensor)
+            }}
+          />
         </li>
       ))}
     </ul>
   )
 }
 
-function TabelaDeSensores({ sensores, aoEditar }: ListaProps) {
+function TabelaDeSensores({ sensores, podeEscrever, aoEditar, aoExcluir }: ListaProps) {
   return (
     <div className="hidden rounded-xl bg-card p-4 md:block">
       <Table>
@@ -355,7 +338,7 @@ function TabelaDeSensores({ sensores, aoEditar }: ListaProps) {
             <TableHead>Localização</TableHead>
             <TableHead>Segmento</TableHead>
             <TableHead>Última leitura</TableHead>
-            <TableHead />
+            {podeEscrever && <TableHead>Ações</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -370,9 +353,19 @@ function TabelaDeSensores({ sensores, aoEditar }: ListaProps) {
               <TableCell>
                 <UltimaLeitura sensor={sensor} />
               </TableCell>
-              <TableCell>
-                <AcoesDoSensor sensor={sensor} aoEditar={aoEditar} />
-              </TableCell>
+              {podeEscrever && (
+                <TableCell>
+                  <Acoes
+                    podeEscrever
+                    aoEditar={() => {
+                      aoEditar(sensor)
+                    }}
+                    aoExcluir={() => {
+                      aoExcluir(sensor)
+                    }}
+                  />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -383,10 +376,12 @@ function TabelaDeSensores({ sensores, aoEditar }: ListaProps) {
 
 interface ConteudoProps {
   tipo: string
+  podeEscrever: boolean
   aoEditar: (sensor: Sensor) => void
+  aoExcluir: (sensor: Sensor) => void
 }
 
-function ConteudoDeSensores({ tipo, aoEditar }: ConteudoProps) {
+function ConteudoDeSensores({ tipo, podeEscrever, aoEditar, aoExcluir }: ConteudoProps) {
   const filtroDeTipo = TIPOS_DE_SENSOR.find((opcao) => opcao.valor === tipo)?.valor
   const { data: sensores, isPending, error } = useSensores({ tipo: filtroDeTipo })
 
@@ -406,24 +401,52 @@ function ConteudoDeSensores({ tipo, aoEditar }: ConteudoProps) {
 
   return (
     <>
-      <ListaDeCartoes sensores={sensores} aoEditar={aoEditar} />
-      <TabelaDeSensores sensores={sensores} aoEditar={aoEditar} />
+      <ListaDeCartoes
+        sensores={sensores}
+        podeEscrever={podeEscrever}
+        aoEditar={aoEditar}
+        aoExcluir={aoExcluir}
+      />
+      <TabelaDeSensores
+        sensores={sensores}
+        podeEscrever={podeEscrever}
+        aoEditar={aoEditar}
+        aoExcluir={aoExcluir}
+      />
     </>
   )
 }
 
 export default function Sensores() {
   const { usuario } = useAutenticacao()
+  const podeEscrever = usuario?.papel === 'gestao'
+  const excluir = useExcluirSensor()
   const [tipo, setTipo] = useState('todos')
   const [emEdicao, setEmEdicao] = useState<Sensor | 'novo' | null>(null)
+  const [paraExcluir, setParaExcluir] = useState<Sensor | null>(null)
   const sensorEmEdicao = emEdicao === 'novo' ? null : emEdicao
+
+  const confirmarExclusao = (sensor: Sensor) => {
+    excluir.mutate(sensor.id, {
+      onSuccess: () => {
+        toast.success('Sensor excluído')
+      },
+      onError: (erro) => {
+        if (erro instanceof ApiError && erro.status === 409) {
+          toast.error('Este sensor já tem leituras registradas e não pode ser excluído.')
+          return
+        }
+        toast.error(`Não foi possível excluir: ${mensagemDeErro(erro)}`)
+      },
+    })
+  }
 
   return (
     <>
       <CabecalhoDeTela
         title="Sensores"
         actions={
-          usuario?.papel === 'gestao' && (
+          podeEscrever && (
             <Button
               size="sm"
               onClick={() => {
@@ -453,7 +476,12 @@ export default function Sensores() {
         </Select>
       </div>
 
-      <ConteudoDeSensores tipo={tipo} aoEditar={setEmEdicao} />
+      <ConteudoDeSensores
+        tipo={tipo}
+        podeEscrever={podeEscrever}
+        aoEditar={setEmEdicao}
+        aoExcluir={setParaExcluir}
+      />
 
       <Dialog
         open={emEdicao !== null}
@@ -479,6 +507,31 @@ export default function Sensores() {
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={paraExcluir !== null}
+        onOpenChange={(aberto) => {
+          if (!aberto) setParaExcluir(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir o sensor {paraExcluir?.codigo}?</AlertDialogTitle>
+            <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (paraExcluir) confirmarExclusao(paraExcluir)
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

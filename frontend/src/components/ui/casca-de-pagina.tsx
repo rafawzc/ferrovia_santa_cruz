@@ -17,18 +17,13 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useAutenticacao } from '@/contexts/Autenticacao'
 import type { Papel } from '@/lib/api'
+import { rotuloDeCargo } from '@/lib/rotulos'
 import { cn } from '@/lib/utils'
 
 const EQUIPE: Papel[] = ['operacional', 'gestao']
 const GESTAO: Papel[] = ['gestao']
 const CLIENTE: Papel[] = ['cliente']
 const TODOS: Papel[] = ['cliente', 'operacional', 'gestao']
-
-const PAPEIS: Record<Papel, string> = {
-  cliente: 'Usuário comum',
-  operacional: 'Maquinista',
-  gestao: 'Administrador',
-}
 
 const NAV = [
   { icon: LayoutGrid, label: 'Início', path: '/admin', papeis: EQUIPE },
@@ -53,7 +48,7 @@ function Identificacao() {
           Conectado como <span className="font-semibold">{usuario.nome}</span>
           <span className="block text-xs opacity-80 sm:inline sm:opacity-100">
             <span className="hidden sm:inline"> · </span>
-            {PAPEIS[usuario.papel]}
+            {rotuloDeCargo(usuario.cargo)}
           </span>
         </p>
         <Button

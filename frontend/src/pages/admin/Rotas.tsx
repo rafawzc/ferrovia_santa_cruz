@@ -56,18 +56,25 @@ import {
   type LinhaStatus,
   type Trem,
   type Viagem,
+  type ViagemNova,
   type ViagemStatus,
 } from '@/lib/api'
 import { dataHora } from '@/lib/utils'
 
-const STATUS_DE_ROTA: LinhaStatus[] = ['na_estacao', 'ja_partiu', 'atraso', 'manutencao', 'fechado']
-const STATUS_DE_VIAGEM: ViagemStatus[] = [
+const STATUS_DE_ROTA = [
+  'na_estacao',
+  'ja_partiu',
+  'atraso',
+  'manutencao',
+  'fechado',
+] as const satisfies readonly LinhaStatus[]
+const STATUS_DE_VIAGEM = [
   'programada',
   'em_andamento',
   'atrasada',
   'concluida',
   'cancelada',
-]
+] as const satisfies readonly ViagemStatus[]
 const TODOS = 'todos'
 
 const paraCampoDeData = (iso: string) => {
@@ -81,7 +88,7 @@ const esquemaDeRota = z.object({
   numero: z.string().trim().min(1, 'Informe o número'),
   origem: z.string().trim().min(1, 'Informe a origem'),
   destino: z.string().trim().min(1, 'Informe o destino'),
-  status: z.enum(['manutencao', 'atraso', 'fechado', 'na_estacao', 'ja_partiu']),
+  status: z.enum(STATUS_DE_ROTA),
   ativo: z.boolean(),
 })
 
@@ -93,7 +100,7 @@ const esquemaDeViagem = z
     trem_id: z.string().min(1, 'Selecione o trem'),
     partida_prevista: z.string().min(1, 'Informe a partida'),
     chegada_prevista: z.string().min(1, 'Informe a chegada'),
-    status: z.enum(['programada', 'em_andamento', 'concluida', 'cancelada', 'atrasada']),
+    status: z.enum(STATUS_DE_VIAGEM),
   })
   .refine((valores) => valores.chegada_prevista > valores.partida_prevista, {
     message: 'A chegada deve ser depois da partida',
@@ -120,9 +127,24 @@ function CampoTexto({ formulario, name, rotulo }: CampoTextoProps) {
   )
 }
 
-function FormularioDeRota({ rota, aoFechar }: { rota: Linha | null; aoFechar: () => void }) {
-  const criar = useCriarLinha()
-  const atualizar = useAtualizarLinha(rota?.id ?? 0)
+interface Chamadas {
+  onSuccess: () => void
+  onError: (erro: Error) => void
+}
+
+interface CorpoDeFormularioDeRotaProps {
+  rota: Linha | null
+  salvando: boolean
+  mutar: (valores: ValoresDeRota, chamadas: Chamadas) => void
+  aoFechar: () => void
+}
+
+function CorpoDeFormularioDeRota({
+  rota,
+  salvando,
+  mutar,
+  aoFechar,
+}: CorpoDeFormularioDeRotaProps) {
   const formulario = useForm<ValoresDeRota>({
     resolver: zodResolver(esquemaDeRota),
     defaultValues: {
@@ -148,14 +170,8 @@ function FormularioDeRota({ rota, aoFechar }: { rota: Linha | null; aoFechar: ()
       toast.success(rota ? 'Rota atualizada' : 'Rota cadastrada')
       aoFechar()
     }
-    if (rota) {
-      atualizar.mutate(valores, { onSuccess, onError: aoErrar })
-      return
-    }
-    criar.mutate(valores, { onSuccess, onError: aoErrar })
+    mutar(valores, { onSuccess, onError: aoErrar })
   })
-
-  const salvando = criar.isPending || atualizar.isPending
 
   return (
     <form
@@ -206,6 +222,39 @@ function FormularioDeRota({ rota, aoFechar }: { rota: Linha | null; aoFechar: ()
       </FieldGroup>
     </form>
   )
+}
+
+function CadastroDeRota({ aoFechar }: { aoFechar: () => void }) {
+  const criar = useCriarLinha()
+  return (
+    <CorpoDeFormularioDeRota
+      rota={null}
+      salvando={criar.isPending}
+      mutar={(valores, chamadas) => {
+        criar.mutate(valores, chamadas)
+      }}
+      aoFechar={aoFechar}
+    />
+  )
+}
+
+function EdicaoDeRota({ rota, aoFechar }: { rota: Linha; aoFechar: () => void }) {
+  const atualizar = useAtualizarLinha(rota.id)
+  return (
+    <CorpoDeFormularioDeRota
+      rota={rota}
+      salvando={atualizar.isPending}
+      mutar={(valores, chamadas) => {
+        atualizar.mutate(valores, chamadas)
+      }}
+      aoFechar={aoFechar}
+    />
+  )
+}
+
+function FormularioDeRota({ rota, aoFechar }: { rota: Linha | null; aoFechar: () => void }) {
+  if (rota) return <EdicaoDeRota rota={rota} aoFechar={aoFechar} />
+  return <CadastroDeRota aoFechar={aoFechar} />
 }
 
 interface AcoesProps {
@@ -420,16 +469,23 @@ function SecaoDeRotas({ podeEscrever }: { podeEscrever: boolean }) {
   )
 }
 
-interface FormularioDeViagemProps {
+interface CorpoDeFormularioDeViagemProps {
   viagem: Viagem | null
   rotas: Linha[]
   trens: Trem[]
+  salvando: boolean
+  mutar: (dados: ViagemNova, chamadas: Chamadas) => void
   aoFechar: () => void
 }
 
-function FormularioDeViagem({ viagem, rotas, trens, aoFechar }: FormularioDeViagemProps) {
-  const criar = useCriarViagem()
-  const atualizar = useAtualizarViagem(viagem?.id ?? 0)
+function CorpoDeFormularioDeViagem({
+  viagem,
+  rotas,
+  trens,
+  salvando,
+  mutar,
+  aoFechar,
+}: CorpoDeFormularioDeViagemProps) {
   const formulario = useForm<ValoresDeViagem>({
     resolver: zodResolver(esquemaDeViagem),
     defaultValues: {
@@ -458,14 +514,8 @@ function FormularioDeViagem({ viagem, rotas, trens, aoFechar }: FormularioDeViag
       toast.success(viagem ? 'Viagem atualizada' : 'Viagem programada')
       aoFechar()
     }
-    if (viagem) {
-      atualizar.mutate(dados, { onSuccess, onError: aoErrar })
-      return
-    }
-    criar.mutate(dados, { onSuccess, onError: aoErrar })
+    mutar(dados, { onSuccess, onError: aoErrar })
   })
-
-  const salvando = criar.isPending || atualizar.isPending
 
   return (
     <form
@@ -578,6 +628,57 @@ function FormularioDeViagem({ viagem, rotas, trens, aoFechar }: FormularioDeViag
       </FieldGroup>
     </form>
   )
+}
+
+interface FormularioDeViagemProps {
+  viagem: Viagem | null
+  rotas: Linha[]
+  trens: Trem[]
+  aoFechar: () => void
+}
+
+function CadastroDeViagem({ rotas, trens, aoFechar }: Omit<FormularioDeViagemProps, 'viagem'>) {
+  const criar = useCriarViagem()
+  return (
+    <CorpoDeFormularioDeViagem
+      viagem={null}
+      rotas={rotas}
+      trens={trens}
+      salvando={criar.isPending}
+      mutar={(dados, chamadas) => {
+        criar.mutate(dados, chamadas)
+      }}
+      aoFechar={aoFechar}
+    />
+  )
+}
+
+function EdicaoDeViagem({
+  viagem,
+  rotas,
+  trens,
+  aoFechar,
+}: Omit<FormularioDeViagemProps, 'viagem'> & { viagem: Viagem }) {
+  const atualizar = useAtualizarViagem(viagem.id)
+  return (
+    <CorpoDeFormularioDeViagem
+      viagem={viagem}
+      rotas={rotas}
+      trens={trens}
+      salvando={atualizar.isPending}
+      mutar={(dados, chamadas) => {
+        atualizar.mutate(dados, chamadas)
+      }}
+      aoFechar={aoFechar}
+    />
+  )
+}
+
+function FormularioDeViagem({ viagem, rotas, trens, aoFechar }: FormularioDeViagemProps) {
+  if (viagem) {
+    return <EdicaoDeViagem viagem={viagem} rotas={rotas} trens={trens} aoFechar={aoFechar} />
+  }
+  return <CadastroDeViagem rotas={rotas} trens={trens} aoFechar={aoFechar} />
 }
 
 function FormularioComOpcoes({

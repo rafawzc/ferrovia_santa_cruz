@@ -13,39 +13,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useTrens } from '@/hooks/trens'
+import { opcoesDeTipoDeRelatorio } from '@/lib/rotulos'
 
-const TIPOS = [
-  { valor: 'desempenho', rotulo: 'Desempenho' },
-  { valor: 'consumo', rotulo: 'Consumo de energia' },
-  { valor: 'eficiencia', rotulo: 'Eficiência operacional' },
-  { valor: 'manutencao', rotulo: 'Manutenção' },
-] as const
+const TODOS_OS_TRENS = 'todos'
 
 const esquema = z
   .object({
-    tipo: z.enum(['desempenho', 'consumo', 'eficiencia', 'manutencao'], {
-      message: 'Escolha o tipo',
-    }),
+    tipo: z
+      .string({ message: 'Escolha o tipo' })
+      .refine((tipo) => opcoesDeTipoDeRelatorio.some(({ valor }) => valor === tipo), {
+        message: 'Escolha o tipo',
+      }),
     inicio: z.string().min(1, 'Informe a data inicial'),
     fim: z.string().min(1, 'Informe a data final'),
-    trem_id: z.string().trim().regex(/^\d*$/, 'Só números'),
+    trem_id: z.string(),
   })
   .refine((v) => v.fim >= v.inicio, { path: ['fim'], message: 'Fim antes do início' })
 
 type ValoresDoFormulario = z.input<typeof esquema>
 
 export default function Relatorios() {
-  const navigate = useNavigate()
+  const navegar = useNavigate()
+  const trens = useTrens()
   const formulario = useForm<ValoresDoFormulario>({
     resolver: zodResolver(esquema),
-    defaultValues: { inicio: '', fim: '', trem_id: '' },
+    defaultValues: { inicio: '', fim: '', trem_id: TODOS_OS_TRENS },
   })
   const erros = formulario.formState.errors
 
   const gerar = formulario.handleSubmit((v) => {
     const parametros = new URLSearchParams({ tipo: v.tipo, inicio: v.inicio, fim: v.fim })
-    if (v.trem_id) parametros.set('trem_id', v.trem_id)
-    void navigate(`/admin/relatorios/ver?${parametros.toString()}`)
+    if (v.trem_id !== TODOS_OS_TRENS) parametros.set('trem_id', v.trem_id)
+    void navegar(`/admin/relatorios/ver?${parametros.toString()}`)
   })
 
   return (
@@ -70,7 +71,7 @@ export default function Relatorios() {
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {TIPOS.map(({ valor, rotulo }) => (
+                    {opcoesDeTipoDeRelatorio.map(({ valor, rotulo }) => (
                       <SelectItem key={valor} value={valor}>
                         {rotulo}
                       </SelectItem>
@@ -101,15 +102,31 @@ export default function Relatorios() {
             />
             {erros.fim && <FieldError errors={[erros.fim]} />}
           </Field>
-          <Field data-invalid={!!erros.trem_id}>
-            <FieldLabel htmlFor="relatorio-trem">Nº do trem (opcional)</FieldLabel>
-            <Input
-              id="relatorio-trem"
-              inputMode="numeric"
-              aria-invalid={!!erros.trem_id}
-              {...formulario.register('trem_id')}
-            />
-            {erros.trem_id && <FieldError errors={[erros.trem_id]} />}
+          <Field>
+            <FieldLabel htmlFor="relatorio-trem">Trem</FieldLabel>
+            {trens.isPending ? (
+              <Skeleton className="h-9 w-full" />
+            ) : (
+              <Controller
+                control={formulario.control}
+                name="trem_id"
+                render={({ field }) => (
+                  <Select name={field.name} value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="relatorio-trem" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={TODOS_OS_TRENS}>Todos os trens</SelectItem>
+                      {trens.data?.map((trem) => (
+                        <SelectItem key={trem.id} value={String(trem.id)}>
+                          {trem.prefixo} · {trem.modelo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
           </Field>
           <Button type="submit">Gerar relatório</Button>
         </FieldGroup>

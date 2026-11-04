@@ -136,4 +136,20 @@
   .nao-imprime {
     display: none;
   }
+
+  :root,
+  .escuro {
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --muted: #e5e5e5;
+    --muted-foreground: #1a1a1a;
+    --border: #1a1a1a;
+    --primary: #1a1a1a;
+    --primary-foreground: #ffffff;
+    --success: #1a1a1a;
+    --warning: #6b6b6b;
+    --danger: #1a1a1a;
+  }
 }

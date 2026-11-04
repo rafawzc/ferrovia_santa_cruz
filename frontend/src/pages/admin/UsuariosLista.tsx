@@ -56,22 +56,8 @@ import {
   useUsuarios,
 } from '@/hooks/usuarios'
 import { ApiError, tratouErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
+import { rotuloDeCargo } from '@/lib/rotulos'
 import { cn } from '@/lib/utils'
-
-const CARGOS: Record<string, string> = {
-  comum: 'Cliente',
-  admin: 'Administrador',
-  administracao: 'Administração',
-  rh: 'RH',
-  maquinista: 'Maquinista',
-  auxiliar_maquinista: 'Auxiliar de Maquinista',
-  agente_trem: 'Agente de Trem',
-  manutencao: 'Manutenção',
-  engenharia_mecanica: 'Engenharia Mecânica',
-  eletricista: 'Eletricista',
-}
-
-const rotuloCargo = (slug: string) => CARGOS[slug] ?? slug
 
 function erroTexto(erro: Error, acao: string) {
   return `Não foi possível ${acao}: ${mensagemDeErro(erro)}`
@@ -197,6 +183,10 @@ function AcaoSenhaTemporaria({ usuario }: { usuario: Usuario }) {
   const [senha, setSenha] = useState<string | null>(null)
 
   const copiar = (texto: string) => {
+    if (!('clipboard' in navigator)) {
+      toast.error('Não foi possível copiar. Copie a senha manualmente.')
+      return
+    }
     void navigator.clipboard.writeText(texto).then(
       () => {
         toast.success('Senha copiada')
@@ -244,7 +234,9 @@ function AcaoSenhaTemporaria({ usuario }: { usuario: Usuario }) {
       <Dialog
         open={senha !== null}
         onOpenChange={(aberto) => {
-          if (!aberto) setSenha(null)
+          if (aberto) return
+          setSenha(null)
+          gerar.reset()
         }}
       >
         <DialogContent>
@@ -364,7 +356,7 @@ function FormularioDeUsuario({
                 <SelectContent>
                   {cargos.map((cargo) => (
                     <SelectItem key={cargo.id} value={String(cargo.id)}>
-                      {rotuloCargo(cargo.nome)}
+                      {rotuloDeCargo(cargo.nome)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -413,12 +405,12 @@ interface ListaProps {
 
 function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden">
       {usuarios.map((usuario) => (
         <li key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
           <CartaoDeUsuario
             nome={usuario.nome}
-            cargo={rotuloCargo(usuario.cargo)}
+            cargo={rotuloDeCargo(usuario.cargo)}
             ativo={usuario.ativo}
             foto={usuario.foto_url ?? undefined}
             onClick={() => {
@@ -433,7 +425,7 @@ function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
 
 function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
   return (
-    <div className="hidden rounded-xl bg-card p-4 lg:block">
+    <div className="hidden rounded-xl bg-card p-4 md:block">
       <Table>
         <TableHeader>
           <TableRow>
@@ -460,7 +452,7 @@ function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
               </TableCell>
               <TableCell>{usuario.email}</TableCell>
               <TableCell>{usuario.telefone ?? '—'}</TableCell>
-              <TableCell>{rotuloCargo(usuario.cargo)}</TableCell>
+              <TableCell>{rotuloDeCargo(usuario.cargo)}</TableCell>
               <TableCell>
                 <StatusAtivo ativo={usuario.ativo} />
               </TableCell>
@@ -477,9 +469,9 @@ function ConteudoDeUsuarios({ aoAbrir }: { aoAbrir: (usuario: Usuario) => void }
 
   if (isPending) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-1">
         {Array.from({ length: 6 }, (_, indice) => (
-          <Skeleton key={indice} className="h-44 lg:h-10" />
+          <Skeleton key={indice} className="h-44 md:h-10" />
         ))}
       </div>
     )
@@ -549,10 +541,11 @@ export default function UsuariosLista() {
             <DialogDescription>
               {usuarioEmEdicao ? (
                 <span className="flex items-center gap-2">
-                  {rotuloCargo(usuarioEmEdicao.cargo)} <StatusAtivo ativo={usuarioEmEdicao.ativo} />
+                  {rotuloDeCargo(usuarioEmEdicao.cargo)}{' '}
+                  <StatusAtivo ativo={usuarioEmEdicao.ativo} />
                 </span>
               ) : (
-                'Cria o acesso de um funcionário ou cliente.'
+                'Cria o acesso de um funcionário ou usuário comum.'
               )}
             </DialogDescription>
           </DialogHeader>

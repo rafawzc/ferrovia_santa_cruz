@@ -14,24 +14,21 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useRelatorio } from '@/hooks/relatorios'
+import { useTrens } from '@/hooks/trens'
 import { api, type CelulaDeRelatorio, type FiltroRelatorio } from '@/lib/api'
-
-const TIPOS = [
-  { valor: 'desempenho', rotulo: 'Desempenho' },
-  { valor: 'consumo', rotulo: 'Consumo de energia' },
-  { valor: 'eficiencia', rotulo: 'Eficiência operacional' },
-  { valor: 'manutencao', rotulo: 'Manutenção' },
-] as const
+import { opcoesDeTipoDeRelatorio, rotuloDeTipoDeRelatorio } from '@/lib/rotulos'
+import { dataBrasileira, formatarNumero } from '@/lib/utils'
 
 const FORMATO_DATA = /^\d{4}-\d{2}-\d{2}$/
 
-const dataBr = (iso: string) => iso.split('-').reverse().join('/')
-
-const celula = (valor: CelulaDeRelatorio | undefined) =>
-  valor === null || valor === undefined ? '—' : String(valor)
+function celula(valor: CelulaDeRelatorio | undefined) {
+  if (valor === null || valor === undefined) return '—'
+  if (typeof valor === 'number') return formatarNumero(valor)
+  return FORMATO_DATA.test(valor) ? dataBrasileira(valor) : valor
+}
 
 function lerFiltro(parametros: URLSearchParams): FiltroRelatorio | null {
-  const tipo = TIPOS.find(({ valor }) => valor === parametros.get('tipo'))?.valor
+  const tipo = opcoesDeTipoDeRelatorio.find(({ valor }) => valor === parametros.get('tipo'))?.valor
   const inicio = parametros.get('inicio') ?? ''
   const fim = parametros.get('fim') ?? ''
   const trem = parametros.get('trem_id') ?? ''
@@ -57,6 +54,7 @@ export default function RelatorioVisualizacao() {
   const [parametros] = useSearchParams()
   const filtro = lerFiltro(parametros)
   const { data: relatorio, isPending, error } = useRelatorio(filtro)
+  const { data: trens } = useTrens()
 
   if (filtro === null) {
     return (
@@ -82,7 +80,9 @@ export default function RelatorioVisualizacao() {
     )
   }
 
-  const rotuloDoTipo = TIPOS.find(({ valor }) => valor === relatorio.tipo)?.rotulo ?? relatorio.tipo
+  const rotuloDoTipo = rotuloDeTipoDeRelatorio(relatorio.tipo)
+  const prefixoDoTrem =
+    trens?.find(({ id }) => id === relatorio.trem_id)?.prefixo ?? String(relatorio.trem_id)
 
   return (
     <>
@@ -95,16 +95,16 @@ export default function RelatorioVisualizacao() {
         </div>
         <div>
           <dt className="text-sm text-muted-foreground">Início</dt>
-          <dd className="font-semibold">{dataBr(relatorio.inicio)}</dd>
+          <dd className="font-semibold">{dataBrasileira(relatorio.inicio)}</dd>
         </div>
         <div>
           <dt className="text-sm text-muted-foreground">Fim</dt>
-          <dd className="font-semibold">{dataBr(relatorio.fim)}</dd>
+          <dd className="font-semibold">{dataBrasileira(relatorio.fim)}</dd>
         </div>
         {relatorio.trem_id !== null && (
           <div>
             <dt className="text-sm text-muted-foreground">Trem</dt>
-            <dd className="font-semibold">{relatorio.trem_id}</dd>
+            <dd className="font-semibold">{prefixoDoTrem}</dd>
           </div>
         )}
       </dl>
@@ -113,7 +113,7 @@ export default function RelatorioVisualizacao() {
         <p className="mb-6 text-muted-foreground">Nenhum dado no período.</p>
       ) : (
         <>
-          <div className="mb-6 hidden overflow-x-auto rounded-xl bg-card p-2 md:block lg:p-4">
+          <div className="mb-6 hidden overflow-x-auto rounded-xl bg-card p-2 md:block lg:p-4 print:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -133,7 +133,7 @@ export default function RelatorioVisualizacao() {
               </TableBody>
             </Table>
           </div>
-          <div className="mb-6 flex flex-col gap-3 md:hidden">
+          <div className="mb-6 flex flex-col gap-3 md:hidden print:hidden">
             {relatorio.linhas.map((linha, i) => (
               <dl key={i} className="flex flex-col gap-1 rounded-xl bg-card p-4">
                 {relatorio.colunas.map(({ chave, rotulo }) => (
@@ -150,7 +150,7 @@ export default function RelatorioVisualizacao() {
 
       <section className="mb-6 rounded-xl bg-card p-4 lg:p-6">
         <h2 className="mb-4 font-bold">{relatorio.grafico.rotulo}</h2>
-        <GraficoDeBarras barras={relatorio.grafico.itens} />
+        <GraficoDeBarras barras={relatorio.grafico.itens} formatar={formatarNumero} />
       </section>
 
       <div className="nao-imprime flex flex-wrap gap-3">

@@ -24,6 +24,11 @@ export type Status = keyof typeof STATUS
 
 export const STATUSES = Object.keys(STATUS) as Status[]
 
+export const rotuloDeStatus = (status: Status) => STATUS[status].label
+
+export const opcoesDeStatus = (statuses: readonly Status[]) =>
+  statuses.map((status) => ({ valor: status, rotulo: STATUS[status].label }))
+
 export function SeloDeStatus({ status, className }: { status: Status; className?: string }) {
   const { label, variant } = STATUS[status]
   return (

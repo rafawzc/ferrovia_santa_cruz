@@ -39,14 +39,14 @@ def test_operacional_ve_so_o_trem_que_opera(como):
     }
 
 
-def test_operacional_sem_trem_vinculado_recebe_painel_vazio_sem_erro(como):
+def test_operacional_sem_trem_vinculado_recebe_ausencia_nula_e_nao_zero(como):
     resposta = como(ID_OPERACIONAL_SEM_TREM).get("/api/dashboard")
 
     assert resposta.status_code == 200
     assert resposta.json() == {
-        "trens_por_status": [],
-        "alertas_ativos_por_severidade": [],
-        "sensores_criticos": 0,
+        "trens_por_status": None,
+        "alertas_ativos_por_severidade": None,
+        "sensores_criticos": None,
         "viagens_em_andamento": 0,
         "velocidade_media": None,
     }
@@ -75,3 +75,11 @@ def test_sem_leitura_na_janela_a_velocidade_media_e_nula_e_nao_zero(como):
 
 def test_dashboard_sem_cookie_e_401(client):
     assert client.get("/api/dashboard").status_code == 401
+
+
+def test_operacional_com_trem_e_sem_sensor_critico_recebe_zero_e_nao_nulo(como):
+    corpo = como(ID_OPERACIONAL_SEM_LEITURA).get("/api/dashboard").json()
+
+    assert corpo["sensores_criticos"] == 0
+    assert corpo["trens_por_status"] == [{"status": "parado", "quantidade": 1}]
+    assert corpo["alertas_ativos_por_severidade"] == []
