@@ -35,8 +35,13 @@ def test_sem_cookie_e_401(client, metodo, rota, corpo):
     assert client.request(metodo, rota, json=corpo).status_code == 401
 
 
-@pytest.mark.parametrize(("metodo", "rota", "corpo"), ROTAS_LEITURA + ROTAS_ESCRITA)
-def test_cliente_nunca_entra(como, metodo, rota, corpo):
+@pytest.mark.parametrize(("metodo", "rota", "corpo"), ROTAS_LEITURA)
+def test_cliente_le(como, metodo, rota, corpo):
+    assert como(ID_CLIENTE).request(metodo, rota, json=corpo).status_code == 200
+
+
+@pytest.mark.parametrize(("metodo", "rota", "corpo"), ROTAS_ESCRITA)
+def test_cliente_nao_escreve(como, metodo, rota, corpo):
     assert como(ID_CLIENTE).request(metodo, rota, json=corpo).status_code == 403
 
 

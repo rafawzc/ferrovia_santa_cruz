@@ -10,7 +10,7 @@ from app.deps import Viagens
 router = APIRouter(
     prefix="/api/viagens",
     tags=["viagens"],
-    dependencies=[Depends(exige_papel("operacional", "gestao"))],
+    dependencies=[Depends(exige_papel("cliente", "operacional", "gestao"))],
 )
 
 StatusViagem = Literal["programada", "em_andamento", "concluida", "cancelada", "atrasada"]

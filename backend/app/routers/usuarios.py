@@ -69,7 +69,7 @@ def editar(usuario_id: int, corpo: UsuarioEdicao, servico: Usuarios, autor: Auto
     except AutoDesativacaoProibida:
         raise HTTPException(403, "Você não pode desativar a própria conta") from None
     except UltimoAdministradorAtivo:
-        raise HTTPException(409, "Não é possível desativar o último administrador ativo") from None
+        raise HTTPException(409, "O sistema precisa de pelo menos um administrador ativo") from None
 
 
 @router.delete("/usuarios/{usuario_id}", status_code=204)
@@ -79,7 +79,7 @@ def desativar(usuario_id: int, servico: Usuarios, autor: Autor):
     except AutoDesativacaoProibida:
         raise HTTPException(403, "Você não pode desativar a própria conta") from None
     except UltimoAdministradorAtivo:
-        raise HTTPException(409, "Não é possível desativar o último administrador ativo") from None
+        raise HTTPException(409, "O sistema precisa de pelo menos um administrador ativo") from None
     if not encontrado:
         raise HTTPException(404, "Usuário não encontrado")
 

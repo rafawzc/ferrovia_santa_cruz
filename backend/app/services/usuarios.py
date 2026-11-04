@@ -79,6 +79,8 @@ class UsuariosService:
             return None
         if usuario["ativo"] is False:
             self._exigir_desativacao_permitida(alvo, autor_id)
+        elif self._deixa_de_ser_administrador(alvo, usuario["cargo_id"]):
+            self._exigir_outro_administrador()
         self.repo.atualizar(usuario_id, _trocar_senha_por_hash(usuario))
         return self.repo.por_id(usuario_id)
 
@@ -103,9 +105,20 @@ class UsuariosService:
         self.repo.trocar_senha(usuario_id, hash_senha(senha))
         return senha
 
-    def _exigir_desativacao_permitida(self, alvo: dict, autor_id: int) -> None:
-        if alvo["papel"] == "gestao" and self.repo.contar_administradores_ativos() <= 1:
+    def _deixa_de_ser_administrador(self, alvo: dict, cargo_id: int | None) -> bool:
+        if cargo_id is None or not alvo["ativo"] or alvo["papel"] != "gestao":
+            return False
+        papeis = {c["id"]: c["papel"] for c in self.repo.listar_cargos()}
+        papel_novo = papeis.get(cargo_id, "gestao")
+        return papel_novo != "gestao"
+
+    def _exigir_outro_administrador(self) -> None:
+        if self.repo.contar_administradores_ativos() <= 1:
             raise UltimoAdministradorAtivo
+
+    def _exigir_desativacao_permitida(self, alvo: dict, autor_id: int) -> None:
+        if alvo["papel"] == "gestao":
+            self._exigir_outro_administrador()
         if alvo["id"] == autor_id:
             raise AutoDesativacaoProibida
 

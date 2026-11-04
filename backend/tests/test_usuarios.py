@@ -9,7 +9,7 @@ from tests.fakes import (
 )
 
 AUTO_DESATIVACAO = {"detail": "Você não pode desativar a própria conta"}
-ULTIMO_ADMINISTRADOR = {"detail": "Não é possível desativar o último administrador ativo"}
+ULTIMO_ADMINISTRADOR = {"detail": "O sistema precisa de pelo menos um administrador ativo"}
 
 NOVO = {
     "nome": "Sergio Santana",
@@ -150,6 +150,23 @@ def test_nao_desativa_o_ultimo_administrador_ativo_pelo_patch(gestao, usuarios):
     assert resposta.status_code == 409
     assert resposta.json() == ULTIMO_ADMINISTRADOR
     assert usuarios.dados[ID_GESTAO]["ativo"] is True
+
+
+def test_nao_troca_o_cargo_do_ultimo_administrador_ativo(gestao, usuarios):
+    usuarios.desativar(ID_GESTAO_SUPLENTE)
+
+    resposta = gestao.patch(f"/api/usuarios/{ID_GESTAO}", json={"cargo_id": 5})
+
+    assert resposta.status_code == 409
+    assert resposta.json() == ULTIMO_ADMINISTRADOR
+    assert usuarios.dados[ID_GESTAO]["cargo_id"] == 2
+
+
+def test_troca_o_cargo_de_administrador_quando_ha_outro_ativo(gestao, usuarios):
+    resposta = gestao.patch(f"/api/usuarios/{ID_GESTAO_SUPLENTE}", json={"cargo_id": 5})
+
+    assert resposta.status_code == 200
+    assert usuarios.dados[ID_GESTAO_SUPLENTE]["cargo_id"] == 5
 
 
 def test_desativa_administrador_quando_ha_outro_ativo(gestao, usuarios):
