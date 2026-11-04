@@ -55,9 +55,20 @@ import {
   useSenhaTemporaria,
   useUsuarios,
 } from '@/hooks/usuarios'
-import { ApiError, tratouErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo, type Cargo, type Papel, type Usuario } from '@/lib/api'
 import { rotuloDeCargo } from '@/lib/rotulos'
 import { cn } from '@/lib/utils'
+
+const OPCOES_DE_PAPEL: { valor: Papel; rotulo: string }[] = [
+  { valor: 'cliente', rotulo: 'Cliente' },
+  { valor: 'operacional', rotulo: 'Operacional' },
+  { valor: 'gestao', rotulo: 'Gestão' },
+]
+
+const OPCOES_DE_SITUACAO = [
+  { valor: 'ativos', rotulo: 'Ativos' },
+  { valor: 'inativos', rotulo: 'Inativos' },
+]
 
 function erroTexto(erro: Error, acao: string) {
   return `Não foi possível ${acao}: ${mensagemDeErro(erro)}`
@@ -464,8 +475,21 @@ function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
   )
 }
 
-function ConteudoDeUsuarios({ aoAbrir }: { aoAbrir: (usuario: Usuario) => void }) {
-  const { data: usuarios, isPending, error } = useUsuarios()
+interface ConteudoProps {
+  busca: string
+  papel: string
+  situacao: string
+  aoAbrir: (usuario: Usuario) => void
+}
+
+function ConteudoDeUsuarios({ busca, papel, situacao, aoAbrir }: ConteudoProps) {
+  const filtroDePapel = OPCOES_DE_PAPEL.find((opcao) => opcao.valor === papel)?.valor
+  const filtroDeAtivo = situacao === 'todos' ? undefined : situacao === 'ativos'
+  const {
+    data: usuarios,
+    isPending,
+    error,
+  } = useUsuarios({ busca, papel: filtroDePapel, ativo: filtroDeAtivo })
 
   if (isPending) {
     return (
@@ -478,7 +502,7 @@ function ConteudoDeUsuarios({ aoAbrir }: { aoAbrir: (usuario: Usuario) => void }
   }
   if (error) return <ErroDeCarregamento error={error} />
   if (usuarios.length === 0) {
-    return <p className="text-muted-foreground">Nenhum usuário cadastrado.</p>
+    return <p className="text-muted-foreground">Nenhum usuário encontrado.</p>
   }
 
   return (
@@ -507,6 +531,9 @@ function FormularioComCargos({
 export default function UsuariosLista() {
   const [emEdicao, setEmEdicao] = useState<Usuario | 'novo' | null>(null)
   const usuarioEmEdicao = emEdicao === 'novo' ? null : emEdicao
+  const [busca, setBusca] = useState('')
+  const [papel, setPapel] = useState('todos')
+  const [situacao, setSituacao] = useState('todos')
 
   return (
     <>
@@ -525,7 +552,45 @@ export default function UsuariosLista() {
         }
       />
 
-      <ConteudoDeUsuarios aoAbrir={setEmEdicao} />
+      <div className="mb-4 grid gap-3 md:grid-cols-3">
+        <Input
+          type="search"
+          aria-label="Buscar usuário"
+          placeholder="Buscar por nome ou e-mail"
+          value={busca}
+          onChange={(evento) => {
+            setBusca(evento.target.value)
+          }}
+        />
+        <Select value={papel} onValueChange={setPapel}>
+          <SelectTrigger aria-label="Filtrar por nível de acesso" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os níveis</SelectItem>
+            {OPCOES_DE_PAPEL.map((opcao) => (
+              <SelectItem key={opcao.valor} value={opcao.valor}>
+                {opcao.rotulo}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={situacao} onValueChange={setSituacao}>
+          <SelectTrigger aria-label="Filtrar por situação" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as situações</SelectItem>
+            {OPCOES_DE_SITUACAO.map((opcao) => (
+              <SelectItem key={opcao.valor} value={opcao.valor}>
+                {opcao.rotulo}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <ConteudoDeUsuarios busca={busca} papel={papel} situacao={situacao} aoAbrir={setEmEdicao} />
 
       <Dialog
         open={emEdicao !== null}

@@ -89,6 +89,12 @@ export type FiltroTrens = {
   status?: TremStatus
 }
 
+export type FiltroUsuarios = {
+  busca?: string
+  papel?: Papel
+  ativo?: boolean
+}
+
 export type TipoSensor = 'velocidade' | 'temperatura' | 'falha' | 'energia' | 'localizacao'
 
 export type StatusOperacional = 'normal' | 'alerta' | 'falha'

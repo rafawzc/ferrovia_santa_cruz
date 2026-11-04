@@ -31,9 +31,20 @@ class UsuariosMySQL:
             )
             return cur.lastrowid
 
-    def listar(self):
+    def listar(self, busca, papel, ativo):
+        condicoes, params = [], {}
+        if busca is not None:
+            condicoes.append("(u.nome LIKE %(busca)s OR u.email LIKE %(busca)s)")
+            params["busca"] = f"%{busca}%"
+        if papel is not None:
+            condicoes.append("c.nivel_acesso = %(papel)s")
+            params["papel"] = papel
+        if ativo is not None:
+            condicoes.append("u.ativo = %(ativo)s")
+            params["ativo"] = ativo
+        onde = " WHERE " + " AND ".join(condicoes) if condicoes else ""
         with cursor() as cur:
-            cur.execute(SELECT_USUARIO + " ORDER BY u.nome")
+            cur.execute(SELECT_USUARIO + onde + " ORDER BY u.nome", params)
             return cur.fetchall()
 
     def listar_cargos(self):

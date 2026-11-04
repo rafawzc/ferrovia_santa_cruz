@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, type UsuarioEdicao } from '@/lib/api'
+import { api, type FiltroUsuarios, type UsuarioEdicao } from '@/lib/api'
 import { chaveMe } from '@/lib/cliente-de-consultas'
 
 const chaveUsuarios = ['usuarios'] as const
@@ -13,8 +13,11 @@ function useInvalidarUsuariosEMe() {
     ])
 }
 
-export function useUsuarios() {
-  return useQuery({ queryKey: chaveUsuarios, queryFn: api.usuarios.listar })
+export function useUsuarios(filtro: FiltroUsuarios = {}) {
+  return useQuery({
+    queryKey: [...chaveUsuarios, filtro],
+    queryFn: () => api.usuarios.listar(filtro),
+  })
 }
 
 export function useCriarUsuario() {

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -48,8 +48,13 @@ def _ou_404(usuario):
 
 
 @router.get("/usuarios", response_model=list[UsuarioSaida])
-def listar(servico: Usuarios):
-    return servico.listar()
+def listar(
+    servico: Usuarios,
+    busca: str | None = None,
+    papel: Literal["cliente", "operacional", "gestao"] | None = None,
+    ativo: bool | None = None,
+):
+    return servico.listar(busca, papel, ativo)
 
 
 @router.get("/usuarios/{usuario_id}", response_model=UsuarioSaida)

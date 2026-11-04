@@ -242,3 +242,61 @@ def test_lista_cargos_pro_formulario(gestao):
 
     assert resposta.status_code == 200
     assert {"id": 5, "nome": "maquinista", "papel": "operacional"} in resposta.json()
+
+
+def _nomes(resposta):
+    return sorted(u["nome"] for u in resposta.json())
+
+
+def test_busca_por_parte_do_nome(gestao):
+    resposta = gestao.get("/api/usuarios", params={"busca": "souza"})
+
+    assert resposta.status_code == 200
+    assert _nomes(resposta) == ["Carlos Souza"]
+
+
+def test_busca_por_parte_do_email(gestao):
+    resposta = gestao.get("/api/usuarios", params={"busca": "@email.com"})
+
+    assert _nomes(resposta) == ["Cliente Comum"]
+
+
+def test_busca_ignora_maiusculas(gestao):
+    resposta = gestao.get("/api/usuarios", params={"busca": "ANA GEST"})
+
+    assert _nomes(resposta) == ["Ana Gestora"]
+
+
+def test_filtra_por_papel(gestao):
+    resposta = gestao.get("/api/usuarios", params={"papel": "gestao"})
+
+    assert _nomes(resposta) == ["Ana Gestora", "Bruna Lima"]
+
+
+def test_papel_invalido_e_422(gestao):
+    assert gestao.get("/api/usuarios", params={"papel": "chefe"}).status_code == 422
+
+
+def test_filtra_por_ativo(gestao):
+    desativados = gestao.get("/api/usuarios", params={"ativo": "false"})
+    ativos = gestao.get("/api/usuarios", params={"ativo": "true"})
+
+    assert _nomes(desativados) == ["Ex Funcionario"]
+    assert "Ex Funcionario" not in _nomes(ativos)
+    assert len(ativos.json()) == 6
+
+
+def test_combina_papel_e_ativo(gestao):
+    resposta = gestao.get("/api/usuarios", params={"papel": "operacional", "ativo": "true"})
+
+    assert _nomes(resposta) == ["Carlos Souza", "Davi Sem Trem", "Elisa Parada"]
+
+
+def test_combina_busca_e_papel(gestao):
+    resposta = gestao.get("/api/usuarios", params={"busca": "ferrovia.com", "papel": "gestao"})
+
+    assert _nomes(resposta) == ["Ana Gestora", "Bruna Lima"]
+
+
+def test_sem_filtro_devolve_todos(gestao):
+    assert len(gestao.get("/api/usuarios").json()) == 7

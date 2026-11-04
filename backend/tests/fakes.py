@@ -82,8 +82,16 @@ class UsuariosFake:
     def por_email(self, email):
         return next((self._completo(u) for u in self.dados.values() if u["email"] == email), None)
 
-    def listar(self):
-        return [self._completo(u) for u in self.dados.values()]
+    def listar(self, busca, papel, ativo):
+        alvo = (busca or "").lower()
+        completos = [self._completo(u) for u in self.dados.values()]
+        return [
+            u
+            for u in completos
+            if (alvo in u["nome"].lower() or alvo in u["email"].lower())
+            and papel in (None, u["papel"])
+            and ativo in (None, u["ativo"])
+        ]
 
     def listar_cargos(self):
         return [{"id": id_, "nome": nome, "papel": papel} for id_, (nome, papel) in CARGOS.items()]

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import type { ViagemStatus } from '@/lib/api'
 
 const STATUS = {
   normal: { label: 'Normal', variant: 'success' },
@@ -23,6 +24,14 @@ const STATUS = {
 export type Status = keyof typeof STATUS
 
 export const STATUSES = Object.keys(STATUS) as Status[]
+
+export const STATUS_DE_VIAGEM = [
+  'programada',
+  'em_andamento',
+  'atrasada',
+  'concluida',
+  'cancelada',
+] as const satisfies readonly ViagemStatus[]
 
 export const rotuloDeStatus = (status: Status) => STATUS[status].label
 

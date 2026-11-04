@@ -13,6 +13,7 @@ import type {
   FiltroRelatorio,
   FiltroSensores,
   FiltroTrens,
+  FiltroUsuarios,
   FiltroViagens,
   Leitura,
   Linha,
@@ -62,7 +63,8 @@ export const api = {
       requisitar<{ detail: string }>('POST', '/auth/recuperar-senha', { email }),
   },
   usuarios: {
-    listar: () => requisitar<Usuario[]>('GET', '/usuarios'),
+    listar: (filtro?: FiltroUsuarios) =>
+      requisitar<Usuario[]>('GET', comFiltro('/usuarios', filtro)),
     criar: (usuario: UsuarioNovo) => requisitar<Usuario>('POST', '/usuarios', usuario),
     atualizar: (id: number, usuario: UsuarioEdicao) =>
       requisitar<Usuario>('PATCH', `/usuarios/${String(id)}`, usuario),
