@@ -2,7 +2,7 @@
 
 Web app de **gerenciamento** (lado admin) e **informação** (lado cliente E admin) sobre a ferrovia Santa Cruz. Dashboard, responsivo desktop + mobile. É uma SA (Situação de Aprendizagem) — trabalho de curso técnico que dura o ano inteiro, composta de várias atividades entregues ao longo do tempo.
 
-**Stack:** React 19 + TypeScript strict + Tailwind v4 (Vite) no frontend · FastAPI no backend (API REST) · MySQL no banco · tudo em Docker Compose, operado pelo `./fsc`.
+**Stack:** React 19 + TypeScript strict + Tailwind v4 (Vite) no frontend · FastAPI no backend (API REST) · MySQL no banco · tudo em Docker Compose, operado pelo `fsc.py`.
 
 ## Core Beliefs
 
@@ -13,7 +13,7 @@ Web app de **gerenciamento** (lado admin) e **informação** (lado cliente E adm
 - ***TDD*** — Ao implementar qualquer feature ou bugfix **no backend**, SEMPRE use `/tdd` antes de escrever código de implementação. RED → GREEN → REFACTOR. O front **não tem teste** (L27): a verificação de tela é manual, no navegador, em mobile E desktop.
 - ***Systematic Debugging*** — Ao debugar qualquer bug, falha de teste ou comportamento inesperado, SEMPRE use `/systematic-debugging`. Sem fix sem investigar a causa raiz primeiro.
 - ***Managing Tasks*** — Externalize qualquer trabalho não-trivial no TaskManager (TaskCreate com dependências explícitas via `blockedBy`). Nunca execute lógica multi-passo inline sem um grafo de tarefas.
-- ***Docker Compose only, via `./fsc`*** — Tudo roda em containers. O `./fsc` (na raiz) é a **porta única** pra TODAS as operações: stack (`up`, `down`, `logs`, `ps`, `sh`), qualidade (`test`, `lint`, `fmt`, `typecheck`, `check`), banco (`db`, `db:reset`) e front (`npm`, `ui add`). `./fsc help` lista tudo. `docker compose` direto só quando o `./fsc` não tem o comando. Nunca rode node/npm/python do host esperando que "funcione igual" — o ambiente de verdade é o do container.
+- ***Docker Compose only, via `fsc.py`*** — Tudo roda em containers. O `fsc.py` (na raiz) é a **porta única** pra TODAS as operações: stack (`up`, `down`, `logs`, `ps`, `sh`), qualidade (`test`, `lint`, `fmt`, `typecheck`, `check`), banco (`db`, `db:reset`) e front (`npm`, `ui add`). Roda com `python3 fsc.py <comando>` (Windows: `python fsc.py <comando>`); `python3 fsc.py help` lista tudo. `docker compose` direto só quando o `fsc.py` não tem o comando. A **única exceção** ao "nada do host" é o Python 3.10+ do host (só biblioteca padrão), usado apenas pra rodar o `fsc.py`. Nunca rode node/npm/python do host esperando que "funcione igual" — o ambiente de verdade é o do container.
 - ***SQL sempre parametrizado*** — O acesso ao MySQL é **SQL puro** (sem ORM). Isso significa que VOCÊ é responsável pela segurança: TODA query com valor vindo de fora (request, query param, body, header) usa placeholders parametrizados (`%s` no mysql-connector / `cursor.execute(sql, params)`), NUNCA f-string / concatenação / `.format()` montando SQL. String interpolada em SQL = SQL injection = reprovado. Sem exceção, nem em "query interna que ninguém chama de fora".
 - ***Evidence Before Completion*** — Nunca declare trabalho "pronto", "corrigido", "passando" ou "funcionando" sem ter ACABADO de rodar o comando de verificação e lido o output. Sem exceção, sem "deve passar", sem confiar em rodada anterior, sem confiar no relatório de sucesso de um agente — re-cheque o diff/output você mesmo. Vale pra: testes passando, lint verde, build ok, bug corrigido, requisito satisfeito, trabalho delegado a agente. Se não consegue mostrar evidência na mesma mensagem, diga o status real em vez disso.
 - ***Documentar ao fechar*** — Implementação NÃO está completa quando o código passa nos testes — está completa quando está **documentada**. Todo fechamento de feature/bugfix/atividade tem um **step de documentação obrigatório** (ver seção *Documentação* abaixo): (1) atualizar os `CLAUDE.md` de pasta tocados com qualquer quirk/decisão/gotcha não-óbvio que você descobriu, e (2) atualizar a pasta `docs/` (incluindo `docs/CLAUDE.md`, o índice) com o que o cliente/professora/próximo-agente precisa saber. Isso é uma SA avaliada — documentação fraca = nota fraca, independente de o código funcionar. Pulou o step de doc = trabalho não fechado. Não diga "pronto" sem ter documentado.
@@ -49,8 +49,8 @@ ferrovia_santa_cruz/
 ├── docs/               # documentação do projeto (ver seção Documentação)
 │   └── CLAUDE.md       # ÍNDICE da pasta docs
 ├── docker-compose.yml  # 3 serviços: frontend, backend, db
-├── fsc                 # porta única de operação (./fsc help)
-├── .github/workflows/  # ci.yml — roda ./fsc check em todo PR
+├── fsc.py              # porta única de operação (python3 fsc.py help)
+├── .github/workflows/  # ci.yml — roda python3 fsc.py check em todo PR
 └── .claude/
     ├── CLAUDE.md       # este arquivo — instruções raiz do agente
     └── skills/         # brainstorming, tdd, systematic-debugging, ponytail, token-efficiency
@@ -75,7 +75,7 @@ Navegador (você)  ──:5173──►  [frontend]  ──rede interna──►
 
 ## Documentação
 
-**Mapa vivo da documentação: [`docs/CLAUDE.md`](../docs/CLAUDE.md) (índice). Decisões técnicas com o *porquê*: [`docs/decisoes/stack.md`](../docs/decisoes/stack.md) e [`docs/decisoes/frontend-e-qualidade.md`](../docs/decisoes/frontend-e-qualidade.md). Como operar (quickstart, `./fsc`, ruleset do GitHub): [`docs/arquitetura/operacao.md`](../docs/arquitetura/operacao.md). Comece por aí quando precisar de contexto.**
+**Mapa vivo da documentação: [`docs/CLAUDE.md`](../docs/CLAUDE.md) (índice). Decisões técnicas com o *porquê*: [`docs/decisoes/stack.md`](../docs/decisoes/stack.md) e [`docs/decisoes/frontend-e-qualidade.md`](../docs/decisoes/frontend-e-qualidade.md). Como operar (quickstart, `fsc.py`, ruleset do GitHub): [`docs/arquitetura/operacao.md`](../docs/arquitetura/operacao.md). Comece por aí quando precisar de contexto.**
 
 Documentação é cidadã de primeira classe aqui (ver P0 *Documentar ao fechar*). É uma SA avaliada por entregas ao longo do ano — a doc é metade da nota e o que faz o trabalho ser navegável daqui a 6 meses. Duas frentes complementares: **`docs/`** (documentação do projeto, pra humano — você, professora, colegas) e **`CLAUDE.md` espalhados** (conhecimento procedural local, pro próximo agente). As duas se atualizam no fechamento de cada implementação.
 
@@ -172,13 +172,13 @@ Regra escrita sem ferramenta = regra ignorada. Aqui o lint impõe:
 
 - **Front (ESLint 9 + Prettier)** — sem comentário (L7), **sem cor crua** (hex/`rgb(`/`bg-red-500` — cor só no `src/index.css`), **sem controle HTML cru** (`<button>/<input>/<select>/<textarea>/<dialog>` só dentro de `components/ui/`), **sem `style={{}}`** nem valor arbitrário Tailwind (`rounded-[3rem]`), **fronteiras de import** (página não importa `@radix-ui/*` nem outra página, `fetch` só em `lib/api`). Tabela completa com exceções: [`frontend/CLAUDE.md`](../frontend/CLAUDE.md).
 - **Back** — `ruff` (lint + format) + `scripts/check_comments.py` (zero comentário em `.py`).
-- **CI** — `.github/workflows/ci.yml` roda `./fsc check` em todo PR e push na `main`. Vermelho não entra.
+- **CI** — `.github/workflows/ci.yml` roda `python3 fsc.py check` em todo PR e push na `main`. Vermelho não entra.
 
 ## Testes
 
 ```bash
-./fsc test    # backend — pytest (args repassados: ./fsc test -k health)
-./fsc check   # gate completo: lint + typecheck + format check + test + build do front
+python3 fsc.py test    # backend — pytest (args repassados: python3 fsc.py test -k health)
+python3 fsc.py check   # gate completo: lint + typecheck + format check + test + build do front
 ```
 
-Só o backend tem teste (L27). Rode tudo pelo `./fsc` (ver P0 *Docker Compose only*) — o ambiente de verdade é o do container, não o host. Antes de abrir PR: `./fsc check` verde.
+Só o backend tem teste (L27). Rode tudo pelo `fsc.py` (ver P0 *Docker Compose only*) — o ambiente de verdade é o do container, não o host. Antes de abrir PR: `python3 fsc.py check` verde.

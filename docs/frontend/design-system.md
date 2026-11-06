@@ -12,7 +12,7 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 
 ## Catálogo
 
-### Primitivos (shadcn, `./fsc ui add`)
+### Primitivos (shadcn, `python3 fsc.py ui add`)
 
 | Componente | Arquivo | Uso nas telas | Ajuste de marca |
 |------------|---------|---------------|-----------------|
@@ -58,7 +58,7 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 3. Layout mobile-first com utilitários (`grid grid-cols-2 lg:grid-cols-4`), cor só por token.
 4. Formulário: `useForm({ resolver: zodResolver(esquema) })` + `<Controller>` renderizando `<Field data-invalid>` / `<FieldLabel>` / controle com `aria-invalid` / `<FieldError errors={[fieldState.error]} />`. Exemplo completo em `src/pages/Vitrine.tsx` (`FormularioDemo`).
 5. Confirmação destrutiva: `AlertDialog`. Feedback: `toast()` do `sonner` (o `<Toaster />` já está no `principal.tsx`). Erro de carregamento: `<ErroDeCarregamento error={error} />`. `422` da API: `if (tratouErrosDeCampo(erro, formulario)) return` (de `@/lib/api`). Data `criado_em`: `dataHora()` de `@/lib/utils`.
-6. Faltou algo? Primitivo novo → `./fsc ui add <nome>`; padrão do domínio que se repete → composto novo em `ui/`. Nunca estilo solto na página.
+6. Faltou algo? Primitivo novo → `python3 fsc.py ui add <nome>`; padrão do domínio que se repete → composto novo em `ui/`. Nunca estilo solto na página.
 7. Texto da tela que vira rótulo vem de `src/lib/rotulos.ts` (`rotuloDeCargo`, `rotuloDeTipoDeRelatorio`, `opcoesDeTipoDeRelatorio`); formatação vem de `src/lib/utils.ts` (`dataHora`, `dataBrasileira`, `formatarNumero`).
 8. Confira em `/ui` e na própria tela, 414px e 1440px, nos dois temas.
 

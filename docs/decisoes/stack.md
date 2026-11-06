@@ -67,3 +67,19 @@ Formato: cada decisão tem contexto, o que foi decidido, e a consequência. Data
 **Decisão:** `docs/` com índice em `docs/CLAUDE.md`, profundidade final de 2 (`docs/<area-geral>/<subtema>/arquivo.md`), primeira camada com poucas pastas amplas. Em paralelo, `CLAUDE.md` procedurais espalhados pelo codebase. Step de documentação obrigatório no fechamento de toda implementação.
 
 **Consequência:** o detalhe verboso sai do CLAUDE.md raiz e vira doc granular referenciada fortemente — o agente lê o resumo + ponteiro no CLAUDE.md e decide se precisa abrir o detalhe. Virou P0 (*Documentar ao fechar*) no CLAUDE.md raiz.
+
+---
+
+## D6 — Script de operação: `fsc.py` em Python (biblioteca padrão), não bash
+
+**Data:** 2026-11-06 · **Status:** vigente (substitui o `fsc` em bash)
+
+**Contexto:** o `fsc` era um script bash, então só rodava em Linux e macOS. Colegas no Windows precisariam de Git Bash ou WSL só pra subir o projeto. Além disso, a saída crua do `docker compose` era longa e, quando faltava Docker ou a porta 5173 estava ocupada, a mensagem de erro não dizia o que fazer.
+
+**Decisão:** a porta única de operação virou `fsc.py`, em Python 3.10+ usando só a biblioteca padrão. Roda como `python3 fsc.py <comando>` (Linux/macOS, ou `./fsc.py`) e `python fsc.py <comando>` (Windows). Faz checagens antes de agir (Docker instalado, rodando, plugin Compose, porta 5173 livre no `up`) e, quando algo falta, diz em uma linha o que fazer. Os comandos longos mostram uma linha por passo; `-v`/`--verboso` mostra a saída inteira. Mensagens em português. Spec: [`../tasks/lowh-fsc-multiplataforma-2026-11-06.md`](../tasks/lowh-fsc-multiplataforma-2026-11-06.md).
+
+**Porquê:** um arquivo só, igual em qualquer sistema, sem instalar Git Bash. Python já vem na maioria das máquinas e não há nada pra `pip install`.
+
+**Alternativas descartadas:** bash + um `fsc.cmd` de lançamento (ainda exige Git Bash no Windows); porta em PowerShell (duas cópias da mesma lógica pra manter em sincronia).
+
+**Consequência:** o host passa a precisar de Python 3.10+, exceção registrada ao "nada de python do host" — ele serve só pra rodar o `fsc.py`; node, npm, backend e banco continuam só nos containers. O CI roda `python3 fsc.py check`.

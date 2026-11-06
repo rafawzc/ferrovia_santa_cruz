@@ -101,6 +101,6 @@ O backend é em camadas (L21 do plano da fundação): `routers/` (só HTTP) → 
 
 ## Testes — banco mockado
 
-Decisão travada (L16): **sem banco de teste**. Testes usam pytest + `TestClient` e trocam o repositório por um fake via `app.dependency_overrides[deps.<recurso>_repo]` (fakes em `backend/tests/fakes.py`, com a mesma interface dos repos reais — inclusive levantando o mesmo `IntegrityError`). Rodar: `./fsc test`.
+Decisão travada (L16): **sem banco de teste**. Testes usam pytest + `TestClient` e trocam o repositório por um fake via `app.dependency_overrides[deps.<recurso>_repo]` (fakes em `backend/tests/fakes.py`, com a mesma interface dos repos reais — inclusive levantando o mesmo `IntegrityError`). Rodar: `python3 fsc.py test`.
 
-Preço disso: o SQL nunca executa em teste — coluna errada ou erro de sintaxe só aparece rodando de verdade. Compensação: repo fino (quase nada pra errar além da query) e um **smoke manual contra o banco de dev** (`./fsc up` + chamar o endpoint, ou conferir a query no `./fsc db`) antes de fechar qualquer feature que toque SQL.
+Preço disso: o SQL nunca executa em teste — coluna errada ou erro de sintaxe só aparece rodando de verdade. Compensação: repo fino (quase nada pra errar além da query) e um **smoke manual contra o banco de dev** (`python3 fsc.py up` + chamar o endpoint, ou conferir a query no `python3 fsc.py db`) antes de fechar qualquer feature que toque SQL.
