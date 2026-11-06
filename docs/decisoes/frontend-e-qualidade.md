@@ -30,7 +30,7 @@
 
 **Porquê:** shadcn copia o código pro repo (não é lib fechada) — dá pra ajustar à paleta. Vem com a11y pronta (Radix por baixo): foco, teclado, ARIA. E fala Tailwind v4 nativo.
 
-**Consequência:** o `shadcn init` **não** rodou na fase 1 — os nomes de token do shadcn colidem com os atuais (`--color-primary`, `--color-border`), então a troca de nomes e o init vão juntos na fase 2. Componente novo entra por `./fsc ui add <comp>`, que já roda o autofix do lint pra tirar os comentários gerados.
+**Consequência:** o `shadcn init` **não** rodou na fase 1 — os nomes de token do shadcn colidem com os atuais (`--color-primary`, `--color-border`), então a troca de nomes e o init vão juntos na fase 2. Componente novo entra por `python3 fsc.py ui add <comp>`, que já roda o autofix do lint pra tirar os comentários gerados.
 
 ---
 
@@ -84,13 +84,13 @@ No backend: `ruff` (lint + format) + `scripts/check_comments.py`.
 
 ---
 
-## F6 — CI com `./fsc check` em todo PR
+## F6 — CI com `python3 fsc.py check` em todo PR
 
 **Data:** 2026-09-22 · **Status:** vigente (ruleset pendente do dono do repo)
 
 **Contexto:** lint local depende de boa vontade. O repo `rafawzc/ferrovia_santa_cruz` é público, então GitHub Actions é grátis.
 
-**Decisão:** `.github/workflows/ci.yml`, job `check`, roda `./fsc check` em todo PR e em push na `main`. Sem git hook. Ruleset na `main` exigindo PR e o check verde. (L20)
+**Decisão:** `.github/workflows/ci.yml`, job `check`, roda `python3 fsc.py check` em todo PR e em push na `main`. Sem git hook. Ruleset na `main` exigindo PR e o check verde. (L20)
 
 **Porquê:** o CI roda o **mesmo** comando que você roda local — não existe "passa aqui, quebra lá". Ruleset transforma o CI de aviso em trava.
 

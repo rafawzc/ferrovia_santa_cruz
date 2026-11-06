@@ -17,4 +17,4 @@ Padrão comum das duas: no celular, lista de cards; a partir de `md`, tabela. Ca
 - **Formulário:** código, nome, tipo, localização, segmento (opcional) e trem (select de `GET /api/trens`).
 - **Erros:** `409` ao salvar → "Já existe um sensor com esse código." no campo código. `409` ao excluir → toast "Este sensor já tem leituras registradas e não pode ser excluído."
 - **Segmento:** não dá pra apagar depois de preenchido (mesma regra do `null` = "não mexe"); a tela avisa "Não é possível remover o segmento; informe outro valor."
-- **A última leitura é derivada** no backend, não é coluna ([`../../decisoes/fechamento-sa.md`](../../decisoes/fechamento-sa.md), E7). A tela não cria leitura: elas chegam por `POST /api/leituras` (simulador `./fsc sim`).
+- **A última leitura é derivada** no backend, não é coluna ([`../../decisoes/fechamento-sa.md`](../../decisoes/fechamento-sa.md), E7). A tela não cria leitura: elas chegam por `POST /api/leituras` (simulador `python3 fsc.py sim`).

@@ -7,9 +7,9 @@
 
 > Roteiro de teste **manual**, de caixa preta: é o que se verifica clicando no sistema, na ordem em que um avaliador verificaria. O resultado esperado foi escrito **antes** da execução — é isso que faz do roteiro um teste e não uma conferência.
 >
-> Os testes automatizados do backend são outra coisa e rodam por `./fsc test` (pytest, banco trocado por fake). Eles cobrem contrato de API, papéis e validação; não cobrem SQL nem tela. Este roteiro cobre o que eles não alcançam.
+> Os testes automatizados do backend são outra coisa e rodam por `python3 fsc.py test` (pytest, banco trocado por fake). Eles cobrem contrato de API, papéis e validação; não cobrem SQL nem tela. Este roteiro cobre o que eles não alcançam.
 >
-> **Como executar:** em dupla, um opera e o outro anota; quem anota não dá dica. Suba o sistema com `./fsc up` e abra `http://localhost:5173`. **Nenhum caso deste roteiro apaga, altera ou recria o banco por comando**: tudo o que muda dado muda pela própria tela do sistema, e os casos que criam registros dizem como desfazê-los.
+> **Como executar:** em dupla, um opera e o outro anota; quem anota não dá dica. Suba o sistema com `python3 fsc.py up` e abra `http://localhost:5173`. **Nenhum caso deste roteiro apaga, altera ou recria o banco por comando**: tudo o que muda dado muda pela própria tela do sistema, e os casos que criam registros dizem como desfazê-los.
 >
 > **Falha encontrada não se apaga da tabela** — registra-se na observação que falhou e foi corrigida. Os defeitos já encontrados e corrigidos estão na seção 10, com o que falhou, como se reproduzia e o que ficou. Uma tabela toda verde na primeira passada é sinal de que o roteiro não foi executado de verdade.
 
@@ -38,9 +38,9 @@ Dados de exemplo usados nos casos: trens `TR-204`, `TR-118`, `TR-301`, `TR-455`;
 
 | # | O que se testa | Resultado esperado | Obtido | Situação |
 |---|----------------|--------------------|--------|----------|
-| 1 | Subir o projeto em pasta limpa seguindo só o README (`./fsc up`) | Os três containers sobem saudáveis e `http://localhost:5173` abre | | |
-| 2 | Conferir portas publicadas (`./fsc ps`) | Só o `frontend` publica porta; `backend` e `db` não | | |
-| 3 | Abrir o shell do banco (`./fsc db`) e rodar `SHOW TABLES;` (só consulta) | Lista as dez tabelas do modelo | | |
+| 1 | Subir o projeto em pasta limpa seguindo só o README (`python3 fsc.py up`) | Os três containers sobem saudáveis e `http://localhost:5173` abre | | |
+| 2 | Conferir portas publicadas (`python3 fsc.py ps`) | Só o `frontend` publica porta; `backend` e `db` não | | |
+| 3 | Abrir o shell do banco (`python3 fsc.py db`) e rodar `SHOW TABLES;` (só consulta) | Lista as dez tabelas do modelo | | |
 | 4 | No mesmo shell, `SELECT email, senha_hash FROM usuario;` | A senha vem embaralhada (`$argon2id$...`), ilegível | | |
 
 ## 2. Autenticação, sessão e acesso
@@ -103,10 +103,10 @@ Executar como Ana (Administrador), salvo indicação.
 | # | O que se testa | Resultado esperado | Obtido | Situação |
 |---|----------------|--------------------|--------|----------|
 | 43 | Como Ana, abrir o painel | Título "Dashboard"; três indicadores (Viagens em andamento, Velocidade média, Sensores críticos) e dois gráficos (Trens por status, Alertas ativos por severidade) | | |
-| 44 | Conferir os indicadores contra o banco por consulta (`./fsc db`, só `SELECT`) | Trens por status e viagens em andamento batem com `trem` e `viagem`; a velocidade média é a das leituras de velocidade nas últimas 24 horas | | |
+| 44 | Conferir os indicadores contra o banco por consulta (`python3 fsc.py db`, só `SELECT`) | Trens por status e viagens em andamento batem com `trem` e `viagem`; a velocidade média é a das leituras de velocidade nas últimas 24 horas | | |
 | 45 | Como Carlos (com trem `TR-204`), abrir o painel | Título "Dashboard do seu trem"; os números são só do trem dele | | |
 | 46 | Como Ana, em Usuários, cadastrar um usuário com cargo Maquinista (sem trem), entrar com ele e abrir o painel | Velocidade média e Sensores críticos mostram **"Sem dados"** (não "0"), sem bolinha de status; os gráficos mostram "Sem dados para o gráfico." | | |
-| 47 | Rodar `./fsc sim --rodadas 5` e recarregar o painel e a lista de sensores | Aparecem leituras novas e os indicadores mudam | | |
+| 47 | Rodar `python3 fsc.py sim --rodadas 5` e recarregar o painel e a lista de sensores | Aparecem leituras novas e os indicadores mudam | | |
 | 48 | Depois do simulador, abrir Alertas | Leituras acima do limite geraram alertas automáticos (origem "<tipo> (sensor)", ex.: "velocidade (sensor)"). Se nenhuma estourou o limite, repetir a rodada | | |
 | 49 | Conferir a severidade dos alertas automáticos | Leitura acima do limite crítico nasce com selo **Crítico** (borda vermelha se não tratado); acima do limite de atenção, **Atenção**. Nunca "Normal" | | |
 | 50 | Em Alertas, filtrar por severidade, por tipo e por situação | A lista reduz; a situação começa em "Não tratados" e há "Tratados" e "Todos" | | |
@@ -177,7 +177,7 @@ Executar como Ana. Cada caso diz como desfazer o que cria.
 | 91 | Navegar só com o teclado numa tela de formulário | O foco é visível e alcança todos os campos e botões | | |
 | 92 | Abrir o console do navegador e percorrer as telas | Sem erro e sem warning do React | | |
 | 93 | Parar o container do banco (`docker compose stop db`) e usar o sistema; depois `docker compose start db` | Mensagem de falha de carregamento, sem tela branca e sem erro técnico cru; volta ao normal quando o banco sobe (parar um container não apaga dado) | | |
-| 94 | Rodar o gate do projeto (`./fsc check`) | Lint, typecheck, formatação, testes de backend e build do front passam | | |
+| 94 | Rodar o gate do projeto (`python3 fsc.py check`) | Lint, typecheck, formatação, testes de backend e build do front passam | | |
 
 ## 10. Defeitos encontrados e corrigidos
 
@@ -192,7 +192,7 @@ Estes defeitos apareceram ao exercitar o roteiro e na revisão, e foram corrigid
 | D5 | O topo mostrava "Maquinista" para um eletricista: o sistema traduzia o nível de acesso em vez de mostrar o cargo | Cadastrar usuário com cargo Eletricista e entrar com ele | O topo mostra o cargo real ("Eletricista", "RH", "Administrador"…) | 10, 72 |
 | D6 | Apagar um campo opcional de trem ou sensor (última inspeção, rota, segmento) mostrava sucesso, mas o valor antigo voltava: a atualização parcial não limpa campo | Editar um trem com última inspeção, esvaziar o campo e salvar; recarregar | A tela recusa na hora, antes de enviar, com a mensagem explicando que não dá para remover e pedindo outro valor. Segue como limitação conhecida do contrato (README, seção 8) | 27, 35 |
 | D7 | A trava do último administrador podia ser contornada: bastava trocar o cargo dele por um cargo sem gestão | Com um só administrador ativo, editar a conta e trocar o cargo por Maquinista | Qualquer edição que deixe o sistema sem administrador ativo é recusada (conflito, "O sistema precisa de pelo menos um administrador ativo"), seja desativando ou trocando o cargo | 80, 81 |
-| D8 | O alerta gerado automaticamente por uma leitura de sensor nascia **sempre com severidade Normal**, mesmo quando a leitura era crítica. *Correção em andamento por outro integrante no momento desta escrita; o caso 49 só passa depois dela.* | Rodar `./fsc sim --rodadas 5` até uma leitura passar do limite; abrir Alertas | Esperado: leitura acima do limite crítico gera alerta **Crítico**; acima do limite de atenção, **Atenção** | 48, 49 |
+| D8 | O alerta gerado automaticamente por uma leitura de sensor nascia **sempre com severidade Normal**, mesmo quando a leitura era crítica. *Correção em andamento por outro integrante no momento desta escrita; o caso 49 só passa depois dela.* | Rodar `python3 fsc.py sim --rodadas 5` até uma leitura passar do limite; abrir Alertas | Esperado: leitura acima do limite crítico gera alerta **Crítico**; acima do limite de atenção, **Atenção** | 48, 49 |
 
 ## Resumo da execução
 

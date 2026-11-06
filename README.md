@@ -47,32 +47,44 @@ Arquitetura dos containers e da rede: [`docs/arquitetura/containers-e-rede.md`](
 
 ## 4. Como instalar
 
-Pré-requisitos: Docker com o plugin Compose e a porta `5173` livre. Não é preciso instalar Node nem Python: o script `./fsc` roda tudo dentro dos containers.
+Pré-requisitos: Docker (Docker Desktop no Windows e no macOS; Docker Engine com o plugin Compose no Linux), Python 3.10 ou mais novo e a porta `5173` livre. Não é preciso instalar Node: o script `fsc.py` usa o Python do computador só para se executar (não há nada para instalar com `pip`) e roda todo o resto dentro dos containers.
+
+### Linux e macOS
 
 ```bash
 git clone https://github.com/rafawzc/ferrovia_santa_cruz.git
 cd ferrovia_santa_cruz
-./fsc up
+python3 fsc.py up
 ```
 
-Na primeira execução o `./fsc` cria o `.env` a partir do `.env.example`. O `up` constrói as imagens e sobe `db`, `backend` e `frontend`, nessa ordem, esperando cada um ficar saudável. A primeira subida do banco demora um pouco, porque ele carrega o `db/script.sql` (tabelas e dados de exemplo).
+### Windows
+
+Abra o Docker Desktop e espere ele ficar pronto. Depois, no PowerShell ou no Prompt de Comando:
+
+```bat
+git clone https://github.com/rafawzc/ferrovia_santa_cruz.git
+cd ferrovia_santa_cruz
+python fsc.py up
+```
+
+Na primeira execução o `fsc.py` cria o `.env` a partir do `.env.example`. O `up` constrói as imagens e sobe `db`, `backend` e `frontend`, nessa ordem, esperando cada um ficar saudável. A primeira subida do banco demora um pouco, porque ele carrega o `db/script.sql` (tabelas e dados de exemplo). Se faltar algo (Docker não instalado ou fechado, plugin Compose ausente, porta `5173` ocupada), o script avisa em uma linha o que fazer. Por padrão ele mostra só um passo por linha; `-v` (ou `--verboso`) mostra a saída completa.
 
 Quando terminar, abra http://localhost:5173 e entre com um dos usuários da próxima seção.
 
-Comandos úteis:
+Comandos úteis (no Windows, use `python` no lugar de `python3`):
 
 ```bash
-./fsc logs          # acompanha os logs
-./fsc down          # derruba tudo
-./fsc db:reset      # apaga o banco de dev e recria do db/script.sql (pede confirmação)
-./fsc sim           # envia leituras simuladas de sensores (com o sistema no ar)
-./fsc help          # lista todos os comandos
+python3 fsc.py logs          # acompanha os logs
+python3 fsc.py down          # derruba tudo
+python3 fsc.py db:reset      # apaga o banco de dev e recria do db/script.sql (pede confirmação)
+python3 fsc.py sim           # envia leituras simuladas de sensores (com o sistema no ar)
+python3 fsc.py help          # lista todos os comandos
 ```
 
 Para rodar a verificação completa (lint, typecheck, formatação, testes do backend e build do frontend):
 
 ```bash
-./fsc check
+python3 fsc.py check
 ```
 
 Guia de operação: [`docs/arquitetura/operacao.md`](docs/arquitetura/operacao.md).
@@ -119,7 +131,7 @@ Cada linha traz o veredito; a justificativa está no arquivo ligado.
 | Banco | MySQL com SQL puro, sem ORM, queries parametrizadas | [por quê](docs/decisoes/stack.md) |
 | Frontend | React com Vite | [por quê](docs/decisoes/stack.md) |
 | Infraestrutura | Docker Compose, 3 containers, só o frontend exposto | [por quê](docs/decisoes/stack.md) |
-| Estilo e qualidade do front | Tailwind v4, shadcn/ui, TypeScript strict, lint do design system, sem teste de front, CI com `./fsc check` | [por quê](docs/decisoes/frontend-e-qualidade.md) |
+| Estilo e qualidade do front | Tailwind v4, shadcn/ui, TypeScript strict, lint do design system, sem teste de front, CI com `python3 fsc.py check` | [por quê](docs/decisoes/frontend-e-qualidade.md) |
 | E1 | Viagem é tabela própria, não campo de `linha` | [por quê](docs/decisoes/fechamento-sa.md) |
 | E2 | Gráfico feito em CSS, sem biblioteca | [por quê](docs/decisoes/fechamento-sa.md) |
 | E3 | Senha redefinida pelo administrador | [por quê](docs/decisoes/fechamento-sa.md) |
@@ -137,7 +149,7 @@ Cada linha traz o veredito; a justificativa está no arquivo ligado.
 - **Sem teste automatizado no frontend.** É decisão registrada; as telas são conferidas à mão, no navegador. Só o backend tem testes (`backend/tests/`). Ver [`docs/decisoes/frontend-e-qualidade.md`](docs/decisoes/frontend-e-qualidade.md).
 - **Atualização parcial não limpa campos.** O `PATCH` de trens, sensores, rotas e usuários usa `COALESCE` no `UPDATE`; enviar `null` mantém o valor atual em vez de apagá-lo.
 - **A listagem de usuários não tem busca nem filtro.** `GET /api/usuarios` não recebe parâmetros e devolve todos, ordenados por nome.
-- **Não há leitura de dispositivo real.** As leituras entram por `POST` com chave de API; quem as produz hoje é o simulador (`./fsc sim`).
+- **Não há leitura de dispositivo real.** As leituras entram por `POST` com chave de API; quem as produz hoje é o simulador (`python3 fsc.py sim`).
 - **Recuperar senha não envia e-mail.** A tela pública responde sempre a mesma mensagem; quem redefine a senha é o administrador, que gera uma senha temporária. Ver E3 acima.
 - **A tabela `relatorio` não é usada pela geração.** Os relatórios são calculados na hora, sem gravar o pedido. Ver E10 acima.
 - **Importar o `db/script.sql` apaga os dados existentes.** É um script de criação, não de migração (E9).
@@ -150,4 +162,4 @@ Feito com assistência da IA: escrita e refatoração de código (frontend, back
 
 Decidido e revisado por pessoas da equipe: arquitetura, escolha da stack, modelagem do banco, as decisões registradas em `docs/decisoes/` e a aceitação de todo o código. Nada entra sem ser revisado por um integrante.
 
-Como o trabalho foi verificado: o comando `./fsc check` (lint, typecheck, formatação, testes do backend e build do frontend), que o CI também roda em todo PR, e a conferência manual das telas no navegador, em mobile e desktop. Casos de teste manual: [`docs/entregas/roteiro-de-testes.md`](docs/entregas/roteiro-de-testes.md).
+Como o trabalho foi verificado: o comando `python3 fsc.py check` (lint, typecheck, formatação, testes do backend e build do frontend), que o CI também roda em todo PR, e a conferência manual das telas no navegador, em mobile e desktop. Casos de teste manual: [`docs/entregas/roteiro-de-testes.md`](docs/entregas/roteiro-de-testes.md).

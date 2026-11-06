@@ -74,24 +74,24 @@ HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p fsc-api-smoke -f docker-co
 
 ## IoT — ingestão de leituras
 
-`POST /api/leituras` existe (`routers/leituras.py`). Autentica por `X-API-Key` contra `SENSOR_API_KEY`, não por cookie: sensor não loga. `services/leituras.py` calcula o `status_operacional` pelos limites de `LIMITES` (por `tipo_dado`; `localizacao` não tem limite) e, se passou do limite, manda o repo gravar leitura e alerta na mesma transação (`LeiturasMySQL.criar`, um `cursor()` só). O alerta automático nasce com `severidade` igual ao nível calculado (`atencao` ou `critico`), e o texto do nível vai em `status` ("Atencao"/"Critico"). Até a correção desta onda o INSERT omitia `severidade` e o banco aplicava o padrão `normal` em todos os casos, o que fazia a central de alertas nunca destacar um crítico de sensor. `./fsc sim` roda o simulador dentro do container `backend` e bate na mesma URL que o device real.
+`POST /api/leituras` existe (`routers/leituras.py`). Autentica por `X-API-Key` contra `SENSOR_API_KEY`, não por cookie: sensor não loga. `services/leituras.py` calcula o `status_operacional` pelos limites de `LIMITES` (por `tipo_dado`; `localizacao` não tem limite) e, se passou do limite, manda o repo gravar leitura e alerta na mesma transação (`LeiturasMySQL.criar`, um `cursor()` só). O alerta automático nasce com `severidade` igual ao nível calculado (`atencao` ou `critico`), e o texto do nível vai em `status` ("Atencao"/"Critico"). Até a correção desta onda o INSERT omitia `severidade` e o banco aplicava o padrão `normal` em todos os casos, o que fazia a central de alertas nunca destacar um crítico de sensor. `python3 fsc.py sim` roda o simulador dentro do container `backend` e bate na mesma URL que o device real.
 
 ## Venv em `/opt/venv`, não em `/app/.venv`
 
 `/app` é bind mount do `./backend` no compose. Venv dentro de `/app` seria apagado/sombreado pelo mount. Por isso `UV_PROJECT_ENVIRONMENT=/opt/venv`, instalado no build com `uv sync --frozen` (inclui o grupo dev: pytest, httpx, ruff) e `chmod a+rX` porque o container roda com o UID do host. `/opt/venv/bin` está no `PATH`: `pytest`, `ruff`, `uvicorn` rodam direto. `uv run` também funciona (`UV_CACHE_DIR=/tmp/uv-cache` porque o UID do host não tem HOME no container).
 
-Mudou dependência → `uv add --no-sync` num container descartável e **rebuild** (`./fsc build`). O venv não é escrevível em runtime, e `./fsc sh backend`/`compose run` não servem: o `backend` só está na rede `internal` (sem internet). Use a imagem já buildada com a rede padrão do docker:
+Mudou dependência → `uv add --no-sync` num container descartável e **rebuild** (`python3 fsc.py build`). O venv não é escrevível em runtime, e `python3 fsc.py sh backend`/`compose run` não servem: o `backend` só está na rede `internal` (sem internet). Use a imagem já buildada com a rede padrão do docker:
 
 ```bash
 docker run --rm --user $(id -u):$(id -g) -e HOME=/tmp -e UV_CACHE_DIR=/tmp/uv \
   -v $PWD/backend:/app -w /app <imagem-do-backend> uv add --no-sync <pacote>
 ```
 
-## Comandos (via `./fsc`, na raiz)
+## Comandos (via `fsc.py`, na raiz)
 
-- `./fsc test` → `pytest`
-- `./fsc lint be` → `ruff check .` + `python scripts/check_comments.py` (o `ruff format --check .` só roda no `./fsc check`)
-- `./fsc fmt` → `ruff format .`
+- `python3 fsc.py test` → `pytest`
+- `python3 fsc.py lint be` → `ruff check .` + `python scripts/check_comments.py` (o `ruff format --check .` só roda no `python3 fsc.py check`)
+- `python3 fsc.py fmt` → `ruff format .`
 
 ## Checagem de comentários (L7)
 

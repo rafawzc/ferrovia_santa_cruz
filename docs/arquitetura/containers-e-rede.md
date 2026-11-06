@@ -42,13 +42,13 @@ Use `depends_on` com `condition: service_healthy`, **não** `depends_on` cru. Mo
 
 ## O compose real, serviço a serviço
 
-Arquivo: [`docker-compose.yml`](../../docker-compose.yml) na raiz. Você não roda ele direto: o [`./fsc`](operacao.md) exporta `HOST_UID`/`HOST_GID` e cria o `.env` antes.
+Arquivo: [`docker-compose.yml`](../../docker-compose.yml) na raiz. Você não roda ele direto: o [`fsc.py`](operacao.md) exporta `HOST_UID`/`HOST_GID` e cria o `.env` antes.
 
 ### `db` — `mysql:8.4`
 
 - **Healthcheck por TCP em `127.0.0.1`:** `mysqladmin ping -h 127.0.0.1 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"`. Durante o init (primeira subida, rodando `schema.sql`/`seed.sql`), o entrypoint do MySQL sobe um servidor **temporário só com socket**, sem rede. Com `-h localhost` o ping vai pelo socket e responde "ok" já nesse servidor temporário → o backend subiria achando que o banco está pronto e ele reiniciaria logo depois. Com `127.0.0.1` o ping vai por TCP, que só existe no servidor final.
 - **Collation pelo `command:`** — `--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci`. Antes ela vinha do `CREATE DATABASE` do `schema.sql`, que saiu (o banco agora nasce do `MYSQL_DATABASE`). Sem o `command:`, o banco pegaria o default do MySQL 8.4 (`utf8mb4_0900_ai_ci`).
-- **Init:** `db/schema.sql` e `db/seed.sql` montados em `/docker-entrypoint-initdb.d/` (`01-`, `02-`). Rodam **uma vez**, com o volume `db_data` vazio. Mudou o SQL → `./fsc db:reset`.
+- **Init:** `db/schema.sql` e `db/seed.sql` montados em `/docker-entrypoint-initdb.d/` (`01-`, `02-`). Rodam **uma vez**, com o volume `db_data` vazio. Mudou o SQL → `python3 fsc.py db:reset`.
 - Credenciais vêm do `.env` (interpoladas no compose). Sem `ports:`.
 
 ### `backend` — imagem do `backend/Dockerfile`

@@ -5,14 +5,14 @@ Primitivos shadcn **e** compostos do domínio moram juntos aqui (L11). Página s
 ## Adicionar primitivo shadcn
 
 ```bash
-./fsc ui add <nome> [-y]      # da raiz do repo; roda o CLI e depois eslint --fix aqui (tira comentários)
-./fsc npm run format          # limpa as linhas em branco que o fix deixa
-./fsc lint fe                 # tem que passar
+python3 fsc.py ui add <nome> [-y]      # da raiz do repo; roda o CLI e depois eslint --fix aqui (tira comentários)
+python3 fsc.py npm run format          # limpa as linhas em branco que o fix deixa
+python3 fsc.py lint fe                 # tem que passar
 ```
 
 Depois do add, conserte na mão o que o lint pegar. Os casos já vistos:
 
-- **`import { cn } from "cn"`**: o registry do shadcn passou a gerar isso (pacote npm `cn`, 2026-09) e instala a dep `cn`. Troque por `@/lib/utils` (`sed -i 's#from "cn"#from "@/lib/utils"#' src/components/ui/*.tsx`) e `./fsc npm uninstall cn`. O lint barra `cn` e `next-themes` aqui.
+- **`import { cn } from "cn"`**: o registry do shadcn passou a gerar isso (pacote npm `cn`, 2026-09) e instala a dep `cn`. Troque por `@/lib/utils` (`sed -i 's#from "cn"#from "@/lib/utils"#' src/components/ui/*.tsx`) e `python3 fsc.py npm uninstall cn`. O lint barra `cn` e `next-themes` aqui.
 - `bg-black/50` do overlay → `bg-overlay`. `text-white` → `text-<cor>-foreground`.
 - `style={}` é proibido até aqui: `progress` virou `<progress>` nativo; o `sonner` passa as vars em classe arbitrária (`[--normal-bg:var(--popover)]`) e lê o tema de `@/contexts/Tema` (não existe `next-themes`).
 - `"use client"` sai (não tem RSC).

@@ -4,7 +4,7 @@ Um arquivo só: **`script.sql`**. Ele cria o banco inteiro do zero — `DROP TAB
 
 Não tem `CREATE DATABASE` nem `USE`: o entrypoint do container `db` roda os arquivos de `/docker-entrypoint-initdb.d` **uma vez só, com o volume vazio**, já dentro do banco de `MYSQL_DATABASE`. Importando à mão (phpMyAdmin, `mysql <`), selecione o banco antes.
 
-Editou o `script.sql`? O volume antigo ignora — reaplique com `./fsc db:reset` (apaga o dado de dev).
+Editou o `script.sql`? O volume antigo ignora — reaplique com `python3 fsc.py db:reset` (apaga o dado de dev).
 
 ## Por que um arquivo e não `schema.sql` + `seed.sql`
 

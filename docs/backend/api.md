@@ -470,7 +470,7 @@ Mesmos parâmetros. Devolve `text/csv; charset=utf-8` com BOM, cabeçalho = `rot
 ## Leituras (IoT)
 
 - `POST /api/leituras` — **não usa cookie**: exige o header `X-API-Key` igual à env `SENSOR_API_KEY` (`401` `"Chave de sensor invalida"`). Corpo `{ "sensor_id": 3, "valor": 95.5 }`. `201` → `{ id, sensor_id, valor, status_operacional, data_hora, alerta_id }`. `409` se o sensor não existe.
-- `GET /api/leituras/sensores` — mesma chave; lista `{ id, tipo_dado }` para o simulador (`./fsc sim`).
+- `GET /api/leituras/sensores` — mesma chave; lista `{ id, tipo_dado }` para o simulador (`python3 fsc.py sim`).
 - `GET /api/leituras?sensor_id=&limite=` — `operacional` e `gestao` (cookie). `limite` 1–500 (padrão 50); mais recente primeiro; cada item traz `sensor_codigo` e `trem_prefixo`. Nenhuma tela consome este endpoint ainda (existe o hook `useLeituras`).
 
 O `status_operacional` é derivado do valor pelos limites do tipo (`services/leituras.py`, E8 em [`../decisoes/fechamento-sa.md`](../decisoes/fechamento-sa.md)): acima do limite de atenção = `alerta`, acima do crítico = `falha`, senão `normal`; `localizacao` não tem limite (sempre `normal`). Leitura fora do normal cria um alerta automático (`alerta_id` na resposta) com `tipo` = tipo do sensor, `status` `"Atencao"`/`"Critico"` e `motivo` descritivo. O código não preenche a coluna `severidade` desse INSERT, então o alerta automático fica com o padrão do banco, `normal`.

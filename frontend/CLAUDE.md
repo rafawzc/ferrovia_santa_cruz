@@ -2,7 +2,7 @@
 
 ## Rodar npm (só container)
 
-Nunca rode `node`/`npm` do host. Use `./fsc npm <args>` da raiz do repo. Sem o `./fsc`, o equivalente cru é:
+Nunca rode `node`/`npm` do host. Use `python3 fsc.py npm <args>` da raiz do repo. Sem o `fsc.py`, o equivalente cru (Linux/macOS) é:
 
 ```bash
 docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD/frontend:/app" -w /app node:24-slim npm <args>
@@ -10,7 +10,7 @@ docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD/frontend:/app" -w /
 
 O `-u` com o UID do host é obrigatório: `frontend/` é bind mount e `node_modules`/`package-lock.json` precisam ficar com o seu dono (senão viram root).
 
-Gate do front: `./fsc lint fe`, `./fsc typecheck`, `./fsc npm run format:check`, `./fsc npm run build`. Não tem teste de front (L27). Formatar: `./fsc npm run format` (ou `./fsc fmt`, que formata front + back).
+Gate do front: `python3 fsc.py lint fe`, `python3 fsc.py typecheck`, `python3 fsc.py npm run format:check`, `python3 fsc.py npm run build`. Não tem teste de front (L27). Formatar: `python3 fsc.py npm run format` (ou `python3 fsc.py fmt`, que formata front + back).
 
 ## Nomes em português
 
@@ -114,4 +114,4 @@ Escopo: `**/*.{ts,tsx}` + `eslint.config.js` + `eslint-rules/`, sem ignore em `s
 
 As regras locais são um plugin ESM em `eslint-rules/index.js`. As de string olham `Literal` e quasis de template e quebram por espaço — não sabem se a string é className, então um texto tipo `"[opcional]"` também cai no `no-arbitrary-value`.
 
-`./fsc ui add <comp>` roda `eslint --fix src/components/ui` depois do CLI do shadcn: é o autofix do `no-comments` que tira os comentários gerados (R6). O fix deixa linha em branco/espaço sobrando; o Prettier limpa.
+`python3 fsc.py ui add <comp>` roda `eslint --fix src/components/ui` depois do CLI do shadcn: é o autofix do `no-comments` que tira os comentários gerados (R6). O fix deixa linha em branco/espaço sobrando; o Prettier limpa.
