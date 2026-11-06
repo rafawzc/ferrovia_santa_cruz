@@ -2,7 +2,7 @@ from app.db import cursor
 
 SELECT_USUARIO = """
     SELECT u.id, u.nome, u.email, u.senha_hash, u.cargo_id, u.telefone, u.foto_url, u.ativo,
-           c.nome AS cargo, c.nivel_acesso AS papel
+           u.trem_id, c.nome AS cargo, c.nivel_acesso AS papel
     FROM usuario u
     JOIN cargo c ON c.id = u.cargo_id
 """
@@ -31,9 +31,20 @@ class UsuariosMySQL:
             )
             return cur.lastrowid
 
-    def listar(self):
+    def listar(self, busca, papel, ativo):
+        condicoes, params = [], {}
+        if busca is not None:
+            condicoes.append("(u.nome LIKE %(busca)s OR u.email LIKE %(busca)s)")
+            params["busca"] = f"%{busca}%"
+        if papel is not None:
+            condicoes.append("c.nivel_acesso = %(papel)s")
+            params["papel"] = papel
+        if ativo is not None:
+            condicoes.append("u.ativo = %(ativo)s")
+            params["ativo"] = ativo
+        onde = " WHERE " + " AND ".join(condicoes) if condicoes else ""
         with cursor() as cur:
-            cur.execute(SELECT_USUARIO + " ORDER BY u.nome")
+            cur.execute(SELECT_USUARIO + onde + " ORDER BY u.nome", params)
             return cur.fetchall()
 
     def listar_cargos(self):
@@ -60,3 +71,21 @@ class UsuariosMySQL:
     def desativar(self, usuario_id):
         with cursor() as cur:
             cur.execute("UPDATE usuario SET ativo = FALSE WHERE id = %s", (usuario_id,))
+
+    def trocar_senha(self, usuario_id, senha_hash):
+        with cursor() as cur:
+            cur.execute(
+                "UPDATE usuario SET senha_hash = %s WHERE id = %s", (senha_hash, usuario_id)
+            )
+
+    def contar_administradores_ativos(self):
+        with cursor() as cur:
+            cur.execute(
+                """
+                SELECT COUNT(*) AS quantidade
+                  FROM usuario u
+                  JOIN cargo c ON c.id = u.cargo_id
+                 WHERE u.ativo AND c.nivel_acesso = 'gestao'
+                """
+            )
+            return cur.fetchone()["quantidade"]

@@ -4,15 +4,41 @@ from mysql.connector import errorcode
 from mysql.connector.errors import IntegrityError
 
 from app.db import BancoIndisponivel
-from app.routers import alertas, auth, cargas, dashboard, linhas, usuarios
+from app.routers import (
+    alertas,
+    auth,
+    cargas,
+    dashboard,
+    leituras,
+    linhas,
+    relatorios,
+    sensores,
+    trens,
+    usuarios,
+    viagens,
+)
 
 app = FastAPI(title="Ferrovia Santa Cruz")
-for modulo in (auth, usuarios, linhas, cargas, alertas, dashboard):
+MODULOS = (
+    auth,
+    usuarios,
+    linhas,
+    cargas,
+    alertas,
+    dashboard,
+    trens,
+    sensores,
+    viagens,
+    relatorios,
+    leituras,
+)
+for modulo in MODULOS:
     app.include_router(modulo.router)
 
 CONFLITOS = {
     errorcode.ER_DUP_ENTRY: "Registro duplicado",
     errorcode.ER_NO_REFERENCED_ROW_2: "Referência inexistente",
+    errorcode.ER_ROW_IS_REFERENCED_2: "Registro em uso por outro cadastro",
 }
 
 

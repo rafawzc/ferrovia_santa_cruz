@@ -1,0 +1,106 @@
+erDiagram
+    CARGO     ||--o{ USUARIO        : classifica
+    USUARIO   ||--o{ RELATORIO      : gera
+    LINHA     ||--o{ TREM           : "opera"
+    LINHA     ||--o{ ALERTA         : recebe
+    LINHA     ||--o{ VIAGEM         : percorre
+    TREM      ||--o{ SENSOR         : possui
+    TREM      ||--o{ CARGA          : transporta
+    TREM      ||--o{ VIAGEM         : realiza
+    TREM      ||--o{ USUARIO        : "e operado por"
+    SENSOR    ||--o{ LEITURA_SENSOR : registra
+    LEITURA_SENSOR ||--o{ ALERTA    : dispara
+
+    CARGO {
+        int id PK
+        varchar nome UK
+        enum nivel_acesso "default cliente"
+    }
+    USUARIO {
+        int id PK
+        varchar nome
+        varchar email UK
+        varchar senha_hash
+        int cargo_id FK "default 1 = comum"
+        int trem_id FK "trem que o maquinista opera"
+        varchar telefone
+        varchar foto_url
+        boolean ativo
+        datetime criado_em
+    }
+    LINHA {
+        int id PK
+        varchar numero UK
+        varchar origem
+        varchar destino
+        enum status
+        boolean ativo
+    }
+    TREM {
+        int id PK
+        varchar prefixo UK
+        varchar modelo
+        smallint ano
+        decimal capacidade_t
+        enum status
+        date ultima_inspecao
+        int linha_id FK
+        datetime criado_em
+    }
+    SENSOR {
+        int id PK
+        varchar codigo UK
+        varchar nome
+        enum tipo_dado
+        varchar localizacao
+        varchar segmento
+        int trem_id FK
+        datetime criado_em
+    }
+    VIAGEM {
+        int id PK
+        int linha_id FK
+        int trem_id FK
+        datetime partida_prevista
+        datetime chegada_prevista
+        enum status
+        datetime criado_em
+    }
+    LEITURA_SENSOR {
+        bigint id PK
+        int sensor_id FK
+        decimal valor
+        enum status_operacional
+        datetime data_hora
+    }
+    CARGA {
+        int id PK
+        varchar tipo
+        decimal peso_t
+        varchar local_partida
+        varchar destino
+        varchar vagao
+        int trem_id FK
+        datetime criado_em
+    }
+    ALERTA {
+        int id PK
+        int linha_id FK "nulo no alerta automatico"
+        bigint leitura_id FK "nulo no alerta manual"
+        varchar tipo
+        enum severidade
+        varchar tempo_espera
+        varchar motivo
+        varchar status
+        boolean tratado
+        datetime criado_em
+    }
+    RELATORIO {
+        int id PK
+        int usuario_id FK
+        varchar tipo
+        date periodo_inicio
+        date periodo_fim
+        enum tipo_falha
+        datetime criado_em
+    }

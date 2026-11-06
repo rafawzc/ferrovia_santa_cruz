@@ -184,5 +184,3 @@
 - **Compatibilidade de navegadores** — versões/navegadores-alvo não definidos.
 - **Privacidade / LGPD** — o cadastro coleta dados pessoais (e-mail); não há requisito escrito de consentimento, retenção ou exclusão de dados.
 - **Disponibilidade / backup** — não há requisito escrito de uptime, recuperação ou rotina de backup do banco.
-</content>
-</invoke>

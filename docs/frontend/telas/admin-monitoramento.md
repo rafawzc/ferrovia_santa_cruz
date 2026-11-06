@@ -1,38 +1,42 @@
 # Telas admin — Dashboard, Rotas, Alertas
 
-Fase 4 (L17, L28). Três telas da equipe (`operacional` e `gestao`), reescritas em TSX sobre o design system e a API real. Contrato: [`../../backend/api.md`](../../backend/api.md). Hooks: [`../dados-e-rotas.md`](../dados-e-rotas.md).
+Três telas da equipe (`operacional` e `gestao`). Contrato: [`../../backend/api.md`](../../backend/api.md). Hooks: [`../dados-e-rotas.md`](../dados-e-rotas.md). Estados comuns: carregando (`Skeleton`), erro (`ErroDeCarregamento`) e vazio (texto).
 
-| Rota | Arquivo | Hooks | Endpoints |
-|---|---|---|---|
-| `/admin` | `pages/admin/Dashboard.tsx` | `useDashboard`, `useLinhas` | `GET /api/dashboard`, `GET /api/linhas` |
-| `/admin/rotas` | `pages/admin/Rotas.tsx` | `useLinhas` | `GET /api/linhas` |
-| `/admin/alertas` | `pages/admin/Alertas.tsx` | `useLinhas`, `useAlertas`, `useCriarAlerta` | `GET /api/linhas`, `GET/POST /api/alertas` |
-
-Todas têm os três estados: carregando (`Skeleton`), erro (`ErroDeCarregamento`) e vazio (texto). Rótulo e cor do status da rota vêm do `SeloDeStatus` (L7).
+| Rota | Arquivo | Endpoints |
+|---|---|---|
+| `/admin` | `pages/admin/Dashboard.tsx` | `GET /api/dashboard` |
+| `/admin/rotas` | `pages/admin/Rotas.tsx` | `/api/linhas`, `/api/viagens`, `GET /api/trens` |
+| `/admin/alertas` | `pages/admin/Alertas.tsx` | `GET /api/linhas`, `/api/alertas` |
 
 ## Dashboard (`/admin`)
 
-- **Quatro indicadores** (`CartaoDeMetrica`): Rotas ativas (`linhas_ativas`), Em manutenção (`linhas_em_manutencao`; bolinha amarela se > 0, verde se 0), Sensores (`sensores`), Velocidade média (`velocidade_media` em km/h; "Sem leitura" quando vem `null`).
-- **Status das rotas**: lista de `GET /api/linhas` com número, `SeloDeStatus` e "(inativa)" quando `ativo` é falso.
-- **Saiu (L28, sem dado no banco):** manutenções pendentes/finalizadas, botão e modal "Cadastrar Manutenção", cadastro de horário, grade de sensores individuais e velocidade por rota. Voltam quando houver tabela + endpoint.
+- **Três indicadores** (`CartaoDeMetrica`): Viagens em andamento, Velocidade média (km/h, sem casas decimais) e Sensores críticos (bolinha vermelha se > 0, verde se 0).
+- **Dois gráficos** (`GraficoDeBarras`): "Trens por status" (barras na cor padrão) e "Alertas ativos por severidade" (normal verde, atenção amarelo, crítico vermelho).
+- **O que o usuário vê depende do papel**, porque a API devolve `null` onde a pergunta não se aplica: título "Dashboard do seu trem" para `operacional`, "Dashboard" para `gestao`. `velocidade_media` e `sensores_criticos` `null` viram o texto "Sem dados" (o de sensores sem bolinha); as listas `null` viram o gráfico vazio ("Sem dados para o gráfico."). É o caso do `operacional` sem trem vinculado ([API, Dashboard](../../backend/api.md#dashboard)). Lista `[]` (trem sem alerta) cai no mesmo texto do gráfico vazio.
+- **Saiu (sem dado no banco):** manutenções pendentes/finalizadas, botão e modal "Cadastrar Manutenção", cadastro de horário, grade de sensores individuais e velocidade por rota. A lista de rotas com status está em `/admin/rotas`.
 
 ## Rotas (`/admin/rotas`)
 
-- Grade de `CartaoDeLinha` (2 colunas no celular, 3 no tablet, 4 no desktop), igual ao mockup — são só 3 campos por rota, então fica card também no desktop em vez de tabela.
-- **Saiu:** o "Mapa de Rotas". Era uma foto genérica de banco de imagens (link externo) com o título de mapa; não há dado geográfico no schema, então mostrar aquilo como mapa das rotas seria dado falso. O mapa é tela opcional do Guia (`uniformizacao-telas.md` §4).
+Duas abas (`Tabs`): **Rotas** e **Viagens**. Escrita (cadastrar, editar, excluir) só para `gestao`; `operacional` só lê, e os botões nem aparecem (`podeEscrever`).
+
+- **Aba Rotas** (`GET /api/linhas`): no celular, cards (número, `SeloDeStatus`, trajeto `origem → destino`, "Inativa"); a partir de `md`, tabela. Cadastro e edição num `Dialog`: número, origem, destino, status, ativa. `409` no salvar → "Já existe uma rota com este número" no campo número. Excluir pede confirmação (`AlertDialog`); `409` → toast "Esta rota tem viagens programadas e não pode ser excluída." (a API só diz "Registro em uso por outro cadastro"; a frase é da tela, que sabe que o vínculo é com viagem).
+- **Aba Viagens** (`GET /api/viagens` com filtros de status, rota, trem e dia, enviados à API): a lista é o `ListaDeViagens`, com a coluna de ações só para `gestao`. "Programar viagem" abre um `Dialog` com rota, trem (`GET /api/trens`), partida, chegada e status. Validação do formulário: chegada depois da partida (a API não confere).
+- **Fuso das viagens:** o `datetime-local` mostra e recebe horário local; a tela converte da API (UTC sem fuso) para local ao abrir a edição e de local para UTC sem fuso (`toISOString` cortado em 19 caracteres) ao salvar. Na lista, `dataHora()` converte de volta.
+- **Saiu:** o "Mapa de Rotas". Era uma foto genérica de banco de imagens com o título de mapa; não há dado geográfico no schema, e mostrar aquilo como mapa seria dado falso. O mapa é tela opcional do Guia (`uniformizacao-telas.md` §4).
 
 ## Alertas (`/admin/alertas`)
 
-- **Formulário** (react-hook-form + zod, regras do contrato): Rota (select de `GET /api/linhas`, manda `linha_id`), Tempo de espera (opcional, até 40), Motivo (1–200), Status (1–40, **texto livre** — o banco guarda `VARCHAR`, não é o ENUM de `linha.status`, por isso não usa `SeloDeStatus`).
-- Sucesso → toast "Alerta enviado", formulário limpa e o histórico recarrega (a mutação invalida `['alertas']`).
-- `409` (rota apagada entre carregar a lista e enviar) → mensagem no campo Rota pedindo pra recarregar. `422` → "Valor inválido" no campo apontado por `loc` (`tratouErrosDeCampo` de `@/lib/api`). Outro erro → toast com o `detail` da API (ou "Sem conexão com o servidor").
-- **Histórico** ("Alertas enviados"): todos os alertas de `GET /api/alertas`, mais recente primeiro, em cards (celular: embaixo do formulário; desktop: coluna ao lado, como no mockup). O legado só mostrava os últimos 30 min da sessão local; agora é o histórico do banco.
-- **Data:** `criado_em` vem sem fuso e está em UTC (horário do MySQL no container). A tela usa `dataHora()` de `src/lib/utils.ts`, que acrescenta `Z` antes do `new Date` pra converter pro horário local; sem isso a hora sai adiantada/atrasada pelo fuso.
+Título "Alertas e Notificações". Duas colunas no desktop; no celular, o formulário vem primeiro e a central embaixo.
 
-## Componente novo: `ErroDeCarregamento`
+- **Novo alerta** (`POST /api/alertas`; react-hook-form + zod com as regras do contrato): Rota (select de `GET /api/linhas`, manda `linha_id`), Tipo (1–40), Severidade (normal, atenção, crítico), Tempo de espera (opcional), Motivo (1–200) e Status (1–40, **texto livre**: o banco guarda `VARCHAR`, não é o ENUM de `linha.status`, por isso não usa `SeloDeStatus`). Sucesso: toast "Alerta enviado" e o formulário limpa. `409` → mensagem no campo Rota pedindo pra recarregar; `422` → "Valor inválido" no campo do `loc`.
+- **Central de alertas** (`GET /api/alertas`, filtros enviados à API): severidade, tipo (igualdade exata, não busca parcial) e situação. A situação começa em **Não tratados**; as outras são Tratados e Todos.
+- **Cada alerta**: origem ("Rota 2645", ou "<tipo> (sensor)" para o automático, que não tem rota), selo de severidade, tipo, status, motivo, tempo de espera e hora. O botão "Marcar como tratado" / "Reabrir" faz `PATCH /api/alertas/{id}`; tratado fica esmaecido e alerta crítico não tratado ganha borda vermelha.
+- **Data:** `criado_em` vem sem fuso, em UTC. A tela usa `dataHora()` de `src/lib/utils.ts`, que acrescenta `Z` antes do `new Date`; sem isso a hora sai deslocada pelo fuso.
 
-`components/ui/erro-de-carregamento.tsx`: `ErroDeCarregamento` (parágrafo `role="alert"` pro estado de erro de uma query) e `mensagemDeErro(error)` (`detail` da API quando é `ApiError`, "Sem conexão com o servidor" quando é falha de rede — o `TypeError` do `fetch` vem em inglês). Usado por todas as telas logadas (erro de carregamento e texto dos toasts de erro) e mostrado na vitrine `/ui`.
+## Componente: `ErroDeCarregamento`
+
+`components/ui/erro-de-carregamento.tsx`: `ErroDeCarregamento` (parágrafo `role="alert"` pro estado de erro de uma query) e `mensagemDeErro(error)` (`detail` da API quando é `ApiError`, "Sem conexão com o servidor" quando é falha de rede). Usado por todas as telas logadas.
 
 ## Vocabulário (L1)
 
-Texto das telas diz **Rota** ("Rota 1778", "Rotas ativas"), inclusive o `CartaoDeLinha` ("Rota {numero}").
+Texto das telas diz **Rota** ("Rota 1778"), inclusive o `CartaoDeLinha`.

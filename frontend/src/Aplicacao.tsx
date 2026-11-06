@@ -13,6 +13,11 @@ const UsuariosLista = lazy(() => import('@/pages/admin/UsuariosLista'))
 const CargaLista = lazy(() => import('@/pages/admin/CargaLista'))
 const Rotas = lazy(() => import('@/pages/admin/Rotas'))
 const Alertas = lazy(() => import('@/pages/admin/Alertas'))
+const Trens = lazy(() => import('@/pages/admin/Trens'))
+const Sensores = lazy(() => import('@/pages/admin/Sensores'))
+const Relatorios = lazy(() => import('@/pages/admin/Relatorios'))
+const RelatorioVisualizacao = lazy(() => import('@/pages/admin/RelatorioVisualizacao'))
+const Viagens = lazy(() => import('@/pages/Viagens'))
 const Perfil = lazy(() => import('@/pages/Perfil'))
 const Vitrine = lazy(() => import('@/pages/Vitrine'))
 
@@ -20,7 +25,7 @@ const EQUIPE: Papel[] = ['operacional', 'gestao']
 const GESTAO: Papel[] = ['gestao']
 
 function inicioDo(papel: Papel) {
-  return papel === 'cliente' ? '/perfil' : '/admin'
+  return papel === 'cliente' ? '/viagens' : '/admin'
 }
 
 function LayoutPublico() {
@@ -59,7 +64,7 @@ function Papeis({ papeis }: { papeis: Papel[] }) {
 export default function Aplicacao() {
   return (
     <BrowserRouter>
-      <div className="fixed top-4 right-4 z-50">
+      <div className="nao-imprime fixed top-4 right-4 z-50">
         <AlternadorDeTema />
       </div>
       <Suspense fallback={null}>
@@ -73,13 +78,18 @@ export default function Aplicacao() {
           <Route element={<LayoutProtegido />}>
             <Route element={<Papeis papeis={EQUIPE} />}>
               <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/trens" element={<Trens />} />
+              <Route path="/admin/sensores" element={<Sensores />} />
               <Route path="/admin/rotas" element={<Rotas />} />
               <Route path="/admin/carga" element={<CargaLista />} />
               <Route path="/admin/alertas" element={<Alertas />} />
             </Route>
             <Route element={<Papeis papeis={GESTAO} />}>
               <Route path="/admin/usuarios" element={<UsuariosLista />} />
+              <Route path="/admin/relatorios" element={<Relatorios />} />
+              <Route path="/admin/relatorios/ver" element={<RelatorioVisualizacao />} />
             </Route>
+            <Route path="/viagens" element={<Viagens />} />
             <Route path="/perfil" element={<Perfil />} />
           </Route>
           <Route path="/ui" element={<Vitrine />} />

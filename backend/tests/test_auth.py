@@ -19,6 +19,7 @@ def test_login_seta_cookie_httponly_e_devolve_o_usuario(client):
         "cargo": "admin",
         "papel": "gestao",
         "ativo": True,
+        "trem_id": None,
     }
     cookie = resposta.headers["set-cookie"]
     assert cookie.startswith("sessao=")

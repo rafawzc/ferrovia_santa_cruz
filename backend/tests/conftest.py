@@ -1,10 +1,26 @@
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 
 from app import deps
 from app.core.security import criar_token
 from app.main import app
-from tests.fakes import AlertasFake, CargasFake, DashboardFake, LinhasFake, UsuariosFake
+from tests.fakes import (
+    CHAVE_SENSOR,
+    AlertasFake,
+    CargasFake,
+    DashboardFake,
+    LeiturasFake,
+    LinhasFake,
+    RelatoriosFake,
+    SensoresFake,
+    TrensFake,
+    UsuariosFake,
+    ViagensFake,
+)
+
+os.environ["SENSOR_API_KEY"] = CHAVE_SENSOR
 
 
 @pytest.fixture
@@ -15,11 +31,20 @@ def usuarios():
 @pytest.fixture
 def client(usuarios):
     app.dependency_overrides[deps.usuarios_repo] = lambda: usuarios
-    app.dependency_overrides[deps.linhas_repo] = LinhasFake
     app.dependency_overrides[deps.dashboard_repo] = DashboardFake
     cargas, alertas = CargasFake(), AlertasFake()
+    trens, sensores = TrensFake(), SensoresFake()
     app.dependency_overrides[deps.cargas_repo] = lambda: cargas
     app.dependency_overrides[deps.alertas_repo] = lambda: alertas
+    linhas, viagens = LinhasFake(), ViagensFake()
+    app.dependency_overrides[deps.trens_repo] = lambda: trens
+    app.dependency_overrides[deps.sensores_repo] = lambda: sensores
+    app.dependency_overrides[deps.linhas_repo] = lambda: linhas
+    app.dependency_overrides[deps.viagens_repo] = lambda: viagens
+    relatorios = RelatoriosFake()
+    app.dependency_overrides[deps.relatorios_repo] = lambda: relatorios
+    leituras_fake = LeiturasFake()
+    app.dependency_overrides[deps.leituras_repo] = lambda: leituras_fake
     yield TestClient(app)
     app.dependency_overrides.clear()
 
@@ -31,3 +56,8 @@ def como(client):
         return client
 
     return entrar
+
+
+@pytest.fixture
+def leituras(client):
+    return app.dependency_overrides[deps.leituras_repo]()

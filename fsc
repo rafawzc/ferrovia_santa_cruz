@@ -29,11 +29,15 @@ Quality
 
 Database
   db                  mysql shell with the .env credentials
-  db:reset [--yes]    DESTROY dev data and recreate the database from db/*.sql
+  db:reset [--yes]    DESTROY dev data and recreate the database from db/script.sql
 
 Frontend
   npm <args>          run npm in a throwaway frontend container
   ui add <comps...>   add shadcn components and lint-fix them
+
+IoT
+  sim [args]          post simulated sensor readings (needs ./fsc up first)
+                      --rodadas N --intervalo SECS
 
   help                show this message
 EOF
@@ -137,7 +141,7 @@ confirm_db_reset() {
   echo "This DESTROYS the dev database:"
   echo "  - removes the db container"
   echo "  - deletes the docker volume '$volume' (all MySQL data)"
-  echo "  - recreates the database from db/schema.sql and db/seed.sql"
+  echo "  - recreates the database from db/script.sql"
   local answer
   read -r -p "Type 'reset' to confirm: " answer
   [[ "$answer" == "reset" ]]
@@ -195,6 +199,7 @@ main() {
     db:reset) db_reset "$@" ;;
     npm) run_frontend npm "$@" ;;
     ui) ui "$@" ;;
+    sim) run_backend python scripts/simulador.py "$@" ;;
     help | -h | --help) show_help ;;
     *) show_help; exit 1 ;;
   esac

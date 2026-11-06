@@ -41,10 +41,12 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 | `CascaDePagina` | `casca-de-pagina.tsx` | Layout das telas logadas: `main` centrado (`max-w-6xl`) + dock fixo embaixo (porta do `BottomNav`: item ativo em pílula com rótulo, tooltip nos outros, inclinação 3D). |
 | `LayoutDeAutenticacao` | `layout-de-autenticacao.tsx` | Layout das telas de auth: logo + card arredondado no mobile; coluna 45% + foto no desktop. Props `title`, `description?`. |
 | `CabecalhoDeTela` | `cabecalho-de-tela.tsx` | `h1` da tela, botão voltar opcional (`temVoltar`), slot `actions`. |
-| `SeloDeStatus` | `selo-de-status.tsx` | Status do banco → rótulo/cor (L7): `normal alerta falha manutencao atraso fechado na_estacao ja_partiu`. Tipo `Status` exportado. |
+| `SeloDeStatus` | `selo-de-status.tsx` | Status do banco → rótulo/cor (L7): linha (`manutencao atraso fechado na_estacao ja_partiu`), trem (`ativo manutencao parado`), sensor/leitura (`normal alerta falha`), severidade (`normal atencao critico`) e viagem (`programada em_andamento concluida cancelada atrasada`). Exporta o tipo `Status`, `rotuloDeStatus(status)`, `opcoesDeStatus(lista)` (vira `{ valor, rotulo }[]` pra `Select`) e a tupla `STATUS_DE_VIAGEM`. |
 | `CartaoDeMetrica` | `cartao-de-metrica.tsx` | Indicador do dashboard: ícone, rótulo, valor, bolinha de `status` (com texto pra leitor de tela). |
 | `CartaoDeLinha` | `cartao-de-linha.tsx` | Card de rota: "Rota {numero}", `SeloDeStatus`, ativo/inativo. |
 | `CartaoDeUsuario` | `cartao-de-usuario.tsx` | Card de funcionário do grid: foto, nome, cargo, ativo. Clicável. |
+| `GraficoDeBarras` | `grafico-de-barras.tsx` | Barras horizontais proporcionais ao maior valor (gráfico em CSS, decisão E2), uma por item `{ rotulo, valor, variant? }`; `formatar` opcional para o valor. Usado no dashboard e nos relatórios. |
+| `ListaDeViagens` | `lista-de-viagens.tsx` | Lista de viagens: cartões no celular, tabela a partir de `md`. A prop `acoes?(viagem)` desenha a coluna/linha de ações; sem ela a lista é só leitura. Usado em Rotas (aba Viagens) e em `/viagens`. |
 | `AlternadorDeTema` | `alternador-de-tema.tsx` | Switch claro/escuro com sol/lua. |
 | `CampoDeSenha` | `campo-de-senha.tsx` | Input de senha com mostrar/ocultar. |
 | `ErroDeCarregamento` | `erro-de-carregamento.tsx` | Estado de erro de uma query (`role="alert"`) + `mensagemDeErro(error)`: `detail` da API ou "Sem conexão com o servidor". |
@@ -57,7 +59,8 @@ Vocabulário do shadcn (`background`, `foreground`, `card`, `popover`, `primary`
 4. Formulário: `useForm({ resolver: zodResolver(esquema) })` + `<Controller>` renderizando `<Field data-invalid>` / `<FieldLabel>` / controle com `aria-invalid` / `<FieldError errors={[fieldState.error]} />`. Exemplo completo em `src/pages/Vitrine.tsx` (`FormularioDemo`).
 5. Confirmação destrutiva: `AlertDialog`. Feedback: `toast()` do `sonner` (o `<Toaster />` já está no `principal.tsx`). Erro de carregamento: `<ErroDeCarregamento error={error} />`. `422` da API: `if (tratouErrosDeCampo(erro, formulario)) return` (de `@/lib/api`). Data `criado_em`: `dataHora()` de `@/lib/utils`.
 6. Faltou algo? Primitivo novo → `./fsc ui add <nome>`; padrão do domínio que se repete → composto novo em `ui/`. Nunca estilo solto na página.
-7. Confira em `/ui` e na própria tela, 414px e 1440px, nos dois temas.
+7. Texto da tela que vira rótulo vem de `src/lib/rotulos.ts` (`rotuloDeCargo`, `rotuloDeTipoDeRelatorio`, `opcoesDeTipoDeRelatorio`); formatação vem de `src/lib/utils.ts` (`dataHora`, `dataBrasileira`, `formatarNumero`).
+8. Confira em `/ui` e na própria tela, 414px e 1440px, nos dois temas.
 
 ## Legado
 

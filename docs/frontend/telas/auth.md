@@ -6,7 +6,7 @@ Páginas em `frontend/src/pages/autenticacao/*.tsx`, dentro do `LayoutPublico` (
 
 - Campos: e-mail, senha (+ link "Esqueceu sua senha?" e "Criar Conta").
 - Envia `useAutenticacao().entrar.mutate({ email, senha })` → `POST /api/auth/login`.
-- **Não navega.** O `entrar` grava `['me']`; o `LayoutPublico` vê o usuário e redireciona (`state.de` ou `cliente → /perfil`, resto → `/admin`).
+- **Não navega.** O `entrar` grava `['me']`; o `LayoutPublico` vê o usuário e redireciona (`state.de` ou `cliente → /viagens`, resto → `/admin`).
 - Erros (abaixo dos campos): `401` → "E-mail ou senha incorretos" (a API não diz qual dos dois errou); `403` → "Usuário desativado. Fale com a gestão."; outro → mensagem genérica.
 
 ## `/cadastro` — `Cadastro.tsx`

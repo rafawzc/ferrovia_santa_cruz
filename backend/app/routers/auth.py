@@ -25,6 +25,7 @@ class UsuarioSaida(BaseModel):
     cargo: str
     papel: str
     ativo: bool
+    trem_id: int | None
 
 
 class Login(BaseModel):

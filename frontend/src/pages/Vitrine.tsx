@@ -42,6 +42,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { GraficoDeBarras } from '@/components/ui/grafico-de-barras'
+import { ListaDeViagens } from '@/components/ui/lista-de-viagens'
 import { ErroDeCarregamento } from '@/components/ui/erro-de-carregamento'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -76,7 +78,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ApiError } from '@/lib/api'
+import { ApiError, type Viagem } from '@/lib/api'
 
 const TOKENS = [
   { name: 'background', className: 'bg-background text-foreground' },
@@ -440,6 +442,50 @@ function SecaoAuxiliares() {
   )
 }
 
+function SecaoGraficoELista() {
+  const viagens: Viagem[] = [
+    {
+      id: 1,
+      linha_id: 1,
+      linha_numero: '1778',
+      origem: 'Santa Cruz',
+      destino: 'Porto Velho',
+      trem_id: 1,
+      trem_prefixo: 'TR-01',
+      partida_prevista: '2026-11-03T08:00:00',
+      chegada_prevista: '2026-11-03T11:30:00',
+      status: 'em_andamento',
+      criado_em: '2026-11-01T09:00:00',
+    },
+    {
+      id: 2,
+      linha_id: 2,
+      linha_numero: '2645',
+      origem: 'Porto Velho',
+      destino: 'Santa Cruz',
+      trem_id: 2,
+      trem_prefixo: 'TR-02',
+      partida_prevista: '2026-11-03T14:00:00',
+      chegada_prevista: '2026-11-03T17:45:00',
+      status: 'programada',
+      criado_em: '2026-11-01T09:00:00',
+    },
+  ]
+  return (
+    <Secao titulo="GraficoDeBarras e ListaDeViagens">
+      <GraficoDeBarras
+        barras={[
+          { rotulo: 'Ativo', valor: 7 },
+          { rotulo: 'Manutenção', valor: 2, variant: 'warning' },
+          { rotulo: 'Parado', valor: 1, variant: 'danger' },
+        ]}
+      />
+      <GraficoDeBarras barras={[]} />
+      <ListaDeViagens viagens={viagens} />
+    </Secao>
+  )
+}
+
 function SecaoCompostosDoDominio({
   aoVerLayoutDeAutenticacao,
 }: {
@@ -507,6 +553,7 @@ export default function Vitrine() {
         <SecaoSobreposicoes />
         <SecaoTabela />
         <SecaoAuxiliares />
+        <SecaoGraficoELista />
         <SecaoCompostosDoDominio
           aoVerLayoutDeAutenticacao={() => {
             setMostrandoLayoutDeAutenticacao(true)

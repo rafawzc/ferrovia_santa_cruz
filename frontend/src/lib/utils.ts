@@ -11,3 +11,12 @@ export function dataHora(isoUtcSemFuso: string) {
     timeStyle: 'short',
   })
 }
+
+export function dataBrasileira(dataIso: string) {
+  const [ano, mes, dia] = dataIso.split('-')
+  return `${dia}/${mes}/${ano}`
+}
+
+export function formatarNumero(valor: number) {
+  return valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+}

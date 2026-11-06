@@ -52,24 +52,23 @@ import {
   useAtualizarUsuario,
   useCriarUsuario,
   useDesativarUsuario,
+  useSenhaTemporaria,
   useUsuarios,
 } from '@/hooks/usuarios'
-import { ApiError, tratouErrosDeCampo, type Cargo, type Usuario } from '@/lib/api'
+import { ApiError, tratouErrosDeCampo, type Cargo, type Papel, type Usuario } from '@/lib/api'
+import { rotuloDeCargo } from '@/lib/rotulos'
+import { cn } from '@/lib/utils'
 
-const CARGOS: Record<string, string> = {
-  comum: 'Cliente',
-  admin: 'Administrador',
-  administracao: 'Administração',
-  rh: 'RH',
-  maquinista: 'Maquinista',
-  auxiliar_maquinista: 'Auxiliar de Maquinista',
-  agente_trem: 'Agente de Trem',
-  manutencao: 'Manutenção',
-  engenharia_mecanica: 'Engenharia Mecânica',
-  eletricista: 'Eletricista',
-}
+const OPCOES_DE_PAPEL: { valor: Papel; rotulo: string }[] = [
+  { valor: 'cliente', rotulo: 'Cliente' },
+  { valor: 'operacional', rotulo: 'Operacional' },
+  { valor: 'gestao', rotulo: 'Gestão' },
+]
 
-const rotuloCargo = (slug: string) => CARGOS[slug] ?? slug
+const OPCOES_DE_SITUACAO = [
+  { valor: 'ativos', rotulo: 'Ativos' },
+  { valor: 'inativos', rotulo: 'Inativos' },
+]
 
 function erroTexto(erro: Error, acao: string) {
   return `Não foi possível ${acao}: ${mensagemDeErro(erro)}`
@@ -148,7 +147,9 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
   }
 
   const ehVoceMesmo = usuario.id === eu?.id
-  if (ehVoceMesmo) return null
+  if (ehVoceMesmo) {
+    return <p className="text-sm text-muted-foreground">Você não pode desativar a própria conta.</p>
+  }
 
   return (
     <AlertDialog>
@@ -161,8 +162,9 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
         <AlertDialogHeader>
           <AlertDialogTitle>Desativar {usuario.nome}?</AlertDialogTitle>
           <AlertDialogDescription>
-            A pessoa perde o acesso na hora. O cadastro e o histórico continuam, e dá pra reativar
-            depois.
+            A pessoa perde o acesso na hora. Desativar não exclui: o cadastro e o histórico
+            continuam, e dá pra reativar depois. O último administrador ativo não pode ser
+            desativado.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -184,6 +186,91 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  )
+}
+
+function AcaoSenhaTemporaria({ usuario }: { usuario: Usuario }) {
+  const gerar = useSenhaTemporaria()
+  const [senha, setSenha] = useState<string | null>(null)
+
+  const copiar = (texto: string) => {
+    if (!('clipboard' in navigator)) {
+      toast.error('Não foi possível copiar. Copie a senha manualmente.')
+      return
+    }
+    void navigator.clipboard.writeText(texto).then(
+      () => {
+        toast.success('Senha copiada')
+      },
+      () => {
+        toast.error('Não foi possível copiar. Copie manualmente.')
+      },
+    )
+  }
+
+  return (
+    <>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button type="button" variant="outline" disabled={gerar.isPending}>
+            Gerar senha temporária
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gerar senha temporária para {usuario.nome}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A senha anterior deixa de valer na hora. A nova senha aparece uma única vez, para você
+              repassar à pessoa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                gerar.mutate(usuario.id, {
+                  onSuccess: (resposta) => {
+                    setSenha(resposta.senha_temporaria)
+                  },
+                  onError: (erro) => toast.error(erroTexto(erro, 'gerar a senha temporária')),
+                })
+              }}
+            >
+              Gerar senha
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog
+        open={senha !== null}
+        onOpenChange={(aberto) => {
+          if (aberto) return
+          setSenha(null)
+          gerar.reset()
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Senha temporária de {usuario.nome}</DialogTitle>
+            <DialogDescription>
+              Esta senha não será mostrada de novo. Copie e repasse agora.
+            </DialogDescription>
+          </DialogHeader>
+          <p className="rounded-lg bg-muted p-4 text-center font-mono text-2xl font-bold select-all">
+            {senha}
+          </p>
+          <Button
+            type="button"
+            onClick={() => {
+              if (senha !== null) copiar(senha)
+            }}
+          >
+            Copiar senha
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -211,12 +298,15 @@ function FormularioDeUsuario({
 
   const aoErrar = (erro: Error) => {
     if (erro instanceof ApiError && erro.status === 409) {
-      const emailDuplicado = erro.message === 'Registro duplicado'
-      if (emailDuplicado) {
+      if (erro.message === 'Registro duplicado') {
         formulario.setError('email', { message: 'E-mail já cadastrado' })
-      } else {
-        formulario.setError('cargo_id', { message: 'Cargo não encontrado' })
+        return
       }
+      if (erro.message === 'Referência inexistente') {
+        formulario.setError('cargo_id', { message: 'Cargo não encontrado' })
+        return
+      }
+      toast.error(mensagemDeErro(erro))
       return
     }
     if (tratouErrosDeCampo(erro, formulario)) return
@@ -280,7 +370,7 @@ function FormularioDeUsuario({
                 <SelectContent>
                   {cargos.map((cargo) => (
                     <SelectItem key={cargo.id} value={String(cargo.id)}>
-                      {rotuloCargo(cargo.nome)}
+                      {rotuloDeCargo(cargo.nome)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -311,6 +401,7 @@ function FormularioDeUsuario({
           {salvando ? 'Salvando…' : rotuloDeEnvio}
         </Button>
 
+        {usuario && <AcaoSenhaTemporaria usuario={usuario} />}
         {usuario && <AcoesDeAtivacao usuario={usuario} aoFechar={aoFechar} />}
       </FieldGroup>
     </form>
@@ -328,12 +419,12 @@ interface ListaProps {
 
 function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden">
       {usuarios.map((usuario) => (
-        <li key={usuario.id}>
+        <li key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
           <CartaoDeUsuario
             nome={usuario.nome}
-            cargo={rotuloCargo(usuario.cargo)}
+            cargo={rotuloDeCargo(usuario.cargo)}
             ativo={usuario.ativo}
             foto={usuario.foto_url ?? undefined}
             onClick={() => {
@@ -348,7 +439,7 @@ function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
 
 function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
   return (
-    <div className="hidden rounded-xl bg-card p-4 lg:block">
+    <div className="hidden rounded-xl bg-card p-4 md:block">
       <Table>
         <TableHeader>
           <TableRow>
@@ -361,7 +452,7 @@ function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
         </TableHeader>
         <TableBody>
           {usuarios.map((usuario) => (
-            <TableRow key={usuario.id}>
+            <TableRow key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
               <TableCell>
                 <Button
                   variant="link"
@@ -375,7 +466,7 @@ function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
               </TableCell>
               <TableCell>{usuario.email}</TableCell>
               <TableCell>{usuario.telefone ?? '—'}</TableCell>
-              <TableCell>{rotuloCargo(usuario.cargo)}</TableCell>
+              <TableCell>{rotuloDeCargo(usuario.cargo)}</TableCell>
               <TableCell>
                 <StatusAtivo ativo={usuario.ativo} />
               </TableCell>
@@ -387,21 +478,34 @@ function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
   )
 }
 
-function ConteudoDeUsuarios({ aoAbrir }: { aoAbrir: (usuario: Usuario) => void }) {
-  const { data: usuarios, isPending, error } = useUsuarios()
+interface ConteudoProps {
+  busca: string
+  papel: string
+  situacao: string
+  aoAbrir: (usuario: Usuario) => void
+}
+
+function ConteudoDeUsuarios({ busca, papel, situacao, aoAbrir }: ConteudoProps) {
+  const filtroDePapel = OPCOES_DE_PAPEL.find((opcao) => opcao.valor === papel)?.valor
+  const filtroDeAtivo = situacao === 'todos' ? undefined : situacao === 'ativos'
+  const {
+    data: usuarios,
+    isPending,
+    error,
+  } = useUsuarios({ busca, papel: filtroDePapel, ativo: filtroDeAtivo })
 
   if (isPending) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-1">
         {Array.from({ length: 6 }, (_, indice) => (
-          <Skeleton key={indice} className="h-44 lg:h-10" />
+          <Skeleton key={indice} className="h-44 md:h-10" />
         ))}
       </div>
     )
   }
   if (error) return <ErroDeCarregamento error={error} />
   if (usuarios.length === 0) {
-    return <p className="text-muted-foreground">Nenhum usuário cadastrado.</p>
+    return <p className="text-muted-foreground">Nenhum usuário encontrado.</p>
   }
 
   return (
@@ -430,6 +534,9 @@ function FormularioComCargos({
 export default function UsuariosLista() {
   const [emEdicao, setEmEdicao] = useState<Usuario | 'novo' | null>(null)
   const usuarioEmEdicao = emEdicao === 'novo' ? null : emEdicao
+  const [busca, setBusca] = useState('')
+  const [papel, setPapel] = useState('todos')
+  const [situacao, setSituacao] = useState('todos')
 
   return (
     <>
@@ -448,7 +555,45 @@ export default function UsuariosLista() {
         }
       />
 
-      <ConteudoDeUsuarios aoAbrir={setEmEdicao} />
+      <div className="mb-4 grid gap-3 md:grid-cols-3">
+        <Input
+          type="search"
+          aria-label="Buscar usuário"
+          placeholder="Buscar por nome ou e-mail"
+          value={busca}
+          onChange={(evento) => {
+            setBusca(evento.target.value)
+          }}
+        />
+        <Select value={papel} onValueChange={setPapel}>
+          <SelectTrigger aria-label="Filtrar por nível de acesso" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os níveis</SelectItem>
+            {OPCOES_DE_PAPEL.map((opcao) => (
+              <SelectItem key={opcao.valor} value={opcao.valor}>
+                {opcao.rotulo}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={situacao} onValueChange={setSituacao}>
+          <SelectTrigger aria-label="Filtrar por situação" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as situações</SelectItem>
+            {OPCOES_DE_SITUACAO.map((opcao) => (
+              <SelectItem key={opcao.valor} value={opcao.valor}>
+                {opcao.rotulo}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <ConteudoDeUsuarios busca={busca} papel={papel} situacao={situacao} aoAbrir={setEmEdicao} />
 
       <Dialog
         open={emEdicao !== null}
@@ -464,10 +609,11 @@ export default function UsuariosLista() {
             <DialogDescription>
               {usuarioEmEdicao ? (
                 <span className="flex items-center gap-2">
-                  {rotuloCargo(usuarioEmEdicao.cargo)} <StatusAtivo ativo={usuarioEmEdicao.ativo} />
+                  {rotuloDeCargo(usuarioEmEdicao.cargo)}{' '}
+                  <StatusAtivo ativo={usuarioEmEdicao.ativo} />
                 </span>
               ) : (
-                'Cria o acesso de um funcionário ou cliente.'
+                'Cria o acesso de um funcionário ou usuário comum.'
               )}
             </DialogDescription>
           </DialogHeader>
