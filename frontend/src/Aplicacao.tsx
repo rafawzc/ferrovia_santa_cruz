@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AlternadorDeTema } from '@/components/ui/alternador-de-tema'
-import { CascaDePagina } from '@/components/ui/casca-de-pagina'
+import { CascaDePagina, Marca } from '@/components/ui/casca-de-pagina'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAutenticacao } from '@/contexts/Autenticacao'
 import type { Papel } from '@/lib/api'
 
@@ -28,11 +29,49 @@ function inicioDo(papel: Papel) {
   return papel === 'cliente' ? '/viagens' : '/admin'
 }
 
+function Abertura() {
+  return (
+    <div
+      role="status"
+      className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-background px-4 text-foreground"
+    >
+      <Marca />
+      <div className="flex w-full max-w-xs flex-col items-center gap-3">
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-2/3 rounded-full" />
+      </div>
+      <span className="sr-only">Abrindo a Ferrovia Santa Cruz</span>
+    </div>
+  )
+}
+
+function EsqueletoDeTela() {
+  return (
+    <div role="status" className="flex flex-col gap-6 lg:gap-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <Skeleton className="h-8 w-56 lg:h-9 lg:w-72" />
+        <Skeleton className="h-11 w-full rounded-full sm:w-44" />
+      </div>
+      <Skeleton className="h-64 w-full" />
+      <span className="sr-only">Carregando a tela</span>
+    </div>
+  )
+}
+
 function LayoutPublico() {
   const { usuario, carregando } = useAutenticacao()
   const rota = useLocation()
-  if (carregando) return null
-  if (!usuario) return <Outlet />
+  if (carregando) return <Abertura />
+  if (!usuario) {
+    return (
+      <>
+        <div className="nao-imprime fixed top-4 right-4 z-50 rounded-full bg-popover px-3 py-2 text-popover-foreground shadow-lg">
+          <AlternadorDeTema />
+        </div>
+        <Outlet />
+      </>
+    )
+  }
 
   const destino = (rota.state as { de?: string } | null)?.de ?? inicioDo(usuario.papel)
   return <Navigate to={destino} replace />
@@ -41,13 +80,13 @@ function LayoutPublico() {
 function LayoutProtegido() {
   const { usuario, carregando } = useAutenticacao()
   const rota = useLocation()
-  if (carregando) return null
+  if (carregando) return <Abertura />
   if (!usuario) {
     return <Navigate to="/login" replace state={{ de: rota.pathname + rota.search }} />
   }
   return (
     <CascaDePagina>
-      <Suspense fallback={null}>
+      <Suspense fallback={<EsqueletoDeTela />}>
         <Outlet />
       </Suspense>
     </CascaDePagina>
@@ -64,10 +103,7 @@ function Papeis({ papeis }: { papeis: Papel[] }) {
 export default function Aplicacao() {
   return (
     <BrowserRouter>
-      <div className="nao-imprime fixed top-4 right-4 z-50">
-        <AlternadorDeTema />
-      </div>
-      <Suspense fallback={null}>
+      <Suspense fallback={<Abertura />}>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route element={<LayoutPublico />}>

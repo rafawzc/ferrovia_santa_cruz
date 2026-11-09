@@ -52,7 +52,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-const fieldVariants = cva('group/field flex w-full gap-3 data-[invalid=true]:text-destructive', {
+const fieldVariants = cva('group/field flex w-full gap-3 data-[invalid=true]:text-danger-ink', {
   variants: {
     orientation: {
       vertical: ['flex-col [&>*]:w-full [&>.sr-only]:w-auto'],
@@ -105,8 +105,8 @@ function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>)
       data-slot="field-label"
       className={cn(
         'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50',
-        'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4',
-        'has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10',
+        'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border has-[>[data-slot=field]]:border-border-forte [&>*]:data-[slot=field]:p-4',
+        'has-data-[state=checked]:border-primary has-data-[state=checked]:bg-accent/40',
         className,
       )}
       {...props}
@@ -119,7 +119,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="field-label"
       className={cn(
-        'flex w-fit items-center gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50',
+        'flex w-fit items-center gap-2 text-sm leading-snug font-semibold group-data-[disabled=true]/field:opacity-50',
         className,
       )}
       {...props}
@@ -210,7 +210,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn('text-sm font-normal text-destructive', className)}
+      className={cn('text-rotulo font-semibold text-danger-ink', className)}
       {...props}
     >
       {content}

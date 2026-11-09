@@ -1,15 +1,28 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { BellOff, Plus } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { RotuloDeDado } from '@/components/ui/rotulo-de-dado'
 import {
   Select,
   SelectContent,
@@ -54,7 +67,14 @@ const VAZIO: ValoresDoFormulario = {
   status: '',
 }
 
-function NovoAlerta() {
+const CAMPOS_DE_TEXTO = [
+  { nome: 'tipo', rotulo: 'Tipo', placeholder: 'Ex: via, clima, operacional' },
+  { nome: 'motivo', rotulo: 'Motivo', placeholder: 'Ex: manutenção no trilho' },
+  { nome: 'status', rotulo: 'Status', placeholder: 'Ex: Parado' },
+  { nome: 'tempo_espera', rotulo: 'Tempo de espera (opcional)', placeholder: 'Ex: 15 a 30 min' },
+] as const
+
+function FormularioDeAlerta({ aoEnviar }: { aoEnviar: () => void }) {
   const linhas = useLinhas()
   const criar = useCriarAlerta()
   const formulario = useForm<ValoresDoFormulario>({
@@ -62,7 +82,7 @@ function NovoAlerta() {
     defaultValues: VAZIO,
   })
 
-  function enviar(v: ValoresDoFormulario) {
+  const enviar = formulario.handleSubmit((v) => {
     criar.mutate(
       {
         linha_id: Number(v.linha_id),
@@ -75,7 +95,7 @@ function NovoAlerta() {
       {
         onSuccess: () => {
           toast.success('Alerta enviado')
-          formulario.reset(VAZIO)
+          aoEnviar()
         },
         onError: (error) => {
           const rotaNaoExisteMais = error instanceof ApiError && error.status === 409
@@ -90,147 +110,129 @@ function NovoAlerta() {
         },
       },
     )
-  }
+  })
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Novo alerta</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form
-          noValidate
-          onSubmit={(e) => {
-            void formulario.handleSubmit(enviar)(e)
+    <form
+      noValidate
+      className="flex flex-col gap-6"
+      onSubmit={(e) => {
+        void enviar(e)
+      }}
+    >
+      <FieldGroup>
+        <Controller
+          name="linha_id"
+          control={formulario.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="alerta-rota">Rota</FieldLabel>
+              <Select
+                name={field.name}
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={linhas.isPending || !!linhas.error}
+              >
+                <SelectTrigger
+                  id="alerta-rota"
+                  className="w-full"
+                  aria-invalid={fieldState.invalid}
+                >
+                  <SelectValue
+                    placeholder={linhas.isPending ? 'Carregando rotas…' : 'Selecione a rota'}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {linhas.data?.map((l) => (
+                    <SelectItem key={l.id} value={String(l.id)}>
+                      Rota {l.numero}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {linhas.error && (
+                <FieldDescription role="alert">
+                  Não foi possível carregar as rotas: {mensagemDeErro(linhas.error)}. Feche e abra
+                  de novo para tentar outra vez.
+                </FieldDescription>
+              )}
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="severidade"
+          control={formulario.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel htmlFor="alerta-severidade">Severidade</FieldLabel>
+              <Select name={field.name} value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="alerta-severidade" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPCOES_DE_SEVERIDADE.map((o) => (
+                    <SelectItem key={o.valor} value={o.valor}>
+                      {o.rotulo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+        />
+        {CAMPOS_DE_TEXTO.map(({ nome, rotulo, placeholder }) => {
+          const erro = formulario.formState.errors[nome]
+          return (
+            <Field key={nome} data-invalid={!!erro}>
+              <FieldLabel htmlFor={`alerta-${nome}`}>{rotulo}</FieldLabel>
+              <Input
+                id={`alerta-${nome}`}
+                placeholder={placeholder}
+                aria-invalid={!!erro}
+                {...formulario.register(nome)}
+              />
+              {erro && <FieldError errors={[erro]} />}
+            </Field>
+          )
+        })}
+      </FieldGroup>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit" disabled={criar.isPending}>
+          {criar.isPending ? 'Enviando…' : 'Enviar alerta'}
+        </Button>
+      </DialogFooter>
+    </form>
+  )
+}
+
+function NovoAlerta() {
+  const [aberto, setAberto] = useState(false)
+  return (
+    <Dialog open={aberto} onOpenChange={setAberto}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus aria-hidden />
+          Novo alerta
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-dvh overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Novo alerta</DialogTitle>
+          <DialogDescription>Registra uma ocorrência na central de alertas.</DialogDescription>
+        </DialogHeader>
+        <FormularioDeAlerta
+          aoEnviar={() => {
+            setAberto(false)
           }}
-        >
-          <FieldGroup>
-            <Controller
-              name="linha_id"
-              control={formulario.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="alerta-rota">Rota</FieldLabel>
-                  <Select
-                    name={field.name}
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={linhas.isPending || !!linhas.error}
-                  >
-                    <SelectTrigger
-                      id="alerta-rota"
-                      className="w-full"
-                      aria-invalid={fieldState.invalid}
-                    >
-                      <SelectValue
-                        placeholder={linhas.isPending ? 'Carregando rotas…' : 'Selecione a rota'}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {linhas.data?.map((l) => (
-                        <SelectItem key={l.id} value={String(l.id)}>
-                          Rota {l.numero}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {linhas.error && <ErroDeCarregamento error={linhas.error} />}
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="tipo"
-              control={formulario.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="alerta-tipo">Tipo</FieldLabel>
-                  <Input
-                    {...field}
-                    id="alerta-tipo"
-                    placeholder="Ex: via, clima, operacional"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="severidade"
-              control={formulario.control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel htmlFor="alerta-severidade">Severidade</FieldLabel>
-                  <Select name={field.name} value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="alerta-severidade" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {OPCOES_DE_SEVERIDADE.map((o) => (
-                        <SelectItem key={o.valor} value={o.valor}>
-                          {o.rotulo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              )}
-            />
-            <Controller
-              name="tempo_espera"
-              control={formulario.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="alerta-espera">Tempo de espera (opcional)</FieldLabel>
-                  <Input
-                    {...field}
-                    id="alerta-espera"
-                    placeholder="Ex: 15 a 30 min"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="motivo"
-              control={formulario.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="alerta-motivo">Motivo</FieldLabel>
-                  <Input
-                    {...field}
-                    id="alerta-motivo"
-                    placeholder="Ex: manutenção no trilho"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Controller
-              name="status"
-              control={formulario.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="alerta-status">Status</FieldLabel>
-                  <Input
-                    {...field}
-                    id="alerta-status"
-                    placeholder="Ex: Parado"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            <Button type="submit" disabled={criar.isPending} className="self-end">
-              {criar.isPending ? 'Enviando…' : 'Enviar'}
-            </Button>
-          </FieldGroup>
-        </form>
-      </CardContent>
-    </Card>
+        />
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -260,48 +262,57 @@ function Filtros({
   aoMudarSituacao,
 }: FiltrosProps) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <Select
-        value={severidade}
-        onValueChange={(v) => {
-          aoMudarSeveridade(SEVERIDADES.find((s) => s === v) ?? 'todas')
-        }}
-      >
-        <SelectTrigger className="w-full" aria-label="Filtrar por severidade">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="todas">Todas as severidades</SelectItem>
-          {OPCOES_DE_SEVERIDADE.map((o) => (
-            <SelectItem key={o.valor} value={o.valor}>
-              {o.rotulo}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Input
-        value={tipo}
-        onChange={(e) => {
-          aoMudarTipo(e.target.value)
-        }}
-        placeholder="Filtrar por tipo"
-        aria-label="Filtrar por tipo"
-      />
-      <Select
-        value={situacao}
-        onValueChange={(v) => {
-          if (v === 'abertos' || v === 'tratados' || v === 'todos') aoMudarSituacao(v)
-        }}
-      >
-        <SelectTrigger className="w-full" aria-label="Filtrar por situação">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="abertos">Não tratados</SelectItem>
-          <SelectItem value="tratados">Tratados</SelectItem>
-          <SelectItem value="todos">Todos</SelectItem>
-        </SelectContent>
-      </Select>
+    <div className="grid gap-4 sm:grid-cols-3">
+      <Field>
+        <FieldLabel htmlFor="filtro-severidade">Severidade</FieldLabel>
+        <Select
+          value={severidade}
+          onValueChange={(v) => {
+            aoMudarSeveridade(SEVERIDADES.find((s) => s === v) ?? 'todas')
+          }}
+        >
+          <SelectTrigger id="filtro-severidade" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas</SelectItem>
+            {OPCOES_DE_SEVERIDADE.map((o) => (
+              <SelectItem key={o.valor} value={o.valor}>
+                {o.rotulo}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="filtro-tipo">Tipo</FieldLabel>
+        <Input
+          id="filtro-tipo"
+          value={tipo}
+          placeholder="Ex: via"
+          onChange={(e) => {
+            aoMudarTipo(e.target.value)
+          }}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="filtro-situacao">Situação</FieldLabel>
+        <Select
+          value={situacao}
+          onValueChange={(v) => {
+            if (v === 'abertos' || v === 'tratados' || v === 'todos') aoMudarSituacao(v)
+          }}
+        >
+          <SelectTrigger id="filtro-situacao" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="abertos">Não tratados</SelectItem>
+            <SelectItem value="tratados">Tratados</SelectItem>
+            <SelectItem value="todos">Todos</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
     </div>
   )
 }
@@ -324,68 +335,98 @@ function CartaoDeAlerta({ alerta: a }: { alerta: Alerta }) {
   const origem = a.linha_numero === null ? `${a.tipo} (sensor)` : `Rota ${a.linha_numero}`
 
   return (
-    <Card
-      className={cn(
-        'gap-2 p-4',
-        'bg-accent text-accent-foreground',
-        critico && 'border-2 border-danger',
-        a.tratado && 'opacity-60',
-      )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2 font-semibold">
-          {origem}
-          <SeloDeStatus status={a.severidade} />
-          <Badge variant="outline">{a.tipo}</Badge>
-          {a.tratado && <Badge variant="secondary">Tratado</Badge>}
-        </p>
-        <time dateTime={a.criado_em} className="text-xs text-muted-foreground">
+    <Card className={cn('gap-4 p-5', critico && 'border-danger')}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <SeloDeStatus status={a.severidade} />
+            {a.tratado && <Badge variant="secondary">Tratado</Badge>}
+          </div>
+          <h2 className="text-lg leading-snug font-bold">{origem}</h2>
+        </div>
+        <time dateTime={a.criado_em} className="text-rotulo text-muted-foreground tabular-nums">
           {dataHora(a.criado_em)}
         </time>
       </div>
-      <p className="text-sm">
-        <span className="text-muted-foreground">Status:</span> {a.status}
-      </p>
-      <p className="text-sm">
-        <span className="text-muted-foreground">Motivo:</span> {a.motivo}
-      </p>
-      {a.tempo_espera && (
-        <p className="text-sm">
-          <span className="text-muted-foreground">Tempo de espera:</span> {a.tempo_espera}
-        </p>
-      )}
+      <dl className="grid gap-4 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <RotuloDeDado como="dt">Motivo</RotuloDeDado>
+          <dd className="text-sm">{a.motivo}</dd>
+        </div>
+        <div>
+          <RotuloDeDado como="dt">Tipo</RotuloDeDado>
+          <dd className="text-sm">{a.tipo}</dd>
+        </div>
+        <div>
+          <RotuloDeDado como="dt">Status</RotuloDeDado>
+          <dd className="text-sm">{a.status}</dd>
+        </div>
+        {a.tempo_espera && (
+          <div>
+            <RotuloDeDado como="dt">Tempo de espera</RotuloDeDado>
+            <dd className="text-sm">{a.tempo_espera}</dd>
+          </div>
+        )}
+      </dl>
       <Button
-        size="sm"
         variant={a.tratado ? 'outline' : 'default'}
-        className="self-end"
+        className="sm:self-end"
         disabled={tratar.isPending}
         onClick={alternar}
       >
-        {a.tratado ? 'Reabrir' : 'Marcar como tratado'}
+        {a.tratado ? 'Reabrir alerta' : 'Marcar como tratado'}
       </Button>
     </Card>
   )
 }
 
-function ListaDeAlertas({ filtro }: { filtro: FiltroAlertas }) {
-  const { data: alertas, isPending, error } = useAlertas(filtro)
+function ListaDeAlertas({
+  filtro,
+  aoLimparFiltros,
+}: {
+  filtro: FiltroAlertas
+  aoLimparFiltros: () => void
+}) {
+  const { data: alertas, isPending, error, refetch } = useAlertas(filtro)
 
   if (isPending) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
+          <Skeleton key={i} className="h-40 rounded-lg" />
         ))}
       </div>
     )
   }
-  if (error) return <ErroDeCarregamento error={error} />
+
+  if (error) {
+    return (
+      <ErroDeCarregamento
+        error={error}
+        aoTentarDeNovo={() => {
+          void refetch()
+        }}
+      />
+    )
+  }
+
   if (alertas.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nenhum alerta encontrado.</p>
+    return (
+      <EstadoVazio
+        icone={BellOff}
+        titulo="Nenhum alerta encontrado"
+        descricao="Nenhuma ocorrência corresponde aos filtros atuais."
+        acao={
+          <Button variant="outline" onClick={aoLimparFiltros}>
+            Limpar filtros
+          </Button>
+        }
+      />
+    )
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-4">
       {alertas.map((a) => (
         <li key={a.id}>
           <CartaoDeAlerta alerta={a} />
@@ -395,44 +436,41 @@ function ListaDeAlertas({ filtro }: { filtro: FiltroAlertas }) {
   )
 }
 
-function Historico() {
+export default function Alertas() {
   const [severidade, setSeveridade] = useState<Severidade | 'todas'>('todas')
   const [tipo, setTipo] = useState('')
   const [situacao, setSituacao] = useState<Situacao>('abertos')
   const tipoLimpo = tipo.trim()
 
   return (
-    <section aria-labelledby="historico" className="flex flex-col gap-4">
-      <h2 id="historico" className="text-lg font-bold text-foreground">
-        Central de alertas
-      </h2>
-      <Filtros
-        severidade={severidade}
-        tipo={tipo}
-        situacao={situacao}
-        aoMudarSeveridade={setSeveridade}
-        aoMudarTipo={setTipo}
-        aoMudarSituacao={setSituacao}
+    <>
+      <CabecalhoDeTela
+        title="Alertas e Notificações"
+        apoio="Ocorrências da operação, da mais recente para a mais antiga."
+        actions={<NovoAlerta />}
       />
-      <ListaDeAlertas
-        filtro={{
-          ...(severidade !== 'todas' && { severidade }),
-          ...(tipoLimpo && { tipo: tipoLimpo }),
-          tratado: TRATADO_DA_SITUACAO[situacao],
-        }}
-      />
-    </section>
-  )
-}
-
-export default function Alertas() {
-  return (
-    <div className="flex flex-col gap-6">
-      <CabecalhoDeTela title="Alertas e Notificações" />
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-        <NovoAlerta />
-        <Historico />
-      </div>
-    </div>
+      <section aria-label="Central de alertas" className="flex flex-col gap-5">
+        <Filtros
+          severidade={severidade}
+          tipo={tipo}
+          situacao={situacao}
+          aoMudarSeveridade={setSeveridade}
+          aoMudarTipo={setTipo}
+          aoMudarSituacao={setSituacao}
+        />
+        <ListaDeAlertas
+          filtro={{
+            ...(severidade !== 'todas' && { severidade }),
+            ...(tipoLimpo && { tipo: tipoLimpo }),
+            tratado: TRATADO_DA_SITUACAO[situacao],
+          }}
+          aoLimparFiltros={() => {
+            setSeveridade('todas')
+            setTipo('')
+            setSituacao('todos')
+          }}
+        />
+      </section>
+    </>
   )
 }

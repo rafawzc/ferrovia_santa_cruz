@@ -1,9 +1,12 @@
-import { Download, Printer } from 'lucide-react'
+import { Download, FileText, Printer } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ErroDeCarregamento } from '@/components/ui/erro-de-carregamento'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
 import { GraficoDeBarras } from '@/components/ui/grafico-de-barras'
+import { RotuloDeDado } from '@/components/ui/rotulo-de-dado'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -17,7 +20,7 @@ import { useRelatorio } from '@/hooks/relatorios'
 import { useTrens } from '@/hooks/trens'
 import { api, type CelulaDeRelatorio, type FiltroRelatorio } from '@/lib/api'
 import { opcoesDeTipoDeRelatorio, rotuloDeTipoDeRelatorio } from '@/lib/rotulos'
-import { dataBrasileira, formatarNumero } from '@/lib/utils'
+import { cn, dataBrasileira, formatarNumero } from '@/lib/utils'
 
 const FORMATO_DATA = /^\d{4}-\d{2}-\d{2}$/
 
@@ -42,7 +45,7 @@ function lerFiltro(parametros: URLSearchParams): FiltroRelatorio | null {
   return trem ? { tipo, inicio, fim, trem_id: Number(trem) } : { tipo, inicio, fim }
 }
 
-function Voltar() {
+function NovoRelatorio() {
   return (
     <Button variant="outline" asChild className="nao-imprime">
       <Link to="/admin/relatorios">Novo relatório</Link>
@@ -53,124 +56,153 @@ function Voltar() {
 export default function RelatorioVisualizacao() {
   const [parametros] = useSearchParams()
   const filtro = lerFiltro(parametros)
-  const { data: relatorio, isPending, error } = useRelatorio(filtro)
+  const { data: relatorio, isPending, error, refetch } = useRelatorio(filtro)
   const { data: trens } = useTrens()
 
   if (filtro === null) {
     return (
       <>
-        <CabecalhoDeTela title="Relatório" />
-        <div className="flex flex-col items-start gap-4">
-          <p className="text-muted-foreground">
-            Escolha o tipo e o período para gerar o relatório.
-          </p>
-          <Voltar />
-        </div>
+        <CabecalhoDeTela title="Relatório" actions={<NovoRelatorio />} />
+        <EstadoVazio
+          icone={FileText}
+          titulo="Sem período definido"
+          descricao="Escolha o tipo e o período para gerar o relatório."
+        />
       </>
     )
   }
-  if (error) return <ErroDeCarregamento error={error} />
-  if (isPending) {
+
+  const prefixo = trens?.find(({ id }) => id === filtro.trem_id)?.prefixo
+  const alvo =
+    filtro.trem_id === undefined ? 'Todos os trens' : `Trem ${prefixo ?? String(filtro.trem_id)}`
+  const titulo = `Relatório de ${rotuloDeTipoDeRelatorio(filtro.tipo)}`
+  const periodo = `De ${dataBrasileira(filtro.inicio)} a ${dataBrasileira(filtro.fim)} · ${alvo}`
+
+  if (error) {
     return (
-      <div className="flex flex-col gap-2">
-        {Array.from({ length: 6 }, (_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
-        ))}
-      </div>
+      <>
+        <CabecalhoDeTela title={titulo} apoio={periodo} actions={<NovoRelatorio />} />
+        <ErroDeCarregamento
+          error={error}
+          aoTentarDeNovo={() => {
+            void refetch()
+          }}
+        />
+      </>
     )
   }
 
-  const rotuloDoTipo = rotuloDeTipoDeRelatorio(relatorio.tipo)
-  const prefixoDoTrem =
-    trens?.find(({ id }) => id === relatorio.trem_id)?.prefixo ?? String(relatorio.trem_id)
+  if (isPending) {
+    return (
+      <>
+        <CabecalhoDeTela title={titulo} apoio={periodo} actions={<NovoRelatorio />} />
+        <Card className="gap-3 p-4">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skeleton key={i} className="h-8 w-full" />
+          ))}
+        </Card>
+      </>
+    )
+  }
+
+  const { colunas, linhas, grafico } = relatorio
 
   return (
     <>
-      <CabecalhoDeTela title={`Relatório de ${rotuloDoTipo}`} />
+      <CabecalhoDeTela
+        title={titulo}
+        apoio={periodo}
+        actions={
+          <>
+            <Button asChild className="nao-imprime">
+              <a href={api.relatorios.enderecoCsv(filtro)} download>
+                <Download aria-hidden />
+                Exportar CSV
+              </a>
+            </Button>
+            <Button
+              variant="outline"
+              className="nao-imprime"
+              onClick={() => {
+                window.print()
+              }}
+            >
+              <Printer aria-hidden />
+              Imprimir
+            </Button>
+            <NovoRelatorio />
+          </>
+        }
+      />
 
-      <dl className="mb-6 grid grid-cols-2 gap-4 rounded-xl bg-card p-4 md:grid-cols-4">
-        <div>
-          <dt className="text-sm text-muted-foreground">Tipo</dt>
-          <dd className="font-semibold">{rotuloDoTipo}</dd>
-        </div>
-        <div>
-          <dt className="text-sm text-muted-foreground">Início</dt>
-          <dd className="font-semibold">{dataBrasileira(relatorio.inicio)}</dd>
-        </div>
-        <div>
-          <dt className="text-sm text-muted-foreground">Fim</dt>
-          <dd className="font-semibold">{dataBrasileira(relatorio.fim)}</dd>
-        </div>
-        {relatorio.trem_id !== null && (
-          <div>
-            <dt className="text-sm text-muted-foreground">Trem</dt>
-            <dd className="font-semibold">{prefixoDoTrem}</dd>
-          </div>
-        )}
-      </dl>
-
-      {relatorio.linhas.length === 0 ? (
-        <p className="mb-6 text-muted-foreground">Nenhum dado no período.</p>
+      {linhas.length === 0 ? (
+        <EstadoVazio
+          icone={FileText}
+          titulo="Nenhum dado no período"
+          descricao="Não há registros deste tipo no período escolhido."
+        />
       ) : (
         <>
-          <div className="mb-6 hidden overflow-x-auto rounded-xl bg-card p-2 md:block lg:p-4 print:block">
+          <Card className="hidden overflow-hidden py-0 md:block print:block print:overflow-visible">
             <Table>
               <TableHeader>
                 <TableRow>
-                  {relatorio.colunas.map(({ chave, rotulo }) => (
-                    <TableHead key={chave}>{rotulo}</TableHead>
+                  {colunas.map(({ chave, rotulo }, coluna) => (
+                    <TableHead
+                      key={chave}
+                      className={cn('print:whitespace-normal', coluna > 0 && 'text-right')}
+                    >
+                      {rotulo}
+                    </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {relatorio.linhas.map((linha, i) => (
-                  <TableRow key={i}>
-                    {relatorio.colunas.map(({ chave }) => (
-                      <TableCell key={chave}>{celula(linha[chave])}</TableCell>
+                {linhas.map((linha, indice) => (
+                  <TableRow key={indice}>
+                    {colunas.map(({ chave }, coluna) => (
+                      <TableCell
+                        key={chave}
+                        className={cn('tabular-nums', coluna > 0 && 'text-right')}
+                      >
+                        {celula(linha[chave])}
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
-          <div className="mb-6 flex flex-col gap-3 md:hidden print:hidden">
-            {relatorio.linhas.map((linha, i) => (
-              <dl key={i} className="flex flex-col gap-1 rounded-xl bg-card p-4">
-                {relatorio.colunas.map(({ chave, rotulo }) => (
-                  <div key={chave} className="flex justify-between gap-3">
-                    <dt className="text-sm text-muted-foreground">{rotulo}</dt>
-                    <dd className="text-right font-medium">{celula(linha[chave])}</dd>
-                  </div>
-                ))}
-              </dl>
+          </Card>
+
+          <div className="flex flex-col gap-4 md:hidden print:hidden">
+            {linhas.map((linha, indice) => (
+              <Card key={indice} className="p-4">
+                <dl className="flex flex-col gap-2">
+                  {colunas.map(({ chave, rotulo }) => (
+                    <div key={chave} className="flex items-baseline justify-between gap-3">
+                      <RotuloDeDado como="dt">{rotulo}</RotuloDeDado>
+                      <dd className="text-right font-semibold tabular-nums">
+                        {celula(linha[chave])}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </Card>
             ))}
           </div>
+
+          <Card className="gap-4 print:break-inside-avoid">
+            <CardHeader>
+              <CardTitle>
+                <h2>{grafico.rotulo}</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GraficoDeBarras barras={grafico.itens} formatar={formatarNumero} />
+            </CardContent>
+          </Card>
         </>
       )}
-
-      <section className="mb-6 rounded-xl bg-card p-4 lg:p-6">
-        <h2 className="mb-4 font-bold">{relatorio.grafico.rotulo}</h2>
-        <GraficoDeBarras barras={relatorio.grafico.itens} formatar={formatarNumero} />
-      </section>
-
-      <div className="nao-imprime flex flex-wrap gap-3">
-        <Button asChild>
-          <a href={api.relatorios.enderecoCsv(filtro)} download>
-            <Download />
-            Exportar CSV
-          </a>
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            window.print()
-          }}
-        >
-          <Printer />
-          Imprimir
-        </Button>
-        <Voltar />
-      </div>
     </>
   )
 }

@@ -1,19 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { LogOut } from 'lucide-react'
+import { KeyRound } from 'lucide-react'
 import { Controller, useForm, useWatch, type Control } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { AlternadorDeTema } from '@/components/ui/alternador-de-tema'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
 import { CampoDeSenha } from '@/components/ui/campo-de-senha'
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { BotaoDeSair } from '@/components/ui/casca-de-pagina'
 import { mensagemDeErro } from '@/components/ui/erro-de-carregamento'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import { useAutenticacao } from '@/contexts/Autenticacao'
 import { useAtualizarPerfil } from '@/hooks/auth'
 import { ApiError, tratouErrosDeCampo, type PerfilEdicao, type Usuario } from '@/lib/api'
+import { rotuloDeCargo } from '@/lib/rotulos'
 
 const esquema = z
   .object({
@@ -74,10 +77,9 @@ interface CampoProps {
   label: string
   type?: 'text' | 'email' | 'tel' | 'password'
   autoComplete: string
-  descricao?: string
 }
 
-function Campo({ control, name, label, type = 'text', autoComplete, descricao }: CampoProps) {
+function Campo({ control, name, label, type = 'text', autoComplete }: CampoProps) {
   const id = `perfil-${name}`
   return (
     <Controller
@@ -102,7 +104,6 @@ function Campo({ control, name, label, type = 'text', autoComplete, descricao }:
               aria-invalid={fieldState.invalid}
             />
           )}
-          {descricao && <FieldDescription>{descricao}</FieldDescription>}
           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
       )}
@@ -146,83 +147,111 @@ function FormularioDePerfil({ usuario }: { usuario: Usuario }) {
   return (
     <form
       noValidate
+      className="flex flex-col gap-6 lg:col-span-2 lg:gap-8"
       onSubmit={(evento) => {
         void formulario.handleSubmit(salvar)(evento)
       }}
     >
-      <FieldGroup>
-        <Campo control={formulario.control} name="nome" label="Nome" autoComplete="name" />
-        <Campo
-          control={formulario.control}
-          name="email"
-          label="Email"
-          type="email"
-          autoComplete="email"
-        />
-        <Campo
-          control={formulario.control}
-          name="telefone"
-          label="Telefone"
-          type="tel"
-          autoComplete="tel"
-        />
-        <Campo
-          control={formulario.control}
-          name="senha"
-          label="Nova senha"
-          type="password"
-          autoComplete="new-password"
-          descricao="Deixe em branco pra manter a senha atual."
-        />
-        {trocandoSenha && (
-          <Campo
-            control={formulario.control}
-            name="senha_atual"
-            label="Senha atual"
-            type="password"
-            autoComplete="current-password"
-          />
-        )}
-        <Button type="submit" disabled={!formulario.formState.isDirty || atualizar.isPending}>
-          {atualizar.isPending ? 'Salvando…' : 'Salvar'}
-        </Button>
-      </FieldGroup>
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados da conta</CardTitle>
+          <CardDescription>Nome e contato que a equipe vê no sistema.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            <Campo control={formulario.control} name="nome" label="Nome" autoComplete="name" />
+            <Campo
+              control={formulario.control}
+              name="email"
+              label="Email"
+              type="email"
+              autoComplete="email"
+            />
+            <Campo
+              control={formulario.control}
+              name="telefone"
+              label="Telefone"
+              type="tel"
+              autoComplete="tel"
+            />
+          </FieldGroup>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyRound className="size-5" aria-hidden />
+            Senha
+          </CardTitle>
+          <CardDescription>
+            Deixe em branco para manter a senha atual. Ao digitar uma nova senha, confirme com a
+            senha que você usa hoje.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            <Campo
+              control={formulario.control}
+              name="senha"
+              label="Nova senha"
+              type="password"
+              autoComplete="new-password"
+            />
+            {trocandoSenha && (
+              <Campo
+                control={formulario.control}
+                name="senha_atual"
+                label="Senha atual"
+                type="password"
+                autoComplete="current-password"
+              />
+            )}
+          </FieldGroup>
+        </CardContent>
+      </Card>
+
+      <Button
+        type="submit"
+        className="w-full sm:w-auto sm:self-end"
+        disabled={!formulario.formState.isDirty || atualizar.isPending}
+      >
+        {atualizar.isPending ? 'Salvando…' : 'Salvar alterações'}
+      </Button>
     </form>
   )
 }
 
 export default function Perfil() {
-  const { usuario, sair } = useAutenticacao()
+  const { usuario } = useAutenticacao()
   if (!usuario) return null
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
-      <CabecalhoDeTela title="Perfil" actions={<AlternadorDeTema />} />
+    <>
+      <CabecalhoDeTela title="Perfil" />
 
-      <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <Avatar className="size-32 lg:size-40">
-          {usuario.foto_url && <AvatarImage src={usuario.foto_url} alt="" />}
-          <AvatarFallback className="text-3xl font-bold">{iniciais(usuario.nome)}</AvatarFallback>
-        </Avatar>
-        <h2 className="text-lg font-bold text-foreground lg:text-xl">Informações do perfil</h2>
+      <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
+        <Card className="h-fit items-center px-6 text-center">
+          <Avatar className="size-24 lg:size-28">
+            {usuario.foto_url && (
+              <AvatarImage src={usuario.foto_url} alt="" className="object-cover" />
+            )}
+            <AvatarFallback className="text-2xl font-bold">{iniciais(usuario.nome)}</AvatarFallback>
+          </Avatar>
+
+          <div className="flex w-full flex-col items-center gap-2">
+            <h2 className="text-xl leading-tight font-semibold">{usuario.nome}</h2>
+            <p className="w-full truncate text-sm text-muted-foreground" title={usuario.email}>
+              {usuario.email}
+            </p>
+            <Badge variant="secondary">{rotuloDeCargo(usuario.cargo)}</Badge>
+          </div>
+
+          <BotaoDeSair />
+        </Card>
+
+        <FormularioDePerfil usuario={usuario} />
       </div>
-
-      <FormularioDePerfil usuario={usuario} />
-
-      <Button
-        type="button"
-        variant="destructive"
-        className="mt-4 w-full"
-        disabled={sair.isPending}
-        onClick={() => {
-          sair.mutate(undefined, {
-            onError: () => toast.error('Não foi possível sair. Tente de novo.'),
-          })
-        }}
-      >
-        <LogOut />
-        Sair da conta
-      </Button>
-    </div>
+    </>
   )
 }

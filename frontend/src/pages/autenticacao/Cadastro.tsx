@@ -1,12 +1,19 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Fingerprint } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { CampoDeSenha } from '@/components/ui/campo-de-senha'
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { LayoutDeAutenticacao } from '@/components/ui/layout-de-autenticacao'
 import { Switch } from '@/components/ui/switch'
@@ -58,7 +65,10 @@ export default function Cadastro() {
   }
 
   return (
-    <LayoutDeAutenticacao title="Crie sua Conta">
+    <LayoutDeAutenticacao
+      title="Criar conta"
+      description="O cadastro cria uma conta de cliente, com acesso às viagens da ferrovia."
+    >
       <form
         noValidate
         onSubmit={(e) => {
@@ -126,7 +136,7 @@ export default function Cadastro() {
             control={formulario.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="cadastro-confirmar">Confirmar Senha</FieldLabel>
+                <FieldLabel htmlFor="cadastro-confirmar">Confirmar senha</FieldLabel>
                 <CampoDeSenha
                   {...field}
                   id="cadastro-confirmar"
@@ -148,22 +158,27 @@ export default function Cadastro() {
                   onCheckedChange={field.onChange}
                   aria-invalid={fieldState.invalid}
                 />
-                <FieldLabel htmlFor="cadastro-termos">
-                  Aceito os termos e a política de privacidade.
-                </FieldLabel>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                <FieldContent>
+                  <FieldLabel htmlFor="cadastro-termos">
+                    Aceito os termos e a política de privacidade.
+                  </FieldLabel>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </FieldContent>
               </Field>
             )}
           />
           <Button type="submit" size="lg" disabled={cadastro.isPending}>
-            <Fingerprint />
-            {cadastro.isPending ? 'Criando…' : 'Criar'}
+            <UserPlus aria-hidden />
+            {cadastro.isPending ? 'Criando…' : 'Criar conta'}
           </Button>
         </FieldGroup>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-rotulo text-muted-foreground lg:mt-8">
         Já tem uma conta?{' '}
-        <Link to="/login" className="font-semibold text-primary hover:underline">
+        <Link
+          to="/login"
+          className="font-semibold text-foreground underline-offset-4 hover:underline"
+        >
           Entrar
         </Link>
       </p>

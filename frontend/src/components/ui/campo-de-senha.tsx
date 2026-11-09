@@ -10,14 +10,14 @@ export function CampoDeSenha({ className, ...props }: Omit<ComponentProps<typeof
     <div className="relative">
       <Input
         type={senhaVisivel ? 'text' : 'password'}
-        className={cn('pr-12', className)}
+        className={cn('pr-14', className)}
         {...props}
       />
       <Button
         type="button"
         variant="ghost"
-        size="icon-sm"
-        className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground"
+        size="icon"
+        className="absolute top-1/2 right-1 -translate-y-1/2 text-muted-foreground"
         aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}
         aria-pressed={senhaVisivel}
         onClick={() => {
