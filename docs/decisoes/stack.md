@@ -74,9 +74,9 @@ Formato: cada decisão tem contexto, o que foi decidido, e a consequência. Data
 
 **Data:** 2026-11-06 · **Status:** vigente (substitui o `fsc` em bash)
 
-**Contexto:** o `fsc` era um script bash, então só rodava em Linux e macOS. Colegas no Windows precisariam de Git Bash ou WSL só pra subir o projeto. Além disso, a saída crua do `docker compose` era longa e, quando faltava Docker ou a porta 5173 estava ocupada, a mensagem de erro não dizia o que fazer.
+**Contexto:** o `fsc` era um script bash, então só rodava em Linux e macOS. Colegas no Windows precisariam de Git Bash ou WSL só pra subir o projeto. Além disso, a saída crua do `docker compose` era longa e, quando faltava Docker, a mensagem de erro não dizia o que fazer.
 
-**Decisão:** a porta única de operação virou `fsc.py`, em Python 3.10+ usando só a biblioteca padrão. Roda como `python3 fsc.py <comando>` (Linux/macOS, ou `./fsc.py`) e `python fsc.py <comando>` (Windows). Faz checagens antes de agir (Docker instalado, rodando, plugin Compose, porta 5173 livre no `up`) e, quando algo falta, diz em uma linha o que fazer. Os comandos longos mostram uma linha por passo; `-v`/`--verboso` mostra a saída inteira. Mensagens em português. Spec: [`../tasks/lowh-fsc-multiplataforma-2026-11-06.md`](../tasks/lowh-fsc-multiplataforma-2026-11-06.md).
+**Decisão:** a porta única de operação virou `fsc.py`, em Python 3.10+ usando só a biblioteca padrão. Roda como `python3 fsc.py <comando>` (Linux/macOS, ou `./fsc.py`) e `python fsc.py <comando>` (Windows). Faz checagens antes de agir (Docker instalado, rodando, plugin Compose) e, quando algo falta, diz em uma linha o que fazer. No `up` ele resolve a porta do frontend em vez de exigir a 5173: reusa a porta do container que já está rodando ou toma a primeira livre de 5173 a 5192, grava em `PORTA_FRONTEND` no `.env` (o compose substitui em `${PORTA_FRONTEND:-5173}:5173`) e imprime o endereço real — a 5173 ocupada por outro programa não trava mais ninguém. Os comandos longos mostram uma linha por passo; `-v`/`--verboso` mostra a saída inteira. Mensagens em português. Spec: [`../tasks/lowh-fsc-multiplataforma-2026-11-06.md`](../tasks/lowh-fsc-multiplataforma-2026-11-06.md).
 
 **Porquê:** um arquivo só, igual em qualquer sistema, sem instalar Git Bash. Python já vem na maioria das máquinas e não há nada pra `pip install`.
 

@@ -17,8 +17,8 @@ sys.stdout.reconfigure(errors="replace")
 sys.stderr.reconfigure(errors="replace")
 
 COMPOSE = ["docker", "compose"]
-PORTA_FRONTEND = 5173
-ENDERECO_FRONTEND = f"http://localhost:{PORTA_FRONTEND}"
+PORTA_FRONTEND_PADRAO = 5173
+PORTAS_TENTADAS = 20
 QUADROS_ESPERA = "|/-\\"
 OPCOES_VERBOSO = ("-v", "--verboso")
 COMANDOS_DE_SAIDA_INTEIRA = ("logs", "sh", "db", "ps", "test", "npm", "ui", "sim")
@@ -114,29 +114,69 @@ def preflight(comando):
         sair(f"Docker não está rodando. {religar}")
     if subprocess.run([*COMPOSE, "version"], capture_output=True).returncode != 0:
         sair("Docker Compose não encontrado. Instale o plugin 'docker compose' (https://docs.docker.com/compose/install/).")
-    if comando == "up" and porta_ocupada():
-        sair(f"A porta {PORTA_FRONTEND} está ocupada por outro programa. Feche-o e rode de novo.")
 
 
-def porta_ocupada():
-    try:
-        with socket.create_connection(("127.0.0.1", PORTA_FRONTEND), timeout=0.5):
-            pass
-    except OSError:
-        return False
-    rodando = subprocess.run(
-        [*COMPOSE, "ps", "--status", "running", "--services"],
-        env=ambiente,
-        capture_output=True,
-        encoding="utf-8",
-        errors="replace",
+def porta_livre(porta):
+    for familia, endereco in ((socket.AF_INET, "0.0.0.0"), (socket.AF_INET6, "::")):
+        try:
+            teste = socket.socket(familia, socket.SOCK_STREAM)
+        except OSError:
+            continue
+        with teste:
+            if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+                teste.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+            try:
+                teste.bind((endereco, porta))
+            except OSError:
+                return False
+    return True
+
+
+def saida_do_compose(*argumentos):
+    resultado = subprocess.run(
+        [*COMPOSE, *argumentos], env=ambiente, capture_output=True, encoding="utf-8", errors="replace"
     )
-    return "frontend" not in rodando.stdout.split()
+    return resultado.stdout if resultado.returncode == 0 else ""
+
+
+def porta_publicada_pelo_frontend():
+    if "frontend" not in saida_do_compose("ps", "--status", "running", "--services").split():
+        return None
+    endereco = saida_do_compose("port", "frontend", "5173").strip()
+    return int(endereco.rsplit(":", 1)[1]) if endereco else None
+
+
+def gravar_porta_no_env(porta):
+    ambiente["PORTA_FRONTEND"] = str(porta)
+    with open(".env", encoding="utf-8") as arquivo:
+        atual = arquivo.read()
+    if f"PORTA_FRONTEND={porta}" in atual.splitlines():
+        return
+    linhas = [linha for linha in atual.splitlines() if not linha.startswith("PORTA_FRONTEND=")]
+    linhas.append(f"PORTA_FRONTEND={porta}")
+    rascunho = ".env.novo"
+    with open(rascunho, "w", encoding="utf-8") as arquivo:
+        arquivo.write("\n".join(linhas) + "\n")
+    os.replace(rascunho, ".env")
+
+
+def escolher_porta_frontend():
+    porta = porta_publicada_pelo_frontend()
+    if porta is None:
+        faixa = range(PORTA_FRONTEND_PADRAO, PORTA_FRONTEND_PADRAO + PORTAS_TENTADAS)
+        porta = next((candidata for candidata in faixa if porta_livre(candidata)), None)
+        if porta is None:
+            sair(f"Nenhuma porta livre entre {faixa.start} e {faixa.stop - 1}. Feche algum programa e rode de novo.")
+        if porta != PORTA_FRONTEND_PADRAO:
+            print(f"A porta {PORTA_FRONTEND_PADRAO} está ocupada por outro programa; usando a {porta}.")
+    gravar_porta_no_env(porta)
+    return porta
 
 
 def subir(argumentos):
+    porta = escolher_porta_frontend()
     rodar_passo("Construindo e subindo os containers", [*COMPOSE, "up", "-d", "--build"])
-    print(ENDERECO_FRONTEND)
+    print(f"http://localhost:{porta}")
 
 
 def parar(argumentos):

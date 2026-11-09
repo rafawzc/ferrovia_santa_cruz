@@ -47,7 +47,7 @@ Arquitetura dos containers e da rede: [`docs/arquitetura/containers-e-rede.md`](
 
 ## 4. Como instalar
 
-Pré-requisitos: Docker (Docker Desktop no Windows e no macOS; Docker Engine com o plugin Compose no Linux), Python 3.10 ou mais novo e a porta `5173` livre. Não é preciso instalar Node: o script `fsc.py` usa o Python do computador só para se executar (não há nada para instalar com `pip`) e roda todo o resto dentro dos containers.
+Pré-requisitos: Docker (Docker Desktop no Windows e no macOS; Docker Engine com o plugin Compose no Linux), Python 3.10 ou mais novo e uma porta livre a partir da `5173`. Não é preciso instalar Node: o script `fsc.py` usa o Python do computador só para se executar (não há nada para instalar com `pip`) e roda todo o resto dentro dos containers.
 
 ### Linux e macOS
 
@@ -67,9 +67,9 @@ cd ferrovia_santa_cruz
 python fsc.py up
 ```
 
-Na primeira execução o `fsc.py` cria o `.env` a partir do `.env.example`. O `up` constrói as imagens e sobe `db`, `backend` e `frontend`, nessa ordem, esperando cada um ficar saudável. A primeira subida do banco demora um pouco, porque ele carrega o `db/script.sql` (tabelas e dados de exemplo). Se faltar algo (Docker não instalado ou fechado, plugin Compose ausente, porta `5173` ocupada), o script avisa em uma linha o que fazer. Por padrão ele mostra só um passo por linha; `-v` (ou `--verboso`) mostra a saída completa.
+Na primeira execução o `fsc.py` cria o `.env` a partir do `.env.example`. O `up` constrói as imagens e sobe `db`, `backend` e `frontend`, nessa ordem, esperando cada um ficar saudável. A primeira subida do banco demora um pouco, porque ele carrega o `db/script.sql` (tabelas e dados de exemplo). Se a porta `5173` estiver ocupada por outro programa, ele usa a próxima livre e avisa qual. Se faltar algo (Docker não instalado ou fechado, plugin Compose ausente), o script avisa em uma linha o que fazer. Por padrão ele mostra só um passo por linha; `-v` (ou `--verboso`) mostra a saída completa.
 
-Quando terminar, abra http://localhost:5173 e entre com um dos usuários da próxima seção.
+Quando terminar, abra o endereço impresso no fim (http://localhost:5173 quando a porta padrão está livre) e entre com um dos usuários da próxima seção.
 
 Comandos úteis (no Windows, use `python` no lugar de `python3`):
 

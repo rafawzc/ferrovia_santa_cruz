@@ -1,4 +1,5 @@
 .env
+.env.novo
 .env.staging
 .env.test
 .env.prod

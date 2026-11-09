@@ -64,7 +64,7 @@ Arquivo: [`docker-compose.yml`](../../docker-compose.yml) na raiz. Você não ro
 
 - Não tem imagem própria: usa `node:24-slim` e monta `./frontend` inteiro em `/app`. O `command:` roda `npm install` e `npm run dev`.
 - Roda com o **UID/GID do host** + `HOME=/tmp` (o seu UID não tem home dentro do container). Assim o `node_modules` e o `package-lock.json` escritos pelo container ficam **seus** no host — o editor enxerga os tipos e o lint sem você instalar node na máquina.
-- Porta `5173:5173` — a **única** publicada. O Vite faz o proxy `/api → http://backend:8000`.
+- Porta `${PORTA_FRONTEND:-5173}:5173` — a **única** publicada. O host usa a porta que o `fsc.py up` escolheu (a `5173`, ou a próxima livre, gravada no `.env`); dentro do container é sempre a `5173`. O Vite faz o proxy `/api → http://backend:8000`.
 - Redes `internal` + `edge` (ver acima).
 
 ## Checklist ao mexer aqui

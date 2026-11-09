@@ -6,7 +6,7 @@
 
 - Docker: Docker Desktop no Windows e no macOS; Docker Engine com o plugin Compose no Linux.
 - Python 3.10+ no host, só para rodar o `fsc.py` (biblioteca padrão, nada para `pip install`). Abaixo disso o script avisa e sai.
-- Porta `5173` livre.
+- Uma porta livre a partir da `5173`. Se a `5173` estiver ocupada, o `up` escolhe a próxima livre (até a `5192`), grava a escolhida em `PORTA_FRONTEND` no `.env` e imprime o endereço certo.
 - Nada mais. Não instale node nem python pro projeto em si: o Python do host serve só pra executar o `fsc.py`.
 
 ## Primeira vez
@@ -29,7 +29,7 @@ python fsc.py up
 - Na primeira chamada, o `fsc.py` **cria o `.env` a partir do `.env.example`** (senhas de dev). O `.env` é gitignored — nunca commite.
 - `.env` criado antes da API (fase 3)? Troque o `JWT_SECRET` pelo do `.env.example` (32+ bytes; o antigo só gera warning do PyJWT).
 - O `up` builda as imagens e sobe `db → backend → frontend` em ordem, esperando cada um ficar healthy. A primeira subida do banco demora (roda `db/schema.sql` + `db/seed.sql`).
-- Abra **http://localhost:5173**.
+- Abra o endereço que o `up` imprimiu no fim (**http://localhost:5173** quando a porta padrão está livre).
 
 ### Usuários de dev (seed)
 
@@ -69,7 +69,7 @@ No Linux e no macOS rode `python3 fsc.py <comando>` (ou `./fsc.py <comando>`, o 
 | `fsc.py -v` / `--verboso` | em qualquer posição, mostra a saída completa dos comandos enxutos. Em `logs`, `sh`, `db`, `ps`, `test`, `npm`, `ui` e `sim` o `-v` é repassado ao programa de dentro (ex.: `fsc.py test -v` é o `pytest -v`) |
 | `fsc.py help` | lista tudo |
 
-**Saída enxuta e checagens.** `up`, `down`, `restart`, `build`, `check`, `lint`, `fmt`, `typecheck` e `db:reset` mostram uma linha por passo, com spinner e tempo decorrido; se um passo falha, o script imprime o log daquele passo e para. Com `-v`/`--verboso` sai tudo. `logs`, `sh`, `db`, `ps`, `test`, `npm`, `ui add` (o shadcn pode fazer perguntas) e `sim` sempre mostram a saída inteira. Antes de agir o script confere: Docker instalado, Docker rodando (ou sem permissão pro seu usuário), plugin Compose presente e, no `up`, porta `5173` livre. Cada falha vira uma linha em português dizendo o que fazer. `Ctrl+C` imprime "Interrompido.".
+**Saída enxuta e checagens.** `up`, `down`, `restart`, `build`, `check`, `lint`, `fmt`, `typecheck` e `db:reset` mostram uma linha por passo, com spinner e tempo decorrido; se um passo falha, o script imprime o log daquele passo e para. Com `-v`/`--verboso` sai tudo. `logs`, `sh`, `db`, `ps`, `test`, `npm`, `ui add` (o shadcn pode fazer perguntas) e `sim` sempre mostram a saída inteira. Antes de agir o script confere: Docker instalado, Docker rodando (ou sem permissão pro seu usuário), e plugin Compose presente. No `up` ele ainda resolve a porta do frontend: reusa a porta do container que já está rodando ou toma a primeira livre a partir da `5173`. Cada falha vira uma linha em português dizendo o que fazer. `Ctrl+C` imprime "Interrompido.".
 
 Antes de abrir PR: `fsc.py check` verde. Se passa local, passa no CI — é o mesmo comando.
 

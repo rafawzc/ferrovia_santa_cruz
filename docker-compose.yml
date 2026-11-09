@@ -47,7 +47,7 @@ services:
       - ./frontend:/app
     command: sh -c "npm install --no-audit --no-fund && npm run dev"
     ports:
-      - "5173:5173"
+      - "${PORTA_FRONTEND:-5173}:5173"
     depends_on:
       backend:
         condition: service_healthy
