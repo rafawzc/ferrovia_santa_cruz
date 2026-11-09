@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus, Route, Train } from 'lucide-react'
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { AcoesDeLinha } from '@/components/ui/acoes-de-linha'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,17 +17,22 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { Card } from '@/components/ui/card'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { ListaDeViagens } from '@/components/ui/lista-de-viagens'
+import { RotuloDeDado } from '@/components/ui/rotulo-de-dado'
 import {
   Select,
   SelectContent,
@@ -101,6 +107,36 @@ const esquemaDeViagem = z
 
 type ValoresDeViagem = z.infer<typeof esquemaDeViagem>
 
+interface Chamadas {
+  onSuccess: () => void
+  onError: (erro: Error) => void
+}
+
+function EsqueletoDeLista() {
+  return (
+    <div role="status" aria-label="Carregando" className="grid gap-3">
+      {Array.from({ length: 4 }, (_, indice) => (
+        <Skeleton key={indice} className="h-40 md:h-14" />
+      ))}
+    </div>
+  )
+}
+
+function RodapeDeFormulario({ salvando, rotulo }: { salvando: boolean; rotulo: string }) {
+  return (
+    <DialogFooter className="*:w-full sm:*:w-auto">
+      <DialogClose asChild>
+        <Button type="button" variant="outline">
+          Cancelar
+        </Button>
+      </DialogClose>
+      <Button type="submit" disabled={salvando}>
+        {salvando ? 'Salvando…' : rotulo}
+      </Button>
+    </DialogFooter>
+  )
+}
+
 interface CampoTextoProps {
   formulario: UseFormReturn<ValoresDeRota>
   name: 'numero' | 'origem' | 'destino'
@@ -117,11 +153,6 @@ function CampoTexto({ formulario, name, rotulo }: CampoTextoProps) {
       {erro && <FieldError errors={[erro]} />}
     </Field>
   )
-}
-
-interface Chamadas {
-  onSuccess: () => void
-  onError: (erro: Error) => void
 }
 
 interface CorpoDeFormularioDeRotaProps {
@@ -168,14 +199,17 @@ function CorpoDeFormularioDeRota({
   return (
     <form
       noValidate
+      className="flex flex-col gap-6"
       onSubmit={(evento) => {
         void enviar(evento)
       }}
     >
       <FieldGroup>
         <CampoTexto formulario={formulario} name="numero" rotulo="Número" />
-        <CampoTexto formulario={formulario} name="origem" rotulo="Origem" />
-        <CampoTexto formulario={formulario} name="destino" rotulo="Destino" />
+        <div className="grid gap-7 sm:grid-cols-2">
+          <CampoTexto formulario={formulario} name="origem" rotulo="Origem" />
+          <CampoTexto formulario={formulario} name="destino" rotulo="Destino" />
+        </div>
         <Controller
           name="status"
           control={formulario.control}
@@ -204,14 +238,15 @@ function CorpoDeFormularioDeRota({
           render={({ field }) => (
             <Field orientation="horizontal">
               <Switch id="rota-ativo" checked={field.value} onCheckedChange={field.onChange} />
-              <FieldLabel htmlFor="rota-ativo">Rota ativa</FieldLabel>
+              <FieldLabel htmlFor="rota-ativo">Rota ativa na malha</FieldLabel>
             </Field>
           )}
         />
-        <Button type="submit" disabled={salvando}>
-          {salvando ? 'Salvando…' : rota ? 'Salvar' : 'Cadastrar'}
-        </Button>
       </FieldGroup>
+      <RodapeDeFormulario
+        salvando={salvando}
+        rotulo={rota ? 'Salvar alterações' : 'Cadastrar rota'}
+      />
     </form>
   )
 }
@@ -249,28 +284,6 @@ function FormularioDeRota({ rota, aoFechar }: { rota: Linha | null; aoFechar: ()
   return <CadastroDeRota aoFechar={aoFechar} />
 }
 
-interface AcoesProps {
-  podeEscrever: boolean
-  aoEditar: () => void
-  aoExcluir: () => void
-}
-
-function Acoes({ podeEscrever, aoEditar, aoExcluir }: AcoesProps) {
-  if (!podeEscrever) return null
-  return (
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline" onClick={aoEditar}>
-        <Pencil />
-        Editar
-      </Button>
-      <Button size="sm" variant="destructive" onClick={aoExcluir}>
-        <Trash2 />
-        Excluir
-      </Button>
-    </div>
-  )
-}
-
 interface ListaDeRotasProps {
   rotas: Linha[]
   podeEscrever: boolean
@@ -283,53 +296,67 @@ function ListaDeRotas({ rotas, podeEscrever, aoEditar, aoExcluir }: ListaDeRotas
     <>
       <ul className="grid gap-3 md:hidden">
         {rotas.map((rota) => (
-          <li key={rota.id} className="flex flex-col gap-3 rounded-xl bg-card p-4">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold">Rota {rota.numero}</span>
-              <SeloDeStatus status={rota.status} />
-            </div>
-            <p>
-              {rota.origem} → {rota.destino}
-            </p>
-            {!rota.ativo && <p className="text-sm text-muted-foreground">Inativa</p>}
-            <Acoes
-              podeEscrever={podeEscrever}
-              aoEditar={() => {
-                aoEditar(rota)
-              }}
-              aoExcluir={() => {
-                aoExcluir(rota)
-              }}
-            />
+          <li key={rota.id}>
+            <Card className="gap-4 p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <RotuloDeDado>Rota</RotuloDeDado>
+                  <p className="text-2xl leading-tight font-bold tabular-nums">{rota.numero}</p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <SeloDeStatus status={rota.status} />
+                  <SeloDeStatus status={rota.ativo ? 'ativo' : 'inativo'} />
+                </div>
+              </div>
+              <div>
+                <RotuloDeDado>Trajeto</RotuloDeDado>
+                <p className="leading-snug break-words">
+                  {rota.origem} → {rota.destino}
+                </p>
+              </div>
+              {podeEscrever && (
+                <AcoesDeLinha
+                  nome={`rota ${rota.numero}`}
+                  aoEditar={() => {
+                    aoEditar(rota)
+                  }}
+                  aoExcluir={() => {
+                    aoExcluir(rota)
+                  }}
+                />
+              )}
+            </Card>
           </li>
         ))}
       </ul>
-      <div className="hidden rounded-xl bg-card p-4 md:block">
+      <Card className="hidden gap-0 px-2 py-2 md:block">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Número</TableHead>
+              <TableHead>Rota</TableHead>
               <TableHead>Origem</TableHead>
               <TableHead>Destino</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Ativa</TableHead>
+              <TableHead>Situação</TableHead>
               {podeEscrever && <TableHead>Ações</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {rotas.map((rota) => (
               <TableRow key={rota.id}>
-                <TableCell>{rota.numero}</TableCell>
+                <TableCell className="font-semibold tabular-nums">{rota.numero}</TableCell>
                 <TableCell>{rota.origem}</TableCell>
                 <TableCell>{rota.destino}</TableCell>
                 <TableCell>
                   <SeloDeStatus status={rota.status} />
                 </TableCell>
-                <TableCell>{rota.ativo ? 'Sim' : 'Não'}</TableCell>
+                <TableCell>
+                  <SeloDeStatus status={rota.ativo ? 'ativo' : 'inativo'} />
+                </TableCell>
                 {podeEscrever && (
                   <TableCell>
-                    <Acoes
-                      podeEscrever
+                    <AcoesDeLinha
+                      nome={`rota ${rota.numero}`}
                       aoEditar={() => {
                         aoEditar(rota)
                       }}
@@ -343,27 +370,21 @@ function ListaDeRotas({ rotas, podeEscrever, aoEditar, aoExcluir }: ListaDeRotas
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Card>
     </>
   )
 }
 
-function Carregando() {
-  return (
-    <div className="grid gap-3">
-      {Array.from({ length: 4 }, (_, indice) => (
-        <Skeleton key={indice} className="h-24 md:h-10" />
-      ))}
-    </div>
-  )
-}
-
 function SecaoDeRotas({ podeEscrever }: { podeEscrever: boolean }) {
-  const { data: rotas, isPending, error } = useLinhas()
+  const { data: rotas, isPending, error, refetch } = useLinhas()
   const excluir = useExcluirLinha()
   const [emEdicao, setEmEdicao] = useState<Linha | 'nova' | null>(null)
   const [paraExcluir, setParaExcluir] = useState<Linha | null>(null)
   const rotaEmEdicao = emEdicao === 'nova' ? null : emEdicao
+
+  const abrirCadastro = () => {
+    setEmEdicao('nova')
+  }
 
   const confirmarExclusao = (rota: Linha) => {
     excluir.mutate(rota.id, {
@@ -381,24 +402,38 @@ function SecaoDeRotas({ podeEscrever }: { podeEscrever: boolean }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 lg:gap-8">
       {podeEscrever && (
-        <div>
-          <Button
-            size="sm"
-            onClick={() => {
-              setEmEdicao('nova')
-            }}
-          >
-            <Plus />
-            Cadastrar rota
-          </Button>
-        </div>
+        <Button className="w-full sm:w-auto sm:self-end" onClick={abrirCadastro}>
+          <Plus aria-hidden />
+          Cadastrar rota
+        </Button>
       )}
 
-      {isPending && <Carregando />}
-      {error && <ErroDeCarregamento error={error} />}
-      {rotas?.length === 0 && <p className="text-muted-foreground">Nenhuma rota cadastrada.</p>}
+      {isPending && <EsqueletoDeLista />}
+      {error && (
+        <ErroDeCarregamento
+          error={error}
+          aoTentarDeNovo={() => {
+            void refetch()
+          }}
+        />
+      )}
+      {rotas?.length === 0 && (
+        <EstadoVazio
+          icone={Route}
+          titulo="Nenhuma rota cadastrada"
+          descricao="A malha ainda não tem rotas. Cadastre a primeira para programar viagens."
+          acao={
+            podeEscrever && (
+              <Button onClick={abrirCadastro}>
+                <Plus aria-hidden />
+                Cadastrar rota
+              </Button>
+            )
+          }
+        />
+      )}
       {rotas && rotas.length > 0 && (
         <ListaDeRotas
           rotas={rotas}
@@ -417,7 +452,7 @@ function SecaoDeRotas({ podeEscrever }: { podeEscrever: boolean }) {
         <DialogContent className="max-h-dvh overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {rotaEmEdicao ? `Rota ${rotaEmEdicao.numero}` : 'Cadastrar rota'}
+              {rotaEmEdicao ? `Editar rota ${rotaEmEdicao.numero}` : 'Cadastrar rota'}
             </DialogTitle>
             <DialogDescription>Trajeto e situação operacional da rota.</DialogDescription>
           </DialogHeader>
@@ -452,7 +487,7 @@ function SecaoDeRotas({ podeEscrever }: { podeEscrever: boolean }) {
                 if (paraExcluir) confirmarExclusao(paraExcluir)
               }}
             >
-              Excluir
+              Excluir rota
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -512,6 +547,7 @@ function CorpoDeFormularioDeViagem({
   return (
     <form
       noValidate
+      className="flex flex-col gap-6"
       onSubmit={(evento) => {
         void enviar(evento)
       }}
@@ -614,10 +650,11 @@ function CorpoDeFormularioDeViagem({
             </Field>
           )}
         />
-        <Button type="submit" disabled={salvando}>
-          {salvando ? 'Salvando…' : viagem ? 'Salvar' : 'Programar'}
-        </Button>
       </FieldGroup>
+      <RodapeDeFormulario
+        salvando={salvando}
+        rotulo={viagem ? 'Salvar alterações' : 'Programar viagem'}
+      />
     </form>
   )
 }
@@ -684,8 +721,26 @@ function FormularioComOpcoes({
   const trens = useTrens()
 
   if (rotas.isPending || trens.isPending) return <Skeleton className="h-80" />
-  if (rotas.error) return <ErroDeCarregamento error={rotas.error} />
-  if (trens.error) return <ErroDeCarregamento error={trens.error} />
+  if (rotas.error) {
+    return (
+      <ErroDeCarregamento
+        error={rotas.error}
+        aoTentarDeNovo={() => {
+          void rotas.refetch()
+        }}
+      />
+    )
+  }
+  if (trens.error) {
+    return (
+      <ErroDeCarregamento
+        error={trens.error}
+        aoTentarDeNovo={() => {
+          void trens.refetch()
+        }}
+      />
+    )
+  }
 
   return (
     <FormularioDeViagem viagem={viagem} rotas={rotas.data} trens={trens.data} aoFechar={aoFechar} />
@@ -702,6 +757,7 @@ function SecaoDeViagens({ podeEscrever }: { podeEscrever: boolean }) {
     data: viagens,
     isPending,
     error,
+    refetch,
   } = useViagens({
     status,
     trem_id: filtroDeTrem === TODOS ? undefined : Number(filtroDeTrem),
@@ -715,6 +771,10 @@ function SecaoDeViagens({ podeEscrever }: { podeEscrever: boolean }) {
   const [paraExcluir, setParaExcluir] = useState<Viagem | null>(null)
   const viagemEmEdicao = emEdicao === 'nova' ? null : emEdicao
 
+  const abrirCadastro = () => {
+    setEmEdicao('nova')
+  }
+
   const confirmarExclusao = (viagem: Viagem) => {
     excluir.mutate(viagem.id, {
       onSuccess: () => {
@@ -725,82 +785,110 @@ function SecaoDeViagens({ podeEscrever }: { podeEscrever: boolean }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Select value={filtroDeStatus} onValueChange={setFiltroDeStatus}>
-          <SelectTrigger className="w-full" aria-label="Filtrar por status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS}>Todos os status</SelectItem>
-            {STATUS_DE_VIAGEM.map((item) => (
-              <SelectItem key={item} value={item}>
-                <SeloDeStatus status={item} />
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filtroDeRota} onValueChange={setFiltroDeRota}>
-          <SelectTrigger className="w-full" aria-label="Filtrar por rota">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS}>Todas as rotas</SelectItem>
-            {rotas.data?.map((rota) => (
-              <SelectItem key={rota.id} value={String(rota.id)}>
-                {rota.numero} · {rota.origem} → {rota.destino}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filtroDeTrem} onValueChange={setFiltroDeTrem}>
-          <SelectTrigger className="w-full" aria-label="Filtrar por trem">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TODOS}>Todos os trens</SelectItem>
-            {trens.data?.map((trem) => (
-              <SelectItem key={trem.id} value={String(trem.id)}>
-                {trem.prefixo}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="date"
-          aria-label="Filtrar por dia"
-          value={filtroDeData}
-          onChange={(evento) => {
-            setFiltroDeData(evento.target.value)
-          }}
-        />
-      </div>
-
-      {podeEscrever && (
-        <div>
-          <Button
-            size="sm"
-            onClick={() => {
-              setEmEdicao('nova')
-            }}
-          >
-            <Plus />
+    <div className="flex flex-col gap-6 lg:gap-8">
+      <div className="flex flex-col gap-4">
+        {podeEscrever && (
+          <Button className="w-full sm:w-auto sm:self-end" onClick={abrirCadastro}>
+            <Plus aria-hidden />
             Programar viagem
           </Button>
-        </div>
-      )}
+        )}
 
-      {isPending && <Carregando />}
-      {error && <ErroDeCarregamento error={error} />}
-      {viagens?.length === 0 && <p className="text-muted-foreground">Nenhuma viagem encontrada.</p>}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Field className="gap-2">
+            <FieldLabel htmlFor="filtro-status">Status</FieldLabel>
+            <Select value={filtroDeStatus} onValueChange={setFiltroDeStatus}>
+              <SelectTrigger id="filtro-status" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todos</SelectItem>
+                {STATUS_DE_VIAGEM.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    <SeloDeStatus status={item} />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field className="gap-2">
+            <FieldLabel htmlFor="filtro-rota">Rota</FieldLabel>
+            <Select value={filtroDeRota} onValueChange={setFiltroDeRota}>
+              <SelectTrigger id="filtro-rota" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todas</SelectItem>
+                {rotas.data?.map((rota) => (
+                  <SelectItem key={rota.id} value={String(rota.id)}>
+                    {rota.numero} · {rota.origem} → {rota.destino}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field className="gap-2">
+            <FieldLabel htmlFor="filtro-trem">Trem</FieldLabel>
+            <Select value={filtroDeTrem} onValueChange={setFiltroDeTrem}>
+              <SelectTrigger id="filtro-trem" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TODOS}>Todos</SelectItem>
+                {trens.data?.map((trem) => (
+                  <SelectItem key={trem.id} value={String(trem.id)}>
+                    {trem.prefixo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field className="gap-2">
+            <FieldLabel htmlFor="filtro-dia">Dia</FieldLabel>
+            <Input
+              id="filtro-dia"
+              type="date"
+              value={filtroDeData}
+              onChange={(evento) => {
+                setFiltroDeData(evento.target.value)
+              }}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {isPending && <EsqueletoDeLista />}
+      {error && (
+        <ErroDeCarregamento
+          error={error}
+          aoTentarDeNovo={() => {
+            void refetch()
+          }}
+        />
+      )}
+      {viagens?.length === 0 && (
+        <EstadoVazio
+          icone={Train}
+          titulo="Nenhuma viagem encontrada"
+          descricao="Nenhuma viagem bate com os filtros. Troque o filtro ou programe uma viagem."
+          acao={
+            podeEscrever && (
+              <Button onClick={abrirCadastro}>
+                <Plus aria-hidden />
+                Programar viagem
+              </Button>
+            )
+          }
+        />
+      )}
       {viagens && viagens.length > 0 && (
         <ListaDeViagens
           viagens={viagens}
           acoes={
             podeEscrever
               ? (viagem) => (
-                  <Acoes
-                    podeEscrever
+                  <AcoesDeLinha
+                    nome={`viagem da rota ${viagem.linha_numero}`}
                     aoEditar={() => {
                       setEmEdicao(viagem)
                     }}
@@ -858,7 +946,7 @@ function SecaoDeViagens({ podeEscrever }: { podeEscrever: boolean }) {
                 if (paraExcluir) confirmarExclusao(paraExcluir)
               }}
             >
-              Excluir
+              Excluir viagem
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -873,9 +961,9 @@ export default function Rotas() {
 
   return (
     <>
-      <CabecalhoDeTela title="Rotas" />
-      <Tabs defaultValue="rotas">
-        <TabsList>
+      <CabecalhoDeTela title="Rotas" apoio="Malha ferroviária e viagens programadas." />
+      <Tabs defaultValue="rotas" className="gap-4 lg:gap-6">
+        <TabsList className="w-full sm:w-fit">
           <TabsTrigger value="rotas">Rotas</TabsTrigger>
           <TabsTrigger value="viagens">Viagens</TabsTrigger>
         </TabsList>

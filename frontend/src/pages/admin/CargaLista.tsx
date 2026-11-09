@@ -1,22 +1,27 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus } from 'lucide-react'
+import { Boxes, Plus } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { Card } from '@/components/ui/card'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { RotuloDeDado } from '@/components/ui/rotulo-de-dado'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -27,8 +32,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCargas, useCriarCarga } from '@/hooks/cargas'
-import { ApiError, tratouErrosDeCampo } from '@/lib/api'
-import { dataHora } from '@/lib/utils'
+import { ApiError, tratouErrosDeCampo, type Carga } from '@/lib/api'
+import { dataHora, formatarNumero } from '@/lib/utils'
 
 const numero = (s: string) => Number(s.replace(',', '.'))
 
@@ -55,6 +60,8 @@ const CAMPOS: { nome: keyof ValoresDoFormulario; rotulo: string; modo?: 'decimal
     { nome: 'vagao', rotulo: 'Vagão (opcional)' },
     { nome: 'trem_id', rotulo: 'Nº do trem (opcional)', modo: 'numeric' },
   ]
+
+const peso = (carga: Carga) => `${formatarNumero(carga.peso_t)} t`
 
 function FormularioDeCarga({ aoSalvar }: { aoSalvar: () => void }) {
   const criar = useCriarCarga()
@@ -101,6 +108,7 @@ function FormularioDeCarga({ aoSalvar }: { aoSalvar: () => void }) {
   return (
     <form
       noValidate
+      className="flex flex-col gap-6"
       onSubmit={(e) => {
         void enviar(e)
       }}
@@ -121,62 +129,170 @@ function FormularioDeCarga({ aoSalvar }: { aoSalvar: () => void }) {
             </Field>
           )
         })}
-        <Button type="submit" disabled={criar.isPending}>
-          {criar.isPending ? 'Cadastrando…' : 'Cadastrar'}
-        </Button>
       </FieldGroup>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit" disabled={criar.isPending}>
+          {criar.isPending ? 'Cadastrando…' : 'Cadastrar carga'}
+        </Button>
+      </DialogFooter>
     </form>
   )
 }
 
-function Tabela() {
-  const { data: cargas, isPending, error } = useCargas()
-
-  if (isPending) {
-    return (
-      <div className="flex flex-col gap-2">
-        {Array.from({ length: 6 }, (_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
-        ))}
-      </div>
-    )
-  }
-  if (error) return <ErroDeCarregamento error={error} />
-  if (cargas.length === 0) {
-    return <p className="text-muted-foreground">Nenhuma carga cadastrada ainda.</p>
-  }
-
+function CadastroDeCarga({
+  aberto,
+  aoMudarAbertura,
+}: {
+  aberto: boolean
+  aoMudarAbertura: (valor: boolean) => void
+}) {
   return (
-    <div className="rounded-xl bg-card p-2 lg:p-4">
+    <Dialog open={aberto} onOpenChange={aoMudarAbertura}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus aria-hidden />
+          Cadastrar carga
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-dvh overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Cadastro de carga</DialogTitle>
+          <DialogDescription>Registra a carga no histórico.</DialogDescription>
+        </DialogHeader>
+        <FormularioDeCarga
+          aoSalvar={() => {
+            aoMudarAbertura(false)
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function Cartoes({ cargas }: { cargas: Carga[] }) {
+  return (
+    <ul className="flex flex-col gap-3 lg:hidden">
+      {cargas.map((c) => (
+        <li
+          key={c.id}
+          className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 text-card-foreground"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="min-w-0 text-lg leading-snug font-bold">{c.tipo}</h2>
+            <p className="shrink-0 text-lg leading-snug font-bold tabular-nums">{peso(c)}</p>
+          </div>
+          <dl className="grid grid-cols-2 gap-3">
+            <div>
+              <RotuloDeDado como="dt">Partida</RotuloDeDado>
+              <dd className="text-sm">{c.local_partida}</dd>
+            </div>
+            <div>
+              <RotuloDeDado como="dt">Destino</RotuloDeDado>
+              <dd className="text-sm">{c.destino}</dd>
+            </div>
+            <div>
+              <RotuloDeDado como="dt">Vagão</RotuloDeDado>
+              <dd className="text-sm">{c.vagao ?? '—'}</dd>
+            </div>
+            <div>
+              <RotuloDeDado como="dt">Trem</RotuloDeDado>
+              <dd className="text-sm tabular-nums">{c.trem_id ?? '—'}</dd>
+            </div>
+          </dl>
+          <p className="text-rotulo text-muted-foreground">
+            Cadastro em{' '}
+            <time dateTime={c.criado_em} className="tabular-nums">
+              {dataHora(c.criado_em)}
+            </time>
+          </p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Tabela({ cargas }: { cargas: Carga[] }) {
+  return (
+    <Card className="hidden gap-0 px-2 py-2 lg:block">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Carga</TableHead>
             <TableHead className="text-right">Peso</TableHead>
-            <TableHead className="hidden md:table-cell">Partida</TableHead>
+            <TableHead>Partida</TableHead>
             <TableHead>Destino</TableHead>
-            <TableHead className="hidden md:table-cell">Vagão</TableHead>
-            <TableHead className="hidden md:table-cell">Trem</TableHead>
-            <TableHead className="hidden lg:table-cell">Cadastro</TableHead>
+            <TableHead>Vagão</TableHead>
+            <TableHead>Trem</TableHead>
+            <TableHead>Cadastro</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {cargas.map((c) => (
             <TableRow key={c.id}>
-              <TableCell className="font-medium whitespace-normal">{c.tipo}</TableCell>
-              <TableCell className="text-right font-semibold">
-                {c.peso_t.toLocaleString('pt-BR')} t
-              </TableCell>
-              <TableCell className="hidden md:table-cell">{c.local_partida}</TableCell>
+              <TableCell className="font-semibold whitespace-normal">{c.tipo}</TableCell>
+              <TableCell className="text-right tabular-nums">{peso(c)}</TableCell>
+              <TableCell className="whitespace-normal">{c.local_partida}</TableCell>
               <TableCell className="whitespace-normal">{c.destino}</TableCell>
-              <TableCell className="hidden md:table-cell">{c.vagao ?? '—'}</TableCell>
-              <TableCell className="hidden md:table-cell">{c.trem_id ?? '—'}</TableCell>
-              <TableCell className="hidden lg:table-cell">{dataHora(c.criado_em)}</TableCell>
+              <TableCell>{c.vagao ?? '—'}</TableCell>
+              <TableCell className="tabular-nums">{c.trem_id ?? '—'}</TableCell>
+              <TableCell className="tabular-nums">{dataHora(c.criado_em)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </div>
+    </Card>
+  )
+}
+
+function Conteudo({ aoCadastrar }: { aoCadastrar: () => void }) {
+  const { data: cargas, isPending, error, refetch } = useCargas()
+
+  if (isPending) {
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-36 rounded-lg lg:h-12" />
+        ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <ErroDeCarregamento
+        error={error}
+        aoTentarDeNovo={() => {
+          void refetch()
+        }}
+      />
+    )
+  }
+
+  if (cargas.length === 0) {
+    return (
+      <EstadoVazio
+        icone={Boxes}
+        titulo="Nenhuma carga cadastrada"
+        descricao="O histórico de carga começa no primeiro registro."
+        acao={
+          <Button variant="outline" onClick={aoCadastrar}>
+            Cadastrar carga
+          </Button>
+        }
+      />
+    )
+  }
+
+  return (
+    <>
+      <Cartoes cargas={cargas} />
+      <Tabela cargas={cargas} />
+    </>
   )
 }
 
@@ -187,30 +303,14 @@ export default function CargaLista() {
     <>
       <CabecalhoDeTela
         title="Monitoramento de Carga"
-        actions={
-          <Dialog open={aberto} onOpenChange={setAberto}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus />
-                Cadastrar
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-dvh overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Cadastro de carga</DialogTitle>
-                <DialogDescription>Registra a carga no histórico.</DialogDescription>
-              </DialogHeader>
-              <FormularioDeCarga
-                aoSalvar={() => {
-                  setAberto(false)
-                }}
-              />
-            </DialogContent>
-          </Dialog>
-        }
+        apoio="Cargas registradas, da mais recente para a mais antiga."
+        actions={<CadastroDeCarga aberto={aberto} aoMudarAbertura={setAberto} />}
       />
-
-      <Tabela />
+      <Conteudo
+        aoCadastrar={() => {
+          setAberto(true)
+        }}
+      />
     </>
   )
 }

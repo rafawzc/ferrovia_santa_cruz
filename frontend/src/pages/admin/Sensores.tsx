@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus, Radio } from 'lucide-react'
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { AcoesDeLinha } from '@/components/ui/acoes-de-linha'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +17,21 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { Card } from '@/components/ui/card'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Dado } from '@/components/ui/rotulo-de-dado'
 import {
   Select,
   SelectContent,
@@ -150,16 +156,17 @@ function FormularioDeSensor({ sensor, trens, aoFechar }: FormularioDeSensorProps
   })
 
   const salvando = criar.isPending || atualizar.isPending
-  const rotuloDeEnvio = sensor ? 'Salvar' : 'Cadastrar'
+  const rotuloDeEnvio = sensor ? 'Salvar alterações' : 'Cadastrar sensor'
 
   return (
     <form
       noValidate
+      className="grid gap-6"
       onSubmit={(evento) => {
         void enviar(evento)
       }}
     >
-      <FieldGroup>
+      <FieldGroup className="grid gap-5 sm:grid-cols-2">
         <CampoTexto formulario={formulario} name="codigo" rotulo="Código" />
         <CampoTexto formulario={formulario} name="nome" rotulo="Nome" />
         <Controller
@@ -188,8 +195,6 @@ function FormularioDeSensor({ sensor, trens, aoFechar }: FormularioDeSensorProps
             </Field>
           )}
         />
-        <CampoTexto formulario={formulario} name="localizacao" rotulo="Localização" />
-        <CampoTexto formulario={formulario} name="segmento" rotulo="Segmento (opcional)" />
         <Controller
           name="trem_id"
           control={formulario.control}
@@ -216,10 +221,19 @@ function FormularioDeSensor({ sensor, trens, aoFechar }: FormularioDeSensorProps
             </Field>
           )}
         />
+        <CampoTexto formulario={formulario} name="localizacao" rotulo="Localização" />
+        <CampoTexto formulario={formulario} name="segmento" rotulo="Segmento (opcional)" />
+      </FieldGroup>
+      <DialogFooter className="*:w-full sm:*:w-auto">
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
         <Button type="submit" disabled={salvando}>
           {salvando ? 'Salvando…' : rotuloDeEnvio}
         </Button>
-      </FieldGroup>
+      </DialogFooter>
     </form>
   )
 }
@@ -233,52 +247,39 @@ function FormularioComTrens({ sensor, aoFechar }: FormularioComTrensProps) {
   const trens = useTrens()
 
   if (trens.isPending) return <Skeleton className="h-80" />
-  if (trens.error) return <ErroDeCarregamento error={trens.error} />
+  if (trens.error) {
+    return (
+      <ErroDeCarregamento
+        error={trens.error}
+        aoTentarDeNovo={() => {
+          void trens.refetch()
+        }}
+      />
+    )
+  }
 
   return <FormularioDeSensor sensor={sensor} trens={trens.data} aoFechar={aoFechar} />
 }
 
-interface AcoesProps {
-  podeEscrever: boolean
-  aoEditar: () => void
-  aoExcluir: () => void
-}
+const rotuloDoTipo = (tipo: Sensor['tipo_dado']) =>
+  TIPOS_DE_SENSOR.find((opcao) => opcao.valor === tipo)?.rotulo ?? tipo
 
-function Acoes({ podeEscrever, aoEditar, aoExcluir }: AcoesProps) {
-  if (!podeEscrever) return null
-  return (
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline" onClick={aoEditar}>
-        <Pencil />
-        Editar
-      </Button>
-      <Button size="sm" variant="destructive" onClick={aoExcluir}>
-        <Trash2 />
-        Excluir
-      </Button>
-    </div>
-  )
-}
-
-const valorComUnidade = (sensor: Sensor) => {
+const valorDaLeitura = (sensor: Sensor) => {
   if (sensor.ultima_leitura_valor === null) return '—'
   const unidade = UNIDADE_DO_TIPO[sensor.tipo_dado]
   const valor = formatarNumero(sensor.ultima_leitura_valor)
   return unidade ? `${valor} ${unidade}` : valor
 }
 
-function UltimaLeitura({ sensor }: { sensor: Sensor }) {
-  if (!sensor.ultima_leitura_status || !sensor.ultima_leitura_data) return <span>—</span>
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      <SeloDeStatus status={sensor.ultima_leitura_status} />
-      {valorComUnidade(sensor)} · {dataHora(sensor.ultima_leitura_data)}
-    </span>
-  )
-}
+const momentoDaLeitura = (sensor: Sensor) =>
+  sensor.ultima_leitura_data ? dataHora(sensor.ultima_leitura_data) : '—'
 
-const rotuloDoTipo = (tipo: Sensor['tipo_dado']) =>
-  TIPOS_DE_SENSOR.find((opcao) => opcao.valor === tipo)?.rotulo
+function EstadoDaLeitura({ sensor }: { sensor: Sensor }) {
+  if (!sensor.ultima_leitura_status) {
+    return <span className="text-rotulo text-muted-foreground">Sem leitura</span>
+  }
+  return <SeloDeStatus status={sensor.ultima_leitura_status} />
+}
 
 interface ListaProps {
   sensores: Sensor[]
@@ -291,34 +292,35 @@ function ListaDeCartoes({ sensores, podeEscrever, aoEditar, aoExcluir }: ListaPr
   return (
     <ul className="grid gap-3 md:hidden">
       {sensores.map((sensor) => (
-        <li key={sensor.id} className="grid gap-3 rounded-xl bg-card p-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-bold">{sensor.codigo}</span>
-            <span className="text-sm text-muted-foreground">{sensor.nome}</span>
-          </div>
-          <dl className="grid grid-cols-2 gap-1 text-sm">
-            <dt className="text-muted-foreground">Trem</dt>
-            <dd>{sensor.trem_prefixo}</dd>
-            <dt className="text-muted-foreground">Tipo</dt>
-            <dd>{rotuloDoTipo(sensor.tipo_dado)}</dd>
-            <dt className="text-muted-foreground">Localização</dt>
-            <dd>{sensor.localizacao}</dd>
-            <dt className="text-muted-foreground">Segmento</dt>
-            <dd>{sensor.segmento ?? '—'}</dd>
-            <dt className="text-muted-foreground">Última leitura</dt>
-            <dd>
-              <UltimaLeitura sensor={sensor} />
-            </dd>
-          </dl>
-          <Acoes
-            podeEscrever={podeEscrever}
-            aoEditar={() => {
-              aoEditar(sensor)
-            }}
-            aoExcluir={() => {
-              aoExcluir(sensor)
-            }}
-          />
+        <li key={sensor.id}>
+          <Card className="gap-4 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xl leading-tight font-semibold">{sensor.codigo}</p>
+                <p className="text-rotulo text-muted-foreground">{sensor.nome}</p>
+              </div>
+              <EstadoDaLeitura sensor={sensor} />
+            </div>
+            <dl className="grid gap-2 text-corpo">
+              <Dado rotulo="Última leitura" valor={valorDaLeitura(sensor)} />
+              <Dado rotulo="Medida em" valor={momentoDaLeitura(sensor)} />
+              <Dado rotulo="Trem" valor={sensor.trem_prefixo} />
+              <Dado rotulo="Tipo" valor={rotuloDoTipo(sensor.tipo_dado)} />
+              <Dado rotulo="Localização" valor={sensor.localizacao} />
+              <Dado rotulo="Segmento" valor={sensor.segmento ?? '—'} />
+            </dl>
+            {podeEscrever && (
+              <AcoesDeLinha
+                nome={`sensor ${sensor.codigo}`}
+                aoEditar={() => {
+                  aoEditar(sensor)
+                }}
+                aoExcluir={() => {
+                  aoExcluir(sensor)
+                }}
+              />
+            )}
+          </Card>
         </li>
       ))}
     </ul>
@@ -327,36 +329,47 @@ function ListaDeCartoes({ sensores, podeEscrever, aoEditar, aoExcluir }: ListaPr
 
 function TabelaDeSensores({ sensores, podeEscrever, aoEditar, aoExcluir }: ListaProps) {
   return (
-    <div className="hidden rounded-xl bg-card p-4 md:block">
+    <Card className="hidden gap-0 px-2 py-2 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Código</TableHead>
-            <TableHead>Nome</TableHead>
+            <TableHead>Sensor</TableHead>
             <TableHead>Trem</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead>Localização</TableHead>
-            <TableHead>Segmento</TableHead>
-            <TableHead>Última leitura</TableHead>
-            {podeEscrever && <TableHead>Ações</TableHead>}
+            <TableHead>Local</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead className="text-right">Última leitura</TableHead>
+            {podeEscrever && <TableHead className="text-right">Ações</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {sensores.map((sensor) => (
             <TableRow key={sensor.id}>
-              <TableCell className="font-bold">{sensor.codigo}</TableCell>
-              <TableCell>{sensor.nome}</TableCell>
+              <TableCell>
+                <span className="font-bold">{sensor.codigo}</span>
+                <span className="block text-rotulo text-muted-foreground">{sensor.nome}</span>
+              </TableCell>
               <TableCell>{sensor.trem_prefixo}</TableCell>
               <TableCell>{rotuloDoTipo(sensor.tipo_dado)}</TableCell>
-              <TableCell>{sensor.localizacao}</TableCell>
-              <TableCell>{sensor.segmento ?? '—'}</TableCell>
               <TableCell>
-                <UltimaLeitura sensor={sensor} />
+                <span className="block">{sensor.localizacao}</span>
+                <span className="block text-rotulo text-muted-foreground">
+                  {sensor.segmento ?? '—'}
+                </span>
+              </TableCell>
+              <TableCell>
+                <EstadoDaLeitura sensor={sensor} />
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                <span className="block">{valorDaLeitura(sensor)}</span>
+                <span className="block text-rotulo text-muted-foreground">
+                  {momentoDaLeitura(sensor)}
+                </span>
               </TableCell>
               {podeEscrever && (
                 <TableCell>
-                  <Acoes
-                    podeEscrever
+                  <AcoesDeLinha
+                    nome={`sensor ${sensor.codigo}`}
                     aoEditar={() => {
                       aoEditar(sensor)
                     }}
@@ -370,7 +383,52 @@ function TabelaDeSensores({ sensores, podeEscrever, aoEditar, aoExcluir }: Lista
           ))}
         </TableBody>
       </Table>
+    </Card>
+  )
+}
+
+function EsqueletoDeSensores() {
+  return (
+    <div role="status" aria-label="Carregando" className="grid gap-3">
+      {Array.from({ length: 5 }, (_, indice) => (
+        <Skeleton key={indice} className="h-56 md:h-16" />
+      ))}
     </div>
+  )
+}
+
+interface VazioProps {
+  temFiltro: boolean
+  podeEscrever: boolean
+  aoLimparFiltro: () => void
+  aoCadastrar: () => void
+}
+
+function SemSensores({ temFiltro, podeEscrever, aoLimparFiltro, aoCadastrar }: VazioProps) {
+  return (
+    <EstadoVazio
+      icone={Radio}
+      titulo={temFiltro ? 'Nenhum sensor desse tipo' : 'Nenhum sensor cadastrado'}
+      descricao={
+        temFiltro
+          ? 'Escolha outro tipo para ver os sensores instalados nos trens.'
+          : 'Os sensores instalados nos trens aparecem aqui depois do cadastro.'
+      }
+      acao={
+        temFiltro ? (
+          <Button variant="outline" onClick={aoLimparFiltro}>
+            Ver todos os tipos
+          </Button>
+        ) : (
+          podeEscrever && (
+            <Button onClick={aoCadastrar}>
+              <Plus aria-hidden />
+              Cadastrar primeiro sensor
+            </Button>
+          )
+        )
+      }
+    />
   )
 }
 
@@ -379,24 +437,41 @@ interface ConteudoProps {
   podeEscrever: boolean
   aoEditar: (sensor: Sensor) => void
   aoExcluir: (sensor: Sensor) => void
+  aoLimparFiltro: () => void
+  aoCadastrar: () => void
 }
 
-function ConteudoDeSensores({ tipo, podeEscrever, aoEditar, aoExcluir }: ConteudoProps) {
+function ConteudoDeSensores({
+  tipo,
+  podeEscrever,
+  aoEditar,
+  aoExcluir,
+  aoLimparFiltro,
+  aoCadastrar,
+}: ConteudoProps) {
   const filtroDeTipo = TIPOS_DE_SENSOR.find((opcao) => opcao.valor === tipo)?.valor
-  const { data: sensores, isPending, error } = useSensores({ tipo: filtroDeTipo })
+  const { data: sensores, isPending, error, refetch } = useSensores({ tipo: filtroDeTipo })
 
-  if (isPending) {
+  if (isPending) return <EsqueletoDeSensores />
+  if (error) {
     return (
-      <div className="grid gap-3">
-        {Array.from({ length: 6 }, (_, indice) => (
-          <Skeleton key={indice} className="h-12" />
-        ))}
-      </div>
+      <ErroDeCarregamento
+        error={error}
+        aoTentarDeNovo={() => {
+          void refetch()
+        }}
+      />
     )
   }
-  if (error) return <ErroDeCarregamento error={error} />
   if (sensores.length === 0) {
-    return <p className="text-muted-foreground">Nenhum sensor encontrado.</p>
+    return (
+      <SemSensores
+        temFiltro={tipo !== 'todos'}
+        podeEscrever={podeEscrever}
+        aoLimparFiltro={aoLimparFiltro}
+        aoCadastrar={aoCadastrar}
+      />
+    )
   }
 
   return (
@@ -426,6 +501,14 @@ export default function Sensores() {
   const [paraExcluir, setParaExcluir] = useState<Sensor | null>(null)
   const sensorEmEdicao = emEdicao === 'novo' ? null : emEdicao
 
+  const abrirCadastro = () => {
+    setEmEdicao('novo')
+  }
+
+  const limparFiltro = () => {
+    setTipo('todos')
+  }
+
   const confirmarExclusao = (sensor: Sensor) => {
     excluir.mutate(sensor.id, {
       onSuccess: () => {
@@ -445,42 +528,38 @@ export default function Sensores() {
     <>
       <CabecalhoDeTela
         title="Sensores"
+        apoio={podeEscrever ? undefined : 'Cadastro e edição de sensores são da gestão.'}
         actions={
           podeEscrever && (
-            <Button
-              size="sm"
-              onClick={() => {
-                setEmEdicao('novo')
-              }}
-            >
-              <Plus />
-              Cadastrar
+            <Button onClick={abrirCadastro}>
+              <Plus aria-hidden />
+              Cadastrar sensor
             </Button>
           )
         }
       />
 
-      <div className="mb-4">
-        <Select value={tipo} onValueChange={setTipo}>
-          <SelectTrigger aria-label="Filtrar por tipo" className="w-full md:w-60">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os tipos</SelectItem>
-            {TIPOS_DE_SENSOR.map((opcao) => (
-              <SelectItem key={opcao.valor} value={opcao.valor}>
-                {opcao.rotulo}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={tipo} onValueChange={setTipo}>
+        <SelectTrigger aria-label="Filtrar por tipo" className="w-full md:w-64">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todos">Todos os tipos</SelectItem>
+          {TIPOS_DE_SENSOR.map((opcao) => (
+            <SelectItem key={opcao.valor} value={opcao.valor}>
+              {opcao.rotulo}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       <ConteudoDeSensores
         tipo={tipo}
         podeEscrever={podeEscrever}
         aoEditar={setEmEdicao}
         aoExcluir={setParaExcluir}
+        aoLimparFiltro={limparFiltro}
+        aoCadastrar={abrirCadastro}
       />
 
       <Dialog
@@ -492,10 +571,12 @@ export default function Sensores() {
         <DialogContent className="max-h-dvh overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {sensorEmEdicao ? `Editar ${sensorEmEdicao.codigo}` : 'Cadastrar sensor'}
+              {sensorEmEdicao ? `Editar o sensor ${sensorEmEdicao.codigo}` : 'Cadastrar sensor'}
             </DialogTitle>
             <DialogDescription>
-              {sensorEmEdicao ? 'Altere os dados do sensor.' : 'Informe os dados do novo sensor.'}
+              {sensorEmEdicao
+                ? 'Altere os dados do sensor e salve.'
+                : 'Informe os dados do novo sensor e o trem onde ele está instalado.'}
             </DialogDescription>
           </DialogHeader>
           <FormularioComTrens
@@ -517,7 +598,9 @@ export default function Sensores() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir o sensor {paraExcluir?.codigo}?</AlertDialogTitle>
-            <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+            <AlertDialogDescription>
+              A exclusão é recusada se o sensor já registrou leituras. A ação não se desfaz.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -527,7 +610,7 @@ export default function Sensores() {
                 if (paraExcluir) confirmarExclusao(paraExcluir)
               }}
             >
-              Excluir
+              Excluir sensor
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

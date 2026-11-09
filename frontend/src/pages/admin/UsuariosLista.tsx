@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus } from 'lucide-react'
+import { Pencil, SearchX, UserPlus, Users } from 'lucide-react'
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -15,21 +15,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CampoDeSenha } from '@/components/ui/campo-de-senha'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { CampoDeSenha } from '@/components/ui/campo-de-senha'
+import { Card } from '@/components/ui/card'
 import { CartaoDeUsuario } from '@/components/ui/cartao-de-usuario'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { RotuloDeDado } from '@/components/ui/rotulo-de-dado'
 import {
   Select,
   SelectContent,
@@ -37,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SeloDeStatus } from '@/components/ui/selo-de-status'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -57,7 +62,6 @@ import {
 } from '@/hooks/usuarios'
 import { ApiError, tratouErrosDeCampo, type Cargo, type Papel, type Usuario } from '@/lib/api'
 import { rotuloDeCargo } from '@/lib/rotulos'
-import { cn } from '@/lib/utils'
 
 const OPCOES_DE_PAPEL: { valor: Papel; rotulo: string }[] = [
   { valor: 'cliente', rotulo: 'Cliente' },
@@ -163,8 +167,8 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
           <AlertDialogTitle>Desativar {usuario.nome}?</AlertDialogTitle>
           <AlertDialogDescription>
             A pessoa perde o acesso na hora. Desativar não exclui: o cadastro e o histórico
-            continuam, e dá pra reativar depois. O último administrador ativo não pode ser
-            desativado.
+            continuam, e dá pra reativar depois. O sistema recusa a desativação se esta for a última
+            conta de administração ativa.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -181,7 +185,7 @@ function AcoesDeAtivacao({ usuario, aoFechar }: { usuario: Usuario; aoFechar: ()
               })
             }}
           >
-            Desativar
+            Desativar usuário
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -260,17 +264,34 @@ function AcaoSenhaTemporaria({ usuario }: { usuario: Usuario }) {
           <p className="rounded-lg bg-muted p-4 text-center font-mono text-2xl font-bold select-all">
             {senha}
           </p>
-          <Button
-            type="button"
-            onClick={() => {
-              if (senha !== null) copiar(senha)
-            }}
-          >
-            Copiar senha
-          </Button>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Fechar
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={() => {
+                if (senha !== null) copiar(senha)
+              }}
+            >
+              Copiar senha
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+function AcoesDeConta({ usuario, aoFechar }: { usuario: Usuario; aoFechar: () => void }) {
+  return (
+    <div className="flex flex-col gap-3 border-t border-border pt-5">
+      <RotuloDeDado>Acesso ao sistema</RotuloDeDado>
+      <AcaoSenhaTemporaria usuario={usuario} />
+      <AcoesDeAtivacao usuario={usuario} aoFechar={aoFechar} />
+    </div>
   )
 }
 
@@ -335,11 +356,14 @@ function FormularioDeUsuario({
   })
 
   const salvando = criar.isPending || atualizar.isPending
-  const rotuloDeEnvio = usuario ? 'Salvar' : 'Cadastrar'
+  const ajudaDeSenha = usuario
+    ? 'Deixe em branco para manter a senha atual.'
+    : 'Mínimo de 8 caracteres.'
 
   return (
     <form
       noValidate
+      className="flex flex-col gap-6"
       onSubmit={(evento) => {
         void enviar(evento)
       }}
@@ -384,32 +408,32 @@ function FormularioDeUsuario({
           control={formulario.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="usuario-senha">
-                {usuario ? 'Nova senha (deixe em branco pra manter)' : 'Senha'}
-              </FieldLabel>
+              <FieldLabel htmlFor="usuario-senha">{usuario ? 'Nova senha' : 'Senha'}</FieldLabel>
               <CampoDeSenha
                 {...field}
                 id="usuario-senha"
                 autoComplete="new-password"
                 aria-invalid={fieldState.invalid}
               />
+              <FieldDescription>{ajudaDeSenha}</FieldDescription>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-        <Button type="submit" disabled={salvando}>
-          {salvando ? 'Salvando…' : rotuloDeEnvio}
-        </Button>
-
-        {usuario && <AcaoSenhaTemporaria usuario={usuario} />}
-        {usuario && <AcoesDeAtivacao usuario={usuario} aoFechar={aoFechar} />}
       </FieldGroup>
+
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit" disabled={salvando}>
+          {salvando ? 'Salvando…' : usuario ? 'Salvar alterações' : 'Cadastrar usuário'}
+        </Button>
+      </DialogFooter>
     </form>
   )
-}
-
-function StatusAtivo({ ativo }: { ativo: boolean }) {
-  return <Badge variant={ativo ? 'success' : 'danger'}>{ativo ? 'Ativo' : 'Inativo'}</Badge>
 }
 
 interface ListaProps {
@@ -417,11 +441,11 @@ interface ListaProps {
   aoAbrir: (usuario: Usuario) => void
 }
 
-function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
+function ListaDeCartoes({ usuarios, aoAbrir }: ListaProps) {
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden">
       {usuarios.map((usuario) => (
-        <li key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
+        <li key={usuario.id}>
           <CartaoDeUsuario
             nome={usuario.nome}
             cargo={rotuloDeCargo(usuario.cargo)}
@@ -439,42 +463,72 @@ function ListaDeCards({ usuarios, aoAbrir }: ListaProps) {
 
 function TabelaDeUsuarios({ usuarios, aoAbrir }: ListaProps) {
   return (
-    <div className="hidden rounded-xl bg-card p-4 md:block">
+    <Card className="hidden overflow-hidden py-0 md:block">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>E-mail</TableHead>
-            <TableHead>Telefone</TableHead>
+            <TableHead className="hidden xl:table-cell">Telefone</TableHead>
             <TableHead>Cargo</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {usuarios.map((usuario) => (
-            <TableRow key={usuario.id} className={cn(!usuario.ativo && 'opacity-60')}>
+            <TableRow key={usuario.id}>
+              <TableCell className="font-semibold">
+                <span className="block max-w-xs truncate" title={usuario.nome}>
+                  {usuario.nome}
+                </span>
+              </TableCell>
               <TableCell>
+                <span className="block max-w-xs truncate" title={usuario.email}>
+                  {usuario.email}
+                </span>
+              </TableCell>
+              <TableCell className="hidden xl:table-cell">{usuario.telefone ?? '—'}</TableCell>
+              <TableCell>{rotuloDeCargo(usuario.cargo)}</TableCell>
+              <TableCell>
+                <SeloDeStatus status={usuario.ativo ? 'ativo' : 'inativo'} />
+              </TableCell>
+              <TableCell className="text-right">
                 <Button
-                  variant="link"
-                  className="h-auto p-0"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Editar ${usuario.nome}`}
                   onClick={() => {
                     aoAbrir(usuario)
                   }}
                 >
-                  {usuario.nome}
+                  <Pencil aria-hidden />
                 </Button>
-              </TableCell>
-              <TableCell>{usuario.email}</TableCell>
-              <TableCell>{usuario.telefone ?? '—'}</TableCell>
-              <TableCell>{rotuloDeCargo(usuario.cargo)}</TableCell>
-              <TableCell>
-                <StatusAtivo ativo={usuario.ativo} />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </div>
+    </Card>
+  )
+}
+
+function EsqueletoDeUsuarios() {
+  return (
+    <>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:hidden">
+        {Array.from({ length: 6 }, (_, indice) => (
+          <li key={indice}>
+            <Skeleton className="h-52" />
+          </li>
+        ))}
+      </ul>
+      <Card className="hidden gap-3 px-6 md:flex">
+        {Array.from({ length: 8 }, (_, indice) => (
+          <Skeleton key={indice} className="h-11" />
+        ))}
+      </Card>
+    </>
   )
 }
 
@@ -483,34 +537,74 @@ interface ConteudoProps {
   papel: string
   situacao: string
   aoAbrir: (usuario: Usuario) => void
+  aoLimparFiltros: () => void
+  aoCadastrar: () => void
 }
 
-function ConteudoDeUsuarios({ busca, papel, situacao, aoAbrir }: ConteudoProps) {
+function ConteudoDeUsuarios({
+  busca,
+  papel,
+  situacao,
+  aoAbrir,
+  aoLimparFiltros,
+  aoCadastrar,
+}: ConteudoProps) {
   const filtroDePapel = OPCOES_DE_PAPEL.find((opcao) => opcao.valor === papel)?.valor
   const filtroDeAtivo = situacao === 'todos' ? undefined : situacao === 'ativos'
   const {
     data: usuarios,
     isPending,
     error,
+    refetch,
   } = useUsuarios({ busca, papel: filtroDePapel, ativo: filtroDeAtivo })
 
-  if (isPending) {
+  if (isPending) return <EsqueletoDeUsuarios />
+
+  if (error) {
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-1">
-        {Array.from({ length: 6 }, (_, indice) => (
-          <Skeleton key={indice} className="h-44 md:h-10" />
-        ))}
-      </div>
+      <ErroDeCarregamento
+        error={error}
+        aoTentarDeNovo={() => {
+          void refetch()
+        }}
+      />
     )
   }
-  if (error) return <ErroDeCarregamento error={error} />
+
   if (usuarios.length === 0) {
-    return <p className="text-muted-foreground">Nenhum usuário encontrado.</p>
+    const filtrando = busca !== '' || papel !== 'todos' || situacao !== 'todos'
+    if (filtrando) {
+      return (
+        <EstadoVazio
+          icone={SearchX}
+          titulo="Nenhum resultado para esta busca"
+          descricao="Nenhum usuário combina com o termo e os filtros escolhidos. Troque o termo ou limpe os filtros."
+          acao={
+            <Button variant="outline" onClick={aoLimparFiltros}>
+              Limpar filtros
+            </Button>
+          }
+        />
+      )
+    }
+    return (
+      <EstadoVazio
+        icone={Users}
+        titulo="Nenhum usuário cadastrado"
+        descricao="Cadastre a primeira pessoa para dar acesso ao sistema."
+        acao={
+          <Button onClick={aoCadastrar}>
+            <UserPlus aria-hidden />
+            Cadastrar usuário
+          </Button>
+        }
+      />
+    )
   }
 
   return (
     <>
-      <ListaDeCards usuarios={usuarios} aoAbrir={aoAbrir} />
+      <ListaDeCartoes usuarios={usuarios} aoAbrir={aoAbrir} />
       <TabelaDeUsuarios usuarios={usuarios} aoAbrir={aoAbrir} />
     </>
   )
@@ -538,27 +632,36 @@ export default function UsuariosLista() {
   const [papel, setPapel] = useState('todos')
   const [situacao, setSituacao] = useState('todos')
 
+  const abrirCadastro = () => {
+    setEmEdicao('novo')
+  }
+  const fechar = () => {
+    setEmEdicao(null)
+  }
+  const limparFiltros = () => {
+    setBusca('')
+    setPapel('todos')
+    setSituacao('todos')
+  }
+
   return (
     <>
       <CabecalhoDeTela
         title="Usuários"
+        apoio="Quem entra no sistema e com qual nível de acesso."
         actions={
-          <Button
-            size="sm"
-            onClick={() => {
-              setEmEdicao('novo')
-            }}
-          >
-            <Plus />
-            Cadastrar
+          <Button onClick={abrirCadastro}>
+            <UserPlus aria-hidden />
+            Cadastrar usuário
           </Button>
         }
       />
 
-      <div className="mb-4 grid gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Input
           type="search"
-          aria-label="Buscar usuário"
+          className="col-span-2"
+          aria-label="Buscar usuário por nome ou e-mail"
           placeholder="Buscar por nome ou e-mail"
           value={busca}
           onChange={(evento) => {
@@ -583,7 +686,7 @@ export default function UsuariosLista() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="todos">Todas as situações</SelectItem>
+            <SelectItem value="todos">Todos</SelectItem>
             {OPCOES_DE_SITUACAO.map((opcao) => (
               <SelectItem key={opcao.valor} value={opcao.valor}>
                 {opcao.rotulo}
@@ -593,7 +696,14 @@ export default function UsuariosLista() {
         </Select>
       </div>
 
-      <ConteudoDeUsuarios busca={busca} papel={papel} situacao={situacao} aoAbrir={setEmEdicao} />
+      <ConteudoDeUsuarios
+        busca={busca}
+        papel={papel}
+        situacao={situacao}
+        aoAbrir={setEmEdicao}
+        aoLimparFiltros={limparFiltros}
+        aoCadastrar={abrirCadastro}
+      />
 
       <Dialog
         open={emEdicao !== null}
@@ -608,22 +718,23 @@ export default function UsuariosLista() {
             </DialogTitle>
             <DialogDescription>
               {usuarioEmEdicao ? (
-                <span className="flex items-center gap-2">
-                  {rotuloDeCargo(usuarioEmEdicao.cargo)}{' '}
-                  <StatusAtivo ativo={usuarioEmEdicao.ativo} />
+                <span className="flex flex-wrap items-center gap-2">
+                  {rotuloDeCargo(usuarioEmEdicao.cargo)}
+                  <SeloDeStatus status={usuarioEmEdicao.ativo ? 'ativo' : 'inativo'} />
                 </span>
               ) : (
-                'Cria o acesso de um funcionário ou usuário comum.'
+                'Cria o acesso de um funcionário ou de um cliente.'
               )}
             </DialogDescription>
           </DialogHeader>
+
           <FormularioComCargos
             key={usuarioEmEdicao?.id ?? 'novo'}
             usuario={usuarioEmEdicao}
-            aoFechar={() => {
-              setEmEdicao(null)
-            }}
+            aoFechar={fechar}
           />
+
+          {usuarioEmEdicao && <AcoesDeConta usuario={usuarioEmEdicao} aoFechar={fechar} />}
         </DialogContent>
       </Dialog>
     </>

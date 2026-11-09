@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Fingerprint } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { z } from 'zod'
+import { BannerDeErro } from '@/components/ui/banner-de-erro'
 import { Button } from '@/components/ui/button'
 import { CampoDeSenha } from '@/components/ui/campo-de-senha'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -33,7 +34,7 @@ export default function Login() {
   })
 
   return (
-    <LayoutDeAutenticacao title="Entrar na Conta">
+    <LayoutDeAutenticacao title="Entrar na conta">
       <form
         noValidate
         onSubmit={(e) => {
@@ -43,6 +44,7 @@ export default function Login() {
         }}
       >
         <FieldGroup>
+          {entrar.error && <BannerDeErro>{mensagemDeErro(entrar.error)}</BannerDeErro>}
           <Controller
             name="email"
             control={formulario.control}
@@ -76,24 +78,26 @@ export default function Login() {
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 <Link
                   to="/recuperar-senha"
-                  className="w-fit text-xs font-semibold text-foreground hover:underline"
+                  className="w-fit text-rotulo font-semibold text-foreground underline-offset-4 hover:underline"
                 >
                   Esqueceu sua senha?
                 </Link>
               </Field>
             )}
           />
-          {entrar.error && <FieldError>{mensagemDeErro(entrar.error)}</FieldError>}
           <Button type="submit" size="lg" disabled={entrar.isPending}>
-            <Fingerprint />
+            <LogIn aria-hidden />
             {entrar.isPending ? 'Entrando…' : 'Entrar'}
           </Button>
         </FieldGroup>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-rotulo text-muted-foreground lg:mt-8">
         Não tem uma conta?{' '}
-        <Link to="/cadastro" className="font-semibold text-primary hover:underline">
-          Criar Conta
+        <Link
+          to="/cadastro"
+          className="font-semibold text-foreground underline-offset-4 hover:underline"
+        >
+          Criar conta
         </Link>
       </p>
     </LayoutDeAutenticacao>

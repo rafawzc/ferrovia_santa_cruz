@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Plus, Train } from 'lucide-react'
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { AcoesDeLinha } from '@/components/ui/acoes-de-linha'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +17,21 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { CabecalhoDeTela } from '@/components/ui/cabecalho-de-tela'
+import { Card } from '@/components/ui/card'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ErroDeCarregamento, mensagemDeErro } from '@/components/ui/erro-de-carregamento'
+import { EstadoVazio } from '@/components/ui/estado-vazio'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Dado } from '@/components/ui/rotulo-de-dado'
 import {
   Select,
   SelectContent,
@@ -47,7 +53,7 @@ import { useAutenticacao } from '@/contexts/Autenticacao'
 import { useLinhas } from '@/hooks/linhas'
 import { useAtualizarTrem, useCriarTrem, useExcluirTrem, useTrens } from '@/hooks/trens'
 import { ApiError, tratouErrosDeCampo, type Linha, type Trem, type TremStatus } from '@/lib/api'
-import { dataBrasileira } from '@/lib/utils'
+import { dataBrasileira, formatarNumero } from '@/lib/utils'
 
 const STATUS_DE_TREM: TremStatus[] = ['ativo', 'manutencao', 'parado']
 const OPCOES_DE_STATUS = opcoesDeStatus(STATUS_DE_TREM)
@@ -169,16 +175,17 @@ function FormularioDeTrem({ trem, linhas, aoFechar }: FormularioDeTremProps) {
   })
 
   const salvando = criar.isPending || atualizar.isPending
-  const rotuloDeEnvio = trem ? 'Salvar' : 'Cadastrar'
+  const rotuloDeEnvio = trem ? 'Salvar alterações' : 'Cadastrar trem'
 
   return (
     <form
       noValidate
+      className="grid gap-6"
       onSubmit={(evento) => {
         void enviar(evento)
       }}
     >
-      <FieldGroup>
+      <FieldGroup className="grid gap-5 sm:grid-cols-2">
         <CampoTexto formulario={formulario} name="prefixo" rotulo="Prefixo" />
         <CampoTexto formulario={formulario} name="modelo" rotulo="Modelo" />
         <CampoTexto formulario={formulario} name="ano" rotulo="Ano" inputMode="numeric" />
@@ -224,7 +231,7 @@ function FormularioDeTrem({ trem, linhas, aoFechar }: FormularioDeTremProps) {
           name="linha_id"
           control={formulario.control}
           render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
+            <Field data-invalid={fieldState.invalid} className="sm:col-span-2">
               <FieldLabel htmlFor="trem-linha">Rota (opcional)</FieldLabel>
               <Select name={field.name} value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger id="trem-linha" className="w-full">
@@ -242,10 +249,17 @@ function FormularioDeTrem({ trem, linhas, aoFechar }: FormularioDeTremProps) {
             </Field>
           )}
         />
+      </FieldGroup>
+      <DialogFooter className="*:w-full sm:*:w-auto">
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
         <Button type="submit" disabled={salvando}>
           {salvando ? 'Salvando…' : rotuloDeEnvio}
         </Button>
-      </FieldGroup>
+      </DialogFooter>
     </form>
   )
 }
@@ -254,32 +268,24 @@ function FormularioComLinhas({ trem, aoFechar }: { trem: Trem | null; aoFechar: 
   const linhas = useLinhas()
 
   if (linhas.isPending) return <Skeleton className="h-80" />
-  if (linhas.error) return <ErroDeCarregamento error={linhas.error} />
+  if (linhas.error) {
+    return (
+      <ErroDeCarregamento
+        error={linhas.error}
+        aoTentarDeNovo={() => {
+          void linhas.refetch()
+        }}
+      />
+    )
+  }
 
   return <FormularioDeTrem trem={trem} linhas={linhas.data} aoFechar={aoFechar} />
 }
 
-interface AcoesProps {
-  podeEscrever: boolean
-  aoEditar: () => void
-  aoExcluir: () => void
-}
+const capacidadeDoTrem = (trem: Trem) => `${formatarNumero(trem.capacidade_t)} t`
 
-function Acoes({ podeEscrever, aoEditar, aoExcluir }: AcoesProps) {
-  if (!podeEscrever) return null
-  return (
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline" onClick={aoEditar}>
-        <Pencil />
-        Editar
-      </Button>
-      <Button size="sm" variant="destructive" onClick={aoExcluir}>
-        <Trash2 />
-        Excluir
-      </Button>
-    </div>
-  )
-}
+const inspecaoDoTrem = (trem: Trem) =>
+  trem.ultima_inspecao ? dataBrasileira(trem.ultima_inspecao) : '—'
 
 interface ListaProps {
   trens: Trem[]
@@ -292,34 +298,34 @@ function ListaDeCartoes({ trens, podeEscrever, aoEditar, aoExcluir }: ListaProps
   return (
     <ul className="grid gap-3 md:hidden">
       {trens.map((trem) => (
-        <li key={trem.id} className="grid gap-3 rounded-xl bg-card p-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-bold">{trem.prefixo}</span>
-            <SeloDeStatus status={trem.status} />
-          </div>
-          <dl className="grid grid-cols-2 gap-1 text-sm">
-            <dt className="text-muted-foreground">Modelo</dt>
-            <dd>{trem.modelo}</dd>
-            <dt className="text-muted-foreground">Ano</dt>
-            <dd>{trem.ano}</dd>
-            <dt className="text-muted-foreground">Capacidade</dt>
-            <dd>{trem.capacidade_t} t</dd>
-            <dt className="text-muted-foreground">Última inspeção</dt>
-            <dd>{trem.ultima_inspecao ? dataBrasileira(trem.ultima_inspecao) : '—'}</dd>
-            <dt className="text-muted-foreground">Rota</dt>
-            <dd>{trem.linha_numero ?? '—'}</dd>
-            <dt className="text-muted-foreground">Sensores</dt>
-            <dd>{trem.total_sensores}</dd>
-          </dl>
-          <Acoes
-            podeEscrever={podeEscrever}
-            aoEditar={() => {
-              aoEditar(trem)
-            }}
-            aoExcluir={() => {
-              aoExcluir(trem)
-            }}
-          />
+        <li key={trem.id}>
+          <Card className="gap-4 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xl leading-tight font-semibold">{trem.prefixo}</p>
+                <p className="text-rotulo text-muted-foreground">{trem.modelo}</p>
+              </div>
+              <SeloDeStatus status={trem.status} />
+            </div>
+            <dl className="grid gap-2 text-corpo">
+              <Dado rotulo="Ano" valor={trem.ano} />
+              <Dado rotulo="Capacidade" valor={capacidadeDoTrem(trem)} />
+              <Dado rotulo="Última inspeção" valor={inspecaoDoTrem(trem)} />
+              <Dado rotulo="Rota" valor={trem.linha_numero ?? '—'} />
+              <Dado rotulo="Sensores" valor={trem.total_sensores} />
+            </dl>
+            {podeEscrever && (
+              <AcoesDeLinha
+                nome={`trem ${trem.prefixo}`}
+                aoEditar={() => {
+                  aoEditar(trem)
+                }}
+                aoExcluir={() => {
+                  aoExcluir(trem)
+                }}
+              />
+            )}
+          </Card>
         </li>
       ))}
     </ul>
@@ -328,40 +334,39 @@ function ListaDeCartoes({ trens, podeEscrever, aoEditar, aoExcluir }: ListaProps
 
 function TabelaDeTrens({ trens, podeEscrever, aoEditar, aoExcluir }: ListaProps) {
   return (
-    <div className="hidden rounded-xl bg-card p-4 md:block">
+    <Card className="hidden gap-0 px-2 py-2 md:block">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Prefixo</TableHead>
-            <TableHead>Modelo</TableHead>
-            <TableHead>Ano</TableHead>
-            <TableHead>Capacidade (t)</TableHead>
+            <TableHead>Trem</TableHead>
+            <TableHead className="text-right">Ano</TableHead>
+            <TableHead className="text-right">Capacidade</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Última inspeção</TableHead>
             <TableHead>Rota</TableHead>
-            <TableHead>Sensores</TableHead>
-            {podeEscrever && <TableHead>Ações</TableHead>}
+            <TableHead className="text-right">Sensores</TableHead>
+            {podeEscrever && <TableHead className="text-right">Ações</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {trens.map((trem) => (
             <TableRow key={trem.id}>
-              <TableCell className="font-bold">{trem.prefixo}</TableCell>
-              <TableCell>{trem.modelo}</TableCell>
-              <TableCell>{trem.ano}</TableCell>
-              <TableCell>{trem.capacidade_t}</TableCell>
+              <TableCell>
+                <span className="font-bold">{trem.prefixo}</span>
+                <span className="block text-rotulo text-muted-foreground">{trem.modelo}</span>
+              </TableCell>
+              <TableCell className="text-right tabular-nums">{trem.ano}</TableCell>
+              <TableCell className="text-right tabular-nums">{capacidadeDoTrem(trem)}</TableCell>
               <TableCell>
                 <SeloDeStatus status={trem.status} />
               </TableCell>
-              <TableCell>
-                {trem.ultima_inspecao ? dataBrasileira(trem.ultima_inspecao) : '—'}
-              </TableCell>
+              <TableCell>{inspecaoDoTrem(trem)}</TableCell>
               <TableCell>{trem.linha_numero ?? '—'}</TableCell>
-              <TableCell>{trem.total_sensores}</TableCell>
+              <TableCell className="text-right tabular-nums">{trem.total_sensores}</TableCell>
               {podeEscrever && (
                 <TableCell>
-                  <Acoes
-                    podeEscrever
+                  <AcoesDeLinha
+                    nome={`trem ${trem.prefixo}`}
                     aoEditar={() => {
                       aoEditar(trem)
                     }}
@@ -375,7 +380,52 @@ function TabelaDeTrens({ trens, podeEscrever, aoEditar, aoExcluir }: ListaProps)
           ))}
         </TableBody>
       </Table>
+    </Card>
+  )
+}
+
+function EsqueletoDeTrens() {
+  return (
+    <div role="status" aria-label="Carregando" className="grid gap-3">
+      {Array.from({ length: 5 }, (_, indice) => (
+        <Skeleton key={indice} className="h-48 md:h-16" />
+      ))}
     </div>
+  )
+}
+
+interface VazioProps {
+  temFiltro: boolean
+  podeEscrever: boolean
+  aoLimparFiltros: () => void
+  aoCadastrar: () => void
+}
+
+function SemTrens({ temFiltro, podeEscrever, aoLimparFiltros, aoCadastrar }: VazioProps) {
+  return (
+    <EstadoVazio
+      icone={Train}
+      titulo={temFiltro ? 'Nenhum trem nesse filtro' : 'Nenhum trem cadastrado'}
+      descricao={
+        temFiltro
+          ? 'Mude a busca ou o status para ver outros trens da frota.'
+          : 'A frota aparece aqui assim que o primeiro trem for cadastrado.'
+      }
+      acao={
+        temFiltro ? (
+          <Button variant="outline" onClick={aoLimparFiltros}>
+            Limpar filtros
+          </Button>
+        ) : (
+          podeEscrever && (
+            <Button onClick={aoCadastrar}>
+              <Plus aria-hidden />
+              Cadastrar primeiro trem
+            </Button>
+          )
+        )
+      }
+    />
   )
 }
 
@@ -385,24 +435,42 @@ interface ConteudoProps {
   podeEscrever: boolean
   aoEditar: (trem: Trem) => void
   aoExcluir: (trem: Trem) => void
+  aoLimparFiltros: () => void
+  aoCadastrar: () => void
 }
 
-function ConteudoDeTrens({ busca, status, podeEscrever, aoEditar, aoExcluir }: ConteudoProps) {
+function ConteudoDeTrens({
+  busca,
+  status,
+  podeEscrever,
+  aoEditar,
+  aoExcluir,
+  aoLimparFiltros,
+  aoCadastrar,
+}: ConteudoProps) {
   const filtroDeStatus = STATUS_DE_TREM.find((item) => item === status)
-  const { data: trens, isPending, error } = useTrens({ busca, status: filtroDeStatus })
+  const { data: trens, isPending, error, refetch } = useTrens({ busca, status: filtroDeStatus })
 
-  if (isPending) {
+  if (isPending) return <EsqueletoDeTrens />
+  if (error) {
     return (
-      <div className="grid gap-3">
-        {Array.from({ length: 6 }, (_, indice) => (
-          <Skeleton key={indice} className="h-12" />
-        ))}
-      </div>
+      <ErroDeCarregamento
+        error={error}
+        aoTentarDeNovo={() => {
+          void refetch()
+        }}
+      />
     )
   }
-  if (error) return <ErroDeCarregamento error={error} />
   if (trens.length === 0) {
-    return <p className="text-muted-foreground">Nenhum trem encontrado.</p>
+    return (
+      <SemTrens
+        temFiltro={busca !== '' || status !== 'todos'}
+        podeEscrever={podeEscrever}
+        aoLimparFiltros={aoLimparFiltros}
+        aoCadastrar={aoCadastrar}
+      />
+    )
   }
 
   return (
@@ -433,6 +501,15 @@ export default function Trens() {
   const [paraExcluir, setParaExcluir] = useState<Trem | null>(null)
   const tremEmEdicao = emEdicao === 'novo' ? null : emEdicao
 
+  const abrirCadastro = () => {
+    setEmEdicao('novo')
+  }
+
+  const limparFiltros = () => {
+    setBusca('')
+    setStatus('todos')
+  }
+
   const confirmarExclusao = (trem: Trem) => {
     excluir.mutate(trem.id, {
       onSuccess: () => {
@@ -452,24 +529,21 @@ export default function Trens() {
     <>
       <CabecalhoDeTela
         title="Trens"
+        apoio={podeEscrever ? undefined : 'Cadastro, edição e exclusão da frota são da gestão.'}
         actions={
           podeEscrever && (
-            <Button
-              size="sm"
-              onClick={() => {
-                setEmEdicao('novo')
-              }}
-            >
-              <Plus />
-              Cadastrar
+            <Button onClick={abrirCadastro}>
+              <Plus aria-hidden />
+              Cadastrar trem
             </Button>
           )
         }
       />
 
-      <div className="mb-4 grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-3">
         <Input
           type="search"
+          className="md:col-span-2"
           aria-label="Buscar trem"
           placeholder="Buscar por prefixo ou modelo"
           value={busca}
@@ -498,6 +572,8 @@ export default function Trens() {
         podeEscrever={podeEscrever}
         aoEditar={setEmEdicao}
         aoExcluir={setParaExcluir}
+        aoLimparFiltros={limparFiltros}
+        aoCadastrar={abrirCadastro}
       />
 
       <Dialog
@@ -509,10 +585,12 @@ export default function Trens() {
         <DialogContent className="max-h-dvh overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {tremEmEdicao ? `Editar ${tremEmEdicao.prefixo}` : 'Cadastrar trem'}
+              {tremEmEdicao ? `Editar o trem ${tremEmEdicao.prefixo}` : 'Cadastrar trem'}
             </DialogTitle>
             <DialogDescription>
-              {tremEmEdicao ? 'Altere os dados do trem.' : 'Informe os dados do novo trem.'}
+              {tremEmEdicao
+                ? 'Altere os dados da composição e salve.'
+                : 'Informe os dados da nova composição.'}
             </DialogDescription>
           </DialogHeader>
           <FormularioComLinhas
@@ -534,7 +612,9 @@ export default function Trens() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir o trem {paraExcluir?.prefixo}?</AlertDialogTitle>
-            <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+            <AlertDialogDescription>
+              Só é possível excluir trens sem sensores vinculados. A ação não se desfaz.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -544,7 +624,7 @@ export default function Trens() {
                 if (paraExcluir) confirmarExclusao(paraExcluir)
               }}
             >
-              Excluir
+              Excluir trem
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

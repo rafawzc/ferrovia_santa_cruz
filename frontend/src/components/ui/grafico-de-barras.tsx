@@ -39,12 +39,14 @@ export function GraficoDeBarras({ barras, formatar = String, className }: Grafic
   const escala = maior > 0 ? maior : 1
 
   return (
-    <dl className={cn('flex flex-col gap-3', className)}>
+    <dl className={cn('flex flex-col gap-4', className)}>
       {barras.map(({ rotulo, valor, variant }) => (
-        <div key={rotulo} className="flex flex-col gap-1">
+        <div key={rotulo} className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="truncate text-sm font-medium">{rotulo}</dt>
-            <dd className="text-sm font-bold tabular-nums">{formatar(valor)}</dd>
+            <dt className="truncate text-rotulo font-semibold tracking-wide text-muted-foreground uppercase">
+              {rotulo}
+            </dt>
+            <dd className="text-base font-bold tabular-nums">{formatar(valor)}</dd>
           </div>
           <progress
             className={barra({ variant })}
