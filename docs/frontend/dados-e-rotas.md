@@ -56,6 +56,23 @@ Papel vem da API (`cliente` < `operacional` < `gestao`). Sem sessão → `/login
 
 `/viagens` e `/perfil` ficam no `LayoutProtegido` sem o guard `Papeis`: o `operacional` e a `gestao` que digitarem `/viagens` abrem a tela, mas o item só existe no menu do `cliente`.
 
-Renomes do Guia (L1) aplicados: `/admin/linhas` → `/admin/rotas`, `/admin/funcionarios*` → `/admin/usuarios`. Não há rota própria pra formulário: `/admin/usuarios/:id`, `/admin/usuarios/:id/editar` e os `…/cadastro` viraram `Dialog` dentro da lista. O dock da `CascaDePagina` mostra só os itens do papel (lista `NAV` em `casca-de-pagina.tsx`): equipe vê Início, Trens, Sensores, Rotas, Alertas e Carga; só `gestao` acrescenta Relatórios e Usuários; `cliente` vê Viagens e Perfil; Perfil é de todos. Cada tela é um pedaço de JS separado (`React.lazy`), baixado quando a rota abre.
+Renomes do Guia (L1) aplicados: `/admin/linhas` → `/admin/rotas`, `/admin/funcionarios*` → `/admin/usuarios`. Não há rota própria pra formulário: `/admin/usuarios/:id`, `/admin/usuarios/:id/editar` e os `…/cadastro` viraram `Dialog` dentro da lista. Cada tela é um pedaço de JS separado (`React.lazy`), baixado quando a rota abre.
+
+## Navegação (a constante `GRUPOS`)
+
+A lista de navegação vive em `casca-de-pagina.tsx`, na constante **`GRUPOS`** (desde 2026-11-09; antes era `NAV`, uma lista plana). Cada item tem `papeis` (quem vê) e `dock?: true` (quem aparece na pílula do celular).
+
+| Grupo | Itens | Papéis |
+|---|---|---|
+| (sem título) | Início (`/admin`) · Viagens (`/viagens`) | equipe · cliente |
+| Operação | Rotas · Alertas · Carga | equipe |
+| Frota | Trens · Sensores | equipe |
+| Gestão | Relatórios · Usuários | só `gestao` |
+| Conta | Perfil (`/perfil`) | todos |
+
+- A **barra lateral** (`lg` pra cima) e a **folha de menu** do celular mostram todos os grupos do papel.
+- O **dock** (abaixo de `lg`) mostra só os itens `dock: true`: equipe vê Início, Rotas, Alertas e Perfil; `cliente` vê Viagens e Perfil. O resto fica atrás do botão Menu.
+- Rota nova = `<Route>` no grupo de papel certo em `Aplicacao.tsx` **e** item no grupo de tarefa certo em `GRUPOS`.
+- Sessão (nome/cargo), alternador de tema e "Sair da conta" ficam no rodapé da barra lateral e da folha. **A barra "Conectado como…" do topo não existe mais.**
 
 Todas as telas são TSX sobre o design system e os hooks acima (fase 4 concluída). O que cada tela mostra, o que saiu do mockup e por quê: [`telas/`](telas/).

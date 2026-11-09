@@ -1,6 +1,6 @@
 # Decisões de frontend e gate de qualidade
 
-> Registro das decisões da fundação (fase 1 do plano [`../tasks/lowh-fundacao-design-system-2026-09-22.md`](../tasks/lowh-fundacao-design-system-2026-09-22.md)). Mesmo formato do [`stack.md`](stack.md): contexto, decisão, porquê, consequência. Os `Lxx` apontam pras *Locked Decisions* do plano.
+> F1–F6: decisões da fundação (fase 1 do plano [`../tasks/lowh-fundacao-design-system-2026-09-22.md`](../tasks/lowh-fundacao-design-system-2026-09-22.md), 2026-09-22). **F7: a refatoração total da UI (2026-11-09).** Mesmo formato do [`stack.md`](stack.md): contexto, decisão, porquê, consequência. Os `Lxx` apontam pras *Locked Decisions* dos planos.
 >
 > Supera: a parte de testes do D3 em [`stack.md`](stack.md) (Vitest) e as seções de CSS Modules / JS / Vitest do [`../PLANO_IMPLEMENTACAO.md`](../PLANO_IMPLEMENTACAO.md).
 
@@ -95,3 +95,35 @@ No backend: `ruff` (lint + format) + `scripts/check_comments.py`.
 **Porquê:** o CI roda o **mesmo** comando que você roda local — não existe "passa aqui, quebra lá". Ruleset transforma o CI de aviso em trava.
 
 **Consequência:** lowh não é admin do repo, então o ruleset tem que ser criado pelo rafawzc. Passo a passo em [`../arquitetura/operacao.md`](../arquitetura/operacao.md). Até lá o CI é só informativo.
+
+---
+
+## F7 — Refatoração total da UI, com um contrato visual escrito
+
+**Data:** 2026-11-09 · **Status:** vigente · **Plano:** [`../tasks/lowh-refatoracao-ui-2026-11-09.md`](../tasks/lowh-refatoracao-ui-2026-11-09.md) · **Contrato:** [`../frontend/principios-de-ui.md`](../frontend/principios-de-ui.md)
+>
+> **Supera:** a paleta anterior e a regra de que status é cor igual nos dois temas, descritas em [`../frontend/tema.md`](../frontend/tema.md) e [`../frontend/tema-escuro.md`](../frontend/tema-escuro.md) (os dois foram reescritos com os valores novos). Do L6 de [`uniformizacao-telas.md`](uniformizacao-telas.md) sobrevive a **semântica** (normal=verde · atenção=amarelo · crítico=vermelho) e o mapa do L7; cai a ideia de tom "fixo": os tons são dessaturados para o clima sépia e têm valor próprio em cada tema. Esse arquivo não foi reescrito — na dúvida sobre cor de status, vale esta entrada.
+
+**Contexto:** as 14 telas estavam funcionando e no contrato da API, mas visualmente inconsistentes: alinhamentos quebrados, hierarquia fraca, densidade aleatória de tela em tela, estados indistintos (status como bolinha de cor ou texto colorido), paleta com um fundo que não estava no guia de estilo (`#d5c4a8`), `border: #ffffff` praticamente invisível e status de biblioteca (`#dc2626`, `#eab308`) brigando com o sépia. Cada tela nova herdava o desalinhamento da anterior, porque o "padrão" era o código vizinho, e o código vizinho estava errado.
+
+**Decisão:** recompor a UI inteira numa tacada — tokens, primitivos, casca de navegação, compostos do domínio e as 14 telas — **e escrever o contrato visual num documento que passa a ser lei** (`docs/frontend/principios-de-ui.md`). Rotas, papéis, hooks e contrato de API ficam intactos; a API dos primitivos (nome, prop, `variant`, `size`) foi congelada durante o trabalho. Os pontos travados:
+
+| # | Decisão | Alternativa recusada |
+|---|---|---|
+| D1 | Recompor tela inteira (layout, hierarquia, agrupamento, densidade, navegação), não repintar. | Só trocar cores — mantém o desalinhamento estrutural. |
+| D2 | As 6 cores do guia de estilo são âncoras; o resto é derivado e **medido** por contraste. | Lei literal das 6 cores (reprova AA). |
+| D3 | Claro e escuro são a mesma tela; todo token é redeclarado no `.escuro`. | Só o claro agora (dívida garantida). |
+| D4 | **Status é sempre selo preenchido com rótulo** — nunca ponto de cor, nunca texto colorido, nunca "Sim/Não". | Texto colorido ou bolinha (o que havia). |
+| D5 | Navegação por **grupos de tarefa** (`GRUPOS`): barra lateral no desktop, dock de 4 itens + Menu no celular; sessão/tema/sair no rodapé da casca. | Manter a lista plana e a barra "Conectado como…" no topo. |
+| D6 | O *tasteskill* foi **destilado**, não aplicado: ficou o que vale em app logado (um sistema só, bordas alinhadas, hierarquia, movimento discreto, verificação em navegador); hero, seção por tela, fotografias, shaders e footer de marketing foram descartados. | Aplicar ao pé da letra (vocabulário de landing page num painel de operação). |
+
+**Porquê:** o problema não era gosto, era falta de sistema — sem um documento que diga qual é o botão, qual é o raio, como se mostra status e o que é um estado vazio, cada pessoa (e cada agente) inventa o seu e a inconsistência volta no PR seguinte. Medir contraste em vez de escolher no olho fecha a porta do bug de 2026-07 (cor "bonita" ilegível). E concentrar tudo numa tacada foi mais barato do que corrigir tela por tela, porque tokens e primitivos mudam o visual de todas elas ao mesmo tempo.
+
+**Consequência:**
+
+- `principios-de-ui.md` é leitura obrigatória antes de desenhar tela, e **o código anterior a 2026-11-09 não serve de exemplo estético**.
+- Nasceram três tokens por necessidade medida: `border-forte` (contorno de controle, ≥ 3:1), `danger-ink` (texto de erro) e a escala tipográfica (`text-rotulo/corpo/titulo/destaque`). O `@media print` passou a cobrir todos os tokens de cor.
+- O visual é regido por token e variante: nenhum primitivo usa `dark:` e nenhuma tela usa cor crua (o lint de F4 continua sendo o que garante).
+- O gate de F5 não cobre regressão visual: a verificação segue manual, em 390px e 1440px, nos dois temas (seção 8 do contrato).
+- Dívidas assumidas no fechamento do refactor: `CartaoDeLinha`, `Progress` e `Separator` ficaram sem uso fora da vitrine; `/ui` abre em branco sem sessão (a vitrine monta a casca, que não renderiza sem usuário); e a `docs/entregas/` (manual do usuário, roteiro de testes) ainda descrevia a barra "Conectado como…", que deixou de existir.
+- **Baixa dessas dívidas, 2026-11-09 (mesma data, faxina depois do refactor):** `cartao-de-linha.tsx` e `progress.tsx` foram apagados, junto das seções deles na vitrine — nenhuma tela os usava e a barra de progresso real é o `grafico-de-barras`. `separator.tsx` **ficou**: o `FieldSeparator` do `field.tsx` o importa. O manual do usuário e o roteiro de testes foram reescritos para a navegação em grupos (barra lateral no desktop, faixa de 4 itens + Menu no celular) e para os rótulos reais de botão e de coluna. `/ui` em branco sem sessão continua como está.
